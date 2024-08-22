@@ -1,3 +1,5 @@
+from src.input_to_instructions.load_and_execute import InputToInstruction
+
 def get_current_metadata():
     return {
         "site_name": "YongDongIllHighSchool",
@@ -15,6 +17,7 @@ def input_to_instruction_set(user_input, current_metadata):
     
     Document the output format of the function here.
     """
+    InputToInstruction.execute()
 
 def execute_instruction_set(instruction_set):
     """
