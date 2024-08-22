@@ -5,8 +5,10 @@ logger = logging.getLogger(__name__)
 import psycopg2
 from psycopg2 import sql
 
-
 class DBInstance:
+    """
+    This is a low-level DB driver class that provides methods to interact with a PostgreSQL database.
+    """
     def __init__(self, host='localhost', port=5432, dbname='postgres', user='postgres', password='postgres'):
         self.host = host
         self.port = port
@@ -102,6 +104,43 @@ class DBInstance:
         except Exception as e:
             logger.error(f"An error occurred while creating hypertable {table_name}: {e}")
 
+    def execute_sql(self, sql):
+        """
+        Executes an SQL query against the database.
+
+        This method automatically determines whether to fetch results based on the query type.
+        It fetches and returns results for SELECT queries, and commits changes for other queries
+        like INSERT, UPDATE, DELETE, etc.
+
+        Parameters:
+        - sql (str): The SQL query to be executed.
+
+        Returns:
+        - list: A list of tuples containing the results if the query is a SELECT query.
+        - None: If the query is not a SELECT query, or if an error occurs.
+
+        Logs:
+        - Info: When the query is executed successfully.
+        - Error: If an exception occurs during query execution.
+        """
+    
+        try:
+            # Execute the SQL query
+            self.cursor.execute(sql)
+            
+            # Automatically determine if the query is a SELECT
+            if sql.strip().lower().startswith('select'):
+                results = self.cursor.fetchall()
+                logger.info("SQL SELECT query executed successfully and results fetched")
+                return results
+            else:
+                # Commit the transaction for non-SELECT queries
+                self.connection.commit()
+                logger.info("SQL query executed successfully")
+                return None
+        except Exception as e:
+            logger.error(f"An error occurred while executing SQL query: {e}")
+            return None
 
     def insert_data(self, table_name, data, ignore_if_exists=False):
         try:
