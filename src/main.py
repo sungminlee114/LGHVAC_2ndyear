@@ -10,10 +10,19 @@ def wait_for_input_from_user():
     return input("Enter your query: ")
 
 def input_to_instruction_set(user_input, current_metadata):
-    pass
+    """
+    Implement core functions under input_to_instruction_set module and call it here.
+    
+    Document the output format of the function here.
+    """
 
 def execute_instruction_set(instruction_set):
-    pass
+    """
+    Implement agent.
+    """
+    
+    for instruction in instruction_set:
+        pass
 
 def main():
     while True:
