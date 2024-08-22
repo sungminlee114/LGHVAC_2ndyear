@@ -22,3 +22,12 @@ It contains the real data of each idu, timestamp.\
 
 ## Information of the currently stored data
 Processed version of YongDongIllHighSchool collected from 7 idus during 2022.08.01-2022.09.30. It is interpolated to have sampling rate of 60 secs/sample.
+
+# Demo 시나리오
+## Metadata
+```
+{"site_name": "YongDongIllHighSchool",
+"user_name": "홍길동",
+"user_role": "customer", # customer, admin
+"current_datetime": "2022-09-30 12:00:00",}
+```
