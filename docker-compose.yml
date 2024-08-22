@@ -50,7 +50,7 @@ services:
     ipc: host
     volumes:
       - ./:/workspace
-      - /hdisk/Dataset/LGHVAC_2ndyear:/dataset
+      - /hdisk/Dataset/LGHVAC/:/dataset/
     deploy:
       resources:
         reservations:
