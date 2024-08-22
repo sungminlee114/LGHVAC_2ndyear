@@ -33,6 +33,8 @@ Database=PerSite_DB, Schema=public에는 두 개의 테이블이 있음.
 ## Information of the currently stored data
 2022년 8월 1일부터 2022년 9월 30일까지 7개의 IDU에서 수집된 영동일고등학교(YongDongIllHighSchool) 데이터의 3_Processed 버전. 샘플링 주기가 60초/샘플로 보간되었음.
 
+Hi i am sungmin
+
 # Demo scenario
 ## Metadata
 ```
