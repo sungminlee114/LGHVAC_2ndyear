@@ -40,7 +40,7 @@ services:
     ports:
       - "9913:80"
   main_s:
-    container_name: main_c
+    container_name: main_yourname_c
     build: .
     privileged: true
     command: /bin/bash
