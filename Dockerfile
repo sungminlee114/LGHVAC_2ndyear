@@ -116,4 +116,5 @@ RUN sudo apt install -y \
 
     
 WORKDIR /workspace
+COPY requirements.txt /workspace
 RUN pip install -r ./requirements.txt
