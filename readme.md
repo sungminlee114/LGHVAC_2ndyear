@@ -6,24 +6,24 @@ Goto http://1.233.218.4:9913/
 At the menubar on the left, go through TimescaleDB -> Databases -> `[DatabaseName(=PerSite_DB)]` -> Schemas -> `[SchemaName(=public)]` -> Tables -> `[TableName]`, right-click the table, select View/Edit Data -> All rows
 
 ## DB structure
-At Database=PerSite_DB, Schema=public, there are two tables.
+Database=PerSite_DB, Schema=public에는 두 개의 테이블이 있음.
 1. `idu_t`\
-It contains the idu information of the site.
+이 테이블에는 사이트의 IDU(실내기) 정보가 포함되어 있음.
     |id|name|metadata|
     |--|----|--------|
     |integer|varchar(50)|varchar(255)|
 
 2. `data_t`\
-It contains the real data of each idu, timestamp.\
+이 테이블에는 각 IDU의 실제 데이터와 타임스탬프가 포함되어 있음.
 
     |id|idu_id|roomtemp|settemp|oper|timestamp|
     |--|------|--------|-------|----|---------|
     |integer|integer|double|double|bool|timestamp without timezone|
 
 ## Information of the currently stored data
-Processed version of YongDongIllHighSchool collected from 7 idus during 2022.08.01-2022.09.30. It is interpolated to have sampling rate of 60 secs/sample.
+2022년 8월 1일부터 2022년 9월 30일까지 7개의 IDU에서 수집된 영동일고등학교(YongDongIllHighSchool) 데이터의 3_Processed 버전. 샘플링 주기가 60초/샘플로 보간되었음.
 
-# Demo 시나리오
+# Demo scenario
 ## Metadata
 ```
 {"site_name": "YongDongIllHighSchool",
