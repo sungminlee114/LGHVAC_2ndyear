@@ -114,5 +114,6 @@ RUN sudo apt install -y \
     curl \
     git
 
-
+    
 WORKDIR /workspace
+RUN pip install -r ./requirements.txt
