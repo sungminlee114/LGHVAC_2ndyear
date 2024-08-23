@@ -104,7 +104,7 @@ class DBInstance:
         except Exception as e:
             logger.error(f"An error occurred while creating hypertable {table_name}: {e}")
 
-    def execute_sql(self, sql):
+    def execute_sql(self, sql:str) -> list[tuple] | None:
         """
         Executes an SQL query against the database.
 
