@@ -65,6 +65,14 @@ class InputToInstruction:
         Returns:
         - instructions (list[Instruction]): List of instructions.
         
+        Example:
+            input: "지난 여름 우리집과 옆집의 전력사용량 비교해줘"
+            output: [
+                Instruction(operation_flag="q", content="지난 여름 우리집 전력사용량 알려줘"),
+                Instruction(operation_flag="q", content="지난 여름 옆집 전력사용량 알려줘"),
+                Instruction(operation_flag="o", content="final_result = 1_a - 2_a"),
+                Instruction(operation_flag="r", content="final_result를 한국어로 답해줘")
+            ]
         """
         
         messages = [
