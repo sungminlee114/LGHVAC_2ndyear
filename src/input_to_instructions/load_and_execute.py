@@ -5,11 +5,15 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 class InputToInstruction:
     model_id = 'MLP-KTLim/llama-3-Korean-Bllossom-8B'
 
-    tokenizer = AutoTokenizer.from_pretrained(model_id, )
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_id,
+        cache_dir="/model"
+    )
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
         torch_dtype=torch.bfloat16,
         device_map="auto",
+        cache_dir="/model"
     )
 
     terminators = [

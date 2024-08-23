@@ -40,7 +40,7 @@ services:
     ports:
       - "9913:80"
   main_yourname_s:
-    container_name: main_yourname_c
+    container_name: main_sungmin_c
     build: .
     privileged: true
     command: /bin/bash
@@ -51,6 +51,7 @@ services:
     volumes:
       - ./:/workspace
       - /hdisk/Dataset/LGHVAC/:/dataset/
+      - /hdisk/ModelWeights/LGHVAC/:/model/
     deploy:
       resources:
         reservations:
