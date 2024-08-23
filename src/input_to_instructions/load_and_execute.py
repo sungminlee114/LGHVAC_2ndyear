@@ -15,6 +15,8 @@ class Instruction:
     def __init__(self, instruction):
         self.operation_flag:str = instruction[0]
         self.content:str = instruction[1]
+        
+        assert(self.operation_flag in ["q", "o", "r"])
     
     def __repr__(self) -> str:
         return f"Instruction(operation_flag={self.operation_flag}, content={self.content})"
@@ -107,12 +109,23 @@ class InputToInstruction:
         이런 형식의 result_string(str)을 실제 list(list[str])로 변환하는 코드를 작성해주세요.
         """
         instructions = []
-        result_string = result_string.replace("[[", "").replace("]]", "").replace("\n", "").replace("\t", "").replace('"', "")
+        result_string = result_string.replace("[[", "").replace("\n", "").replace("\t", "").replace('"', "")
         result_string = result_string.split("],")
+        
+        stop = False
         for instruction in result_string:
+            # "또 다른 예시" 방지
+            if "]]" in instruction:
+                instruction = instruction.split("]]")[0]
+                stop = True
+            
             instruction = instruction.replace("[", "").replace("]", "")
             instruction = instruction.split(", ")
+            instruction[0].replace(" ", "")
             instructions.append(Instruction(instruction))
+            
+            if stop:
+                break
         
         return instructions
 
