@@ -51,6 +51,7 @@ services:
     volumes:
       - ./:/workspace
       - /hdisk/Dataset/LGHVAC/:/dataset/
+      - /hdisk/ModelWeights/LGHVAC/:/model/
     deploy:
       resources:
         reservations:
