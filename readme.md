@@ -5,8 +5,8 @@
 `docker compose up -d [service name]`
 
 ## 위 방식을 응용해 같은 machine에서 여러명의 개발자가 git으로 따로 작업하기
-`docker-compose.yml`에서 `main_s` 서비스의 컨테이너 이름을 중복되지 않도록 `main_yourname_s`등으로 바꾼 후 
-`docker compose up -d main_s`로 실행하면 컨테이너 conflict이 일어나지 않음. 
+`docker-compose.yml`에서 서비스의 이름이 중복되지 않도록 `main_yourname_s`와 `main_yourname_c` 등으로 바꾼 후 
+`docker compose up -d main_yourname_s`로 실행하면 컨테이너 conflict이 일어나지 않음. 
 
 # PgAdmin and TimescaleDB
 ## How to access to pgadmin
