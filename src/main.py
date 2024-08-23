@@ -6,7 +6,7 @@ from collections import defaultdict
 
 from src.input_to_instructions.load_and_execute import InputToInstruction, Instruction
 from src.db.manager import DBManager
-
+from src.instruction_to_sql import InstructionToSql
 def get_current_metadata():
     return {
         "site_name": "YongDongIllHighSchool",
@@ -48,9 +48,13 @@ def execute_query(instruction:Instruction, execution_state:dict):
     """
     
     # Run the query generation LLM model
+    sql_string_id = InstructionToSql.query_id(instruction.content)
+    sql_id = DBManager.execute_sql(sql_string_id)
+    sql_string_value = InstructionToSql.query_sql(instruction.content,sql_id)
+    sql_value = DBManager.execute_sql(sql_string_value)
     
     # Execute query
-    sql_result = DBManager.execute_sql(sql_string)
+    
     
     # Save the query result in execution state.
     current_variable_name = f"a_{execution_state['op_counts'][instruction.operation_flag]}" # a_1, a_2, 3_a, ... 변수 이름 생성
