@@ -1,3 +1,7 @@
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 import os
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -16,7 +20,7 @@ class Instruction:
         self.operation_flag:str = instruction[0]
         self.content:str = instruction[1]
         
-        assert(self.operation_flag in ["q", "o", "r"])
+        assert self.operation_flag in ["q", "o", "r"], instruction
     
     def __repr__(self) -> str:
         return f"Instruction(operation_flag={self.operation_flag}, content={self.content})"
@@ -121,7 +125,7 @@ class InputToInstruction:
             
             instruction = instruction.replace("[", "").replace("]", "")
             instruction = instruction.split(", ")
-            instruction[0].replace(" ", "")
+            instruction[0].strip()
             instructions.append(Instruction(instruction))
             
             if stop:
