@@ -55,36 +55,34 @@ total_list = total_list = [
         - input_text (str): Input text to be changed to a instruction list.
         
         Returns:
-        - instruction list (list) 
+        - instructions (list) 
         
         """
         
-        
-        
         messages = [
-        {"role": "system", "content": f"{cls.PROMPT}"},
-        {"role": "user", "content": f"{input_text}"}
+            {"role": "system", "content": f"{cls.PROMPT}"},
+            {"role": "user", "content": f"{input_text}"}
         ]
 
         input_ids = cls.tokenizer.apply_chat_template(
-                messages,
-                add_generation_prompt=True,
-                return_tensors="pt"
-            ).to(cls.model.device)
+            messages,
+            add_generation_prompt=True,
+            return_tensors="pt"
+        ).to(cls.model.device)
 
         outputs = cls.model.generate(
-                input_ids,
-                max_new_tokens=256,
-                eos_token_id=cls.terminators,
-                do_sample=True,
-                temperature=0.6,
-                top_p=0.9,
-                repetition_penalty = 1.1
-            )
+            input_ids,
+            max_new_tokens=256,
+            eos_token_id=cls.terminators,
+            do_sample=True,
+            temperature=0.6,
+            top_p=0.9,
+            repetition_penalty = 1.1
+        )
 
         result_string = cls.tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)
-        parsed_string:str = cls.parse_from_keyword(result_string, 'total_list')
-        return parsed_string
+        instructions = cls.parse_from_keyword(result_string, 'total_list')
+        return instructions
 
 if __name__ == "__main__":
     result = InputToInstruction.execute(
