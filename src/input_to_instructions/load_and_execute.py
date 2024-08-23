@@ -125,7 +125,7 @@ class InputToInstruction:
             
             instruction = instruction.replace("[", "").replace("]", "")
             instruction = instruction.split(", ")
-            instruction[0].strip()
+            instruction[0] = instruction[0].strip()
             instructions.append(Instruction(instruction))
             
             if stop:
