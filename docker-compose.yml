@@ -39,7 +39,7 @@ services:
       - db_s
     ports:
       - "9913:80"
-  main_s:
+  main_yourname_s:
     container_name: main_yourname_c
     build: .
     privileged: true
