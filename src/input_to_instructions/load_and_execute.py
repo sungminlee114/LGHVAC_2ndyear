@@ -5,7 +5,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 class InputToInstruction:
     model_id = 'MLP-KTLim/llama-3-Korean-Bllossom-8B'
 
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    tokenizer = AutoTokenizer.from_pretrained(model_id, )
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
         torch_dtype=torch.bfloat16,
@@ -17,8 +17,23 @@ class InputToInstruction:
         tokenizer.convert_tokens_to_ids("<|eot_id|>")
     ]
     
-    PROMPT = "세부문장은 리스트에 들어가야하는데, 예를 들어 오늘 우리집과 옆집의 온도차이 알려줘 라는 문장은 total_list = [[q,'오늘 우리집 온도 알려줘',a],[q,'오늘 옆집 온도 알려줘',a],[r,total_list[0][-1]-total_list[1][-1]]] 야. 마지막 result 까지 리스트안에 넣어서 해줘. 특별한 문장 간 연산이 필요없는 경우에는, 예를 들어 지금 현재 온도 알려줘 라는 문장은 total_list = [q,'지금 현재온도 알려줘',a] , 올해 에어컨 사용료가 가장 많았던 달이 언제야 ? total_list=[q,'올해 에어컨 사용료가 가장 많았던 달은 언제야?,'a'']"
-    
+    PROMPT = """세부문장은 리스트에 들어가야하는데, 
+세부 문장의 예시는 다음과 같아. 세부 문장은 나중에 데이터 베이스를 query하는데 쓰일 문장이고, 세부 문장을 나누는 기준은 하나의 테이블(장소) 로 해결될 수 있는지 없는지야.오늘 우리집과 옆집의 온도차이 알려줘 라는 문은 여러 테이블(장소)에 접근해야해. 
+따라서 세부 문장은 첫번째, 오늘 우리집의 온도를 알려줘. 두번째, 옆집의 온도를 알려줘. 그리고 결과로는 첫번째 쿼리의 답과 두번째 쿼리의 답을 뺀거야. 최종 r부분에 답을 할때 첫번째 문장이름은 1_q, 첫번째 문장의 답 이름은 1_a이야. 그리고 찻반쩨 문장의 장소 이름은 1_site 로 해줘. 최종 답은 딱 다음과 같은 리스트의 형태로 똑같이 나와야해. total_list = [[q,오늘 우리집 온도 알려줘],[q,오늘 옆집 온도 알려줘],[o,final_result =1_a-2_a],[r, "final_result를 한국어로 답해줘"]] 야. 두번째 예시로는 지난 여름 우리집 평균온도 알려줘 라는 문장은 장소를 데이터베이스 테이블 이름이라고 할때  하나의 테이블(장소)에서 해결할 수 있는 세부문장이 없는 문장이야. 따라서 답은 다음 리스트이 형태 그대로 똑같이 나와야해. 변수 바꾸지마. total_list = [[q,지난 여름 우리집 평균온도 알려줘],[o,final_result=1_a],[r, "final_result를 한국어로 답해줘"]] 야.
+예시를 하나 더 들면, 이번달 중 우리집 온도가 가장 추운달이 언제야 라는 문장은 하나의 테이블(장소)로 해결될수 있으니 답은 다음과 같이 똑같이 나와야해. 변수 바꾸지마. total_list = [q, 이번달 중 우리집 온도가 가장 추운달이 언제야][o,final_result=1_a],[r, "final_result를 한국어로 답해줘"]]. 예시를 하나 더 들면, 우리집과 오피스텔 101동중에 최고온도가 더 낮은 곳은 어디야? 의 세부문장 리스트 알려줘 라는 문장은
+total_list = total_list = [
+    [q, 우리집의 최고 온도가 얼마야?],
+    [q, 오피스텔 101동의 최고 온도가 얼마야?],
+    [o, final_result = "1_site" if 1_a < 2_a else "2_site"],
+    [r, "final_result를 한국어로 답해줘"]
+]
+
+세부 문장을 나누는 기준은 장소야. 
+우리집 실내온도만 물으면 비교할 필요없어. 장소가 여러개 나올때만 여러 세부문장으로 나누게 해줘.
+변수 바꾸지말고 출력해줘.
+
+"""
+
     @classmethod
     def parse_from_keyword(cls, gpt_results, keyword):
         # keyword가 total_list에 있는지 확인하고, 위치를 찾습니다.
@@ -32,15 +47,15 @@ class InputToInstruction:
             return None
 
     @classmethod
-    def execute(cls, instruction):
+    def execute(cls, input_text):
         """
-        ~~
+        Change text to instruction list.
         
         Parameters:
-        - instruction (str): ~
+        - input_text (str): Input text to be changed to a instruction list.
         
         Returns:
-        - ~
+        - instruction list (list) 
         
         """
         
@@ -48,7 +63,7 @@ class InputToInstruction:
         
         messages = [
         {"role": "system", "content": f"{cls.PROMPT}"},
-        {"role": "user", "content": f"{instruction}"}
+        {"role": "user", "content": f"{input_text}"}
         ]
 
         input_ids = cls.tokenizer.apply_chat_template(
@@ -70,3 +85,10 @@ class InputToInstruction:
         result_string = cls.tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)
         parsed_string:str = cls.parse_from_keyword(result_string, 'total_list')
         return parsed_string
+
+if __name__ == "__main__":
+    result = InputToInstruction.execute(
+        "지난 여름 우리집과 옆집의 전력사용량 비교해줘"
+    )
+    
+    print(result)
