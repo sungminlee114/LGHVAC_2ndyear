@@ -17,7 +17,7 @@ def input_to_instruction_set(user_input, current_metadata):
     
     Document the output format of the function here.
     """
-    InputToInstruction.execute(user_input)
+    return InputToInstruction.execute(user_input)
 
 def execute_instruction_set(instruction_set):
     """
