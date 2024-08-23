@@ -1,4 +1,4 @@
-from src.input_to_instructions.load_and_execute import InputToInstruction
+from src.db.manager import DBManager
 
 def get_current_metadata():
     return {
