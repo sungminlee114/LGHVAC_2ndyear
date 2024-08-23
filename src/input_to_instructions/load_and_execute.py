@@ -2,6 +2,10 @@ import os
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
+class Instruction:
+    def __init__(self, instruction):
+        self.operation_flag = instruction[0]
+        self.content = instruction[1]
 class InputToInstruction:
     model_id = 'MLP-KTLim/llama-3-Korean-Bllossom-8B'
 
@@ -59,7 +63,7 @@ total_list = total_list = [
         - input_text (str): Input text to be changed to a instruction list.
         
         Returns:
-        - instructions (list) 
+        - instructions (list[Instruction]): List of instructions.
         
         """
         
@@ -85,7 +89,11 @@ total_list = total_list = [
         )
 
         result_string = cls.tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)
-        instructions = cls.parse_from_keyword(result_string, 'total_list')
+        instructions_str = cls.parse_from_keyword(result_string, 'total_list')
+        
+        instructions = \
+            [Instruction(instruction) for instruction in instructions_str]
+        
         return instructions
 
 if __name__ == "__main__":
