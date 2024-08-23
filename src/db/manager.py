@@ -9,10 +9,12 @@ class DBManager:
     This is a high-level interface which uses the DBInstance class to interact with the database.
     External modules should use this class to interact with the database.
     """
-    def __init__(self):
-        self.db_instance = DBInstance(dbname='PerSite_DB')
+    @classmethod
+    def __init__(cls):
+        cls.db_instance = DBInstance(dbname='PerSite_DB')
     
-    def execute_sql(self, sql):
+    @classmethod
+    def execute_sql(cls, sql:str):
         """
         Executes an SQL query against the database.
 
@@ -25,10 +27,11 @@ class DBManager:
 
         Returns:
         - list: A list of tuples containing the results if the query is a SELECT query.
+        or
         - None: If the query is not a SELECT query, or if an error occurs.
 
         Logs:
         - Info: When the query is executed successfully.
         - Error: If an exception occurs during query execution.
         """
-        return self.db_instance.execute_sql(sql)
+        return cls.db_instance.execute_sql(sql)
