@@ -12,6 +12,7 @@ def get_current_metadata():
         "site_name": "YongDongIllHighSchool",
         "user_name": "홍길동",
         "user_role": "customer", # customer, admin
+        "idu_name": "01_IB5",
         "current_datetime": "2022-09-30 12:00:00",
     }
 
@@ -46,7 +47,7 @@ def execute_query(instruction:Instruction, execution_state:dict):
     @민주
     """
     
-    # Run the query generation LLM model/
+    # Run the query generation LLM model
     
     # Execute query
     sql_result = DBManager.execute_sql(sql_string)
