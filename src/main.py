@@ -13,9 +13,23 @@ def wait_for_input_from_user():
 
 def input_to_instruction_set(user_input, current_metadata):
     """
-    Implement core functions under input_to_instruction_set module and call it here.
+    Change text to instruction list.
     
-    Document the output format of the function here.
+    Parameters:
+    - input_text (str): Input text to be changed to a instruction list.
+    - current_metadata (dict): Not used yet.
+    
+    Returns:
+    - instructions (list[Instruction]): List of instructions.
+    
+    Example:
+        input: "지난 여름 우리집과 옆집의 전력사용량 비교해줘"
+        output: [
+            Instruction(operation_flag="q", content="지난 여름 우리집 전력사용량 알려줘"),
+            Instruction(operation_flag="q", content="지난 여름 옆집 전력사용량 알려줘"),
+            Instruction(operation_flag="o", content="final_result = 1_a - 2_a"),
+            Instruction(operation_flag="r", content="final_result를 한국어로 답해줘")
+        ]
     """
     return InputToInstruction.execute(user_input)
 
