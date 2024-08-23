@@ -48,8 +48,6 @@ def execute_query(instruction:Instruction, execution_state:dict):
     
     # Run the query generation LLM model/
     
-def execute_instruction_set(instruction_set):
-    
     # Execute query
     sql_result = DBManager.execute_sql(sql_string)
     
