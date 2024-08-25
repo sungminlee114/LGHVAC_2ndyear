@@ -7,6 +7,8 @@ from collections import defaultdict
 from src.input_to_instructions.load_and_execute import InputToInstruction, Instruction
 from src.db.manager import DBManager
 from src.instruction_to_sql import InstructionToSql
+from src.response_generation import ResponseGeneration
+
 def get_current_metadata():
     return {
         "site_name": "YongDongIllHighSchool",
@@ -93,11 +95,11 @@ def execute_response_generation(instruction:Instruction, execution_state:dict, u
     """
     
     # Assume the response is using only 'final_result' variable.
-    response = instruction.content # Exmple, "final_result를 한국어로 답해줘"
-    response = response.replace("final_result", str(execution_state['var']['final_result']))
+    #response = instruction.content # Exmple, "final_result를 한국어로 답해줘"
+    #response = response.replace("final_result", str(execution_state['var']['final_result']))
     
-    # Run response generation LLM model. @민주
     
+    response = ResponseGeneration.execute(str(execution_state['var']['final_result']),user_input,current_metadata)
     print(f"답변: {response}")
 
 def execute_instruction_set(instruction_set:list[Instruction], user_input:str, current_metadata:dict):
