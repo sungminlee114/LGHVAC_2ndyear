@@ -125,7 +125,7 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
 "{
     "질문 요약 reasoning": "시간은 오늘이라고 쓰여 있다. 장소는 우리반과 옆반이라고 쓰여 있다. 온도는 실내온도로 추정된다.",
     "질문 요약": "오늘 우리반과 옆반의 실내온도 차이 알려줘.",
-    "Semantic Parsing reasonsing": "오늘은 2022년 9월 30일이다."
+    "Semantic Parsing reasonsing": "오늘은 2022년 9월 30일이다.",
     "Semantic Parsing": {
         "Temporal": [("오늘", "2022-09-30 00:00:00 ~ 2022-09-30 23:59:59")],
         "Spatial": ["우리반", "옆반"],
