@@ -125,17 +125,28 @@ def execute_query(semantic:Semantic, instruction:Instruction, execution_state:di
     Execute query.
     """
 
-    # Run the query generation LLM model
-    sql_query = InstructionToSql.execute(instruction.content,str(semantic))
+    # Replace semantics in the instruction content to specific values.
+    for semantics in [semantic.Temporal, semantic.Spatial, semantic.Modality]:
+        for i, (k, v) in enumerate(semantics):
+            instruction.content = instruction.content.replace(k, v)
     
-    # Execute query
-    logger.info(f"sql_query: {sql_query}")
-    sql_result = DBManager.execute_sql(sql_query)
+    # If the instruction content contains "None", skip the execution.
+    if "None" in instruction.content:
+        execution_state['var'][instruction.save_variable] = None
+        # logger.info(f"Instruction content contains 'None': {instruction.content}")
+        return
+    else:
+        # Run the query generation LLM model
+        sql_query = InstructionToSql.execute(instruction.content,str(semantic))
+        
+        # Execute query
+        logger.info(f"sql_query: {sql_query}")
+        sql_result = DBManager.execute_sql(sql_query)
 
-    # Save the query result in execution state.
-    execution_state['var'][instruction.save_variable] = sql_result
-    logger.info(f"Saving {sql_result} to {instruction.save_variable}")
-    return
+        # Save the query result in execution state.
+        execution_state['var'][instruction.save_variable] = sql_result
+        logger.info(f"Saving {sql_result} to {instruction.save_variable}")
+        return
 
 def execute_response_generation(semantic:Semantic, instruction:Instruction, execution_state:dict, user_input:str, current_metadata:dict):
     """
@@ -148,7 +159,11 @@ def execute_response_generation(semantic:Semantic, instruction:Instruction, exec
     current_metadata: Additional metadata that may be relevant to response generation.
     """
     
-    response = ResponseGeneration.execute(str(execution_state['var']['final_result']),user_input,current_metadata)
+    var = execution_state['var'][instruction.using_varables]
+    if var is None:
+        response = "죄송합니다. 해당 정보를 찾을 수 없습니다. (이유 설명 필요)"
+    else:
+        response = ResponseGeneration.execute(str(var), user_input, current_metadata)
     print(f"답변: {response}")
 
 def execute_instruction_set(semantic:Semantic, instruction_set:list[Instruction], user_input:str, current_metadata:dict):

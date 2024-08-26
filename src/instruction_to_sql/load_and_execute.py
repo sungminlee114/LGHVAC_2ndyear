@@ -44,30 +44,14 @@ class InstructionToSql:
                 CONSTRAINT idu_t_pkey PRIMARY KEY (id)
             )
 
-            사전 정보는 다음과 같아.
-            "Semantic": {semantic}
-            'temporal'의 두 번째 인자(타임스탬프 형식)가 timestamp conditioning에 사용돼.
-            spatial 의 두번째 인자가 idu_t.name 이야. 예를 들어, 01_IB5.
-            modalitry의 두번째 인자가 data_t의 column이야. 예를들어 roomtemp.
-
-        Example:
-            Question: 오늘 우리반의 실내온도 알려줘.
-            Semantic: Semantic(
-                Temporal=[("오늘", "2022-09-30 00:00:00 ~ 2022-09-30 23:59:59")],
-                Spatial=[('우리반', '01_IB5')]
-                Modality=[("실내온도", 'roomtemp')],
-                Type_Quantity=["value"],
-                Target=["온도"]
-                Question_Actuation=["알려줘"]
-            )
-            Output: ```sql
-                SELECT data_t.roomtemp
-                FROM data_t
-                JOIN idu_t ON data_t.idu_id = idu_t.id
-                WHERE idu_t.name = '01_IB5' AND data_t.timestamp >= '2022-09-30 00:00:00' AND data_t.timestamp <= '2022-09-30 23:59:59';
-            ```
-
-
+        Prior information:
+            {semantic}
+        
+        Prior information usage:
+            Replace t[0] in question to t[1] for t in semantic['Temporal']
+            Replace s[0] in question to s[1] for s in semantic['Spatial']
+            Replace m[0] in question to m[1] for m in semantic['Modality']
+        
         The following SQL query best answers the question `{question}`:
         ```sql
         """
