@@ -27,10 +27,12 @@ class Instruction:
         elif self.operation_flag == "r":
             self.save_variable:str = str(instruction[1])
             self.example:str = str(instruction[2])
-        self.instruction = instruction
     
     def __repr__(self) -> str:
-        return f"Instruction({self.instruction})"
+        if self.operation_flag == "r":
+            return f"Instruction({[self.operation_flag, self.save_variable, self.example]})"
+        else:
+            return f"Instruction({[self.operation_flag, self.content, self.save_variable]})"
 
 class Semantic:
     """
@@ -306,16 +308,25 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
         - input_text (str): Input text to be changed to a instruction list.
         
         Returns:
+        - semantic (dict): Semantic information of the input text.
         - instructions (list[Instruction]): List of instructions.
         
         Example:
             input: "지난 여름 우리집과 옆집의 전력사용량 비교해줘"
-            output: [
-                Instruction(operation_flag="q", content="지난 여름 우리집 전력사용량 알려줘"),
-                Instruction(operation_flag="q", content="지난 여름 옆집 전력사용량 알려줘"),
-                Instruction(operation_flag="o", content="final_result = a_1 - a_2"),
-                Instruction(operation_flag="r", content="final_result를 한국어로 답해줘")
-            ]
+            output: 
+                semantic: Semantic(
+                    Temporal=[("지난 여름", "2022-06-01 00:00:00 ~ 2022-08-31 23:59:59")],
+                    Spatial=[("우리집", "01_IB5"), ("옆집", "01_IB7")],
+                    Modality=["전력사용량"],
+                    Type_Quantity=["diff"],
+                    Target=["전력사용량"]
+                    Question_Actuation=["비교해줘"]
+                ), instructions: [
+                    Instruction(operation_flag="q", content="지난 여름 우리집 전력사용량 알려줘", save_variable="V_1"),
+                    Instruction(operation_flag="q", content="지난 여름 옆집 전력사용량 알려줘", save_variable="V_2"),
+                    Instruction(operation_flag="o", content="final_result = V_1 - V_2", save_variable="final_result"),
+                    Instruction(operation_flag="r", content="final_result를 한국어로 답해줘", save_variable="final_result")
+                ]
         """
         
         messages = [
@@ -348,13 +359,33 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
         semantic = Semantic(result_dict["Semantic Parsing"])
         instructions = [Instruction(instruction) for instruction in result_dict["Instruction Set"]]        
         
+        for instruction_idx, instruction in enumerate(instructions):
+            if instruction.operation_flag == "q":
+                # replace {{values}} with actual values
+                contents = instruction.content.split()
+                for i, content in enumerate(contents):
+                    if content.startswith("{{") and content.endswith("}}"):
+                        key = content[2:-2]
+                        key, index = key.split("_")
+                        if key == "QA":
+                            key = "Question/Actuation"
+                        
+                        if key in result_dict["Semantic Parsing"]:
+                            value = result_dict["Semantic Parsing"][key][int(index)-1]
+                            if key in ["Temporal", "Spatial"]:
+                                value = value[1]
+                            contents[i] = value
+                
+                instructions[instruction_idx].content = " ".join(contents)
+                assert "{{" not in instructions[instruction_idx].content, instructions[instruction_idx].content
+                
         logger.info(f"semantic: {semantic}, instructions: {instructions}")
         
         return semantic, instructions
 
 if __name__ == "__main__":
     result = InputToInstruction.execute(
-        "지난 여름 우리집과 옆집의 전력사용량 비교해줘"
+        "지난 여름 우리반과 옆반의 실내온도 비교해줘"
     )
     
     print(result)
