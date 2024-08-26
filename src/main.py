@@ -109,40 +109,16 @@ def execute_query(semantic:Semantic, instruction:Instruction, execution_state:di
     execution_state['var'][instruction.save_variable] = sql_result
     return
 
-def execute_operation(instruction:Instruction, execution_state:dict):
-    """
-    Execute the operation based on the provided instruction.
-    
-    instruction: An Instruction object containing the operation to be executed.
-    execution_state: A dictionary that stores the state during the execution, including variables.
-    """
-    
-    # TODO: Can be optimized.
-    # Loop through the variables and execute the operation to store the variable in memory.
-    for key, value in execution_state['var'].items():
-        exec(f"{key} = {value}")
-    
-    expression = instruction.content # Exmple, "final_result = a_1 - a_2"
-    exec(expression)
-    variable_name = expression.split("=")[0].strip() # "final_result"
-    execution_state['var'][variable_name] = eval(variable_name) # exec("final_result") = final_result
-    
-    return
-
-def execute_response_generation(instruction:Instruction, execution_state:dict, user_input:str, current_metadata:dict):
+def execute_response_generation(semantic:Semantic, instruction:Instruction, execution_state:dict, user_input:str, current_metadata:dict):
     """
     Generate a response based on the provided instruction.
     
+    semantic: The semantic information of the input text.
     instruction: An Instruction object containing the response generation details.
     execution_state: A dictionary that stores the state during the execution, including variables.
     user_input: The user's input, which may influence the response.
     current_metadata: Additional metadata that may be relevant to response generation.
     """
-    
-    # Assume the response is using only 'final_result' variable.
-    #response = instruction.content # Exmple, "final_result를 한국어로 답해줘"
-    #response = response.replace("final_result", str(execution_state['var']['final_result']))
-    
     
     response = ResponseGeneration.execute(str(execution_state['var']['final_result']),user_input,current_metadata)
     print(f"답변: {response}")
@@ -169,9 +145,6 @@ def execute_instruction_set(semantic:Semantic, instruction_set:list[Instruction]
             # Execute query
             execute_query(semantic, instruction, execution_state)
             
-        elif instruction.operation_flag == "o":
-            # Execute operation
-            execute_operation(semantic, instruction, execution_state)
         elif instruction.operation_flag == "r":
             # Execute response generation
             execute_response_generation(semantic, instruction, execution_state, user_input, current_metadata)
