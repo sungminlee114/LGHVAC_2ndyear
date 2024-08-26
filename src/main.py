@@ -1,13 +1,53 @@
 import logging
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 from collections import defaultdict
 
-from src.input_to_instructions.load_and_execute import InputToInstruction, Instruction, Semantic
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
 from src.db.manager import DBManager
-from src.instruction_to_sql import InstructionToSql
-from src.response_generation import ResponseGeneration
+from src.input_to_instructions.load_and_execute import InputToInstruction, Instruction, Semantic
+from src.instruction_to_sql.load_and_execute import InstructionToSql
+from src.response_generation.generate_response import ResponseGeneration
+
+
+def load_models():
+    tokenizer, model, terminators = load_text_model()
+    InputToInstruction.model = model
+    InputToInstruction.tokenizer = tokenizer
+    InputToInstruction.terminators = terminators
+    
+    ResponseGeneration.model = model
+    ResponseGeneration.tokenizer = tokenizer
+    ResponseGeneration.terminators = terminators
+
+def load_text_model():
+    model_id = 'MLP-KTLim/llama-3-Korean-Bllossom-8B'
+
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_id,
+        cache_dir="/model"
+    )
+    model = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        torch_dtype=torch.bfloat16,
+        device_map="auto",
+        cache_dir="/model"
+    )
+
+    terminators = [
+        tokenizer.eos_token_id,
+        tokenizer.convert_tokens_to_ids("<|eot_id|>")
+    ]
+    
+    return tokenizer, model, terminators
+    
+
+def load_sql_model():
+    pass
 
 def get_current_metadata():
     return {
@@ -137,6 +177,7 @@ def execute_instruction_set(semantic:Semantic, instruction_set:list[Instruction]
             execute_response_generation(semantic, instruction, execution_state, user_input, current_metadata)
 
 def main():
+    load_models()
     while True:
         user_input = wait_for_input_from_user()
         current_metadata = get_current_metadata()

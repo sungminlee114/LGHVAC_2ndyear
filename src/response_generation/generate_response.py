@@ -3,24 +3,6 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 class ResponseGeneration:
-    model_id = 'MLP-KTLim/llama-3-Korean-Bllossom-8B'
-
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_id,
-        cache_dir="/model"
-    )
-    model = AutoModelForCausalLM.from_pretrained(
-        model_id,
-        torch_dtype=torch.bfloat16,
-        device_map="auto",
-        cache_dir="/model"
-    )
-
-    terminators = [
-        tokenizer.eos_token_id,
-        tokenizer.convert_tokens_to_ids("<|eot_id|>")
-    ]
-    
  
     
     @classmethod
@@ -73,6 +55,14 @@ class ResponseGeneration:
         return result_string
 
 if __name__ == "__main__":
+    from src.main import load_text_model
+    
+    tokenizer, model, terminators = load_text_model()
+    ResponseGeneration.model = model
+    ResponseGeneration.tokenizer = tokenizer
+    ResponseGeneration.terminators = terminators
+    
+    
     result = ResponseGeneration.execute(
        "5", "오늘 우리집과 옆집의 실내 온도 차이 알려줘", {
         "site_name": "YongDongIllHighSchool",

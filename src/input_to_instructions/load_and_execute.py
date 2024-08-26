@@ -2,10 +2,6 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-import os
-import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
-
 class Instruction:
     """
     operation_flag: choice of [
@@ -60,23 +56,6 @@ class Semantic:
         return f"Semantic(Temporal={self.Temporal}, Spatial={self.Spatial}, Modality={self.Modality}, Type_Quantity={self.Type_Quantity}, Target={self.Target}, Question_Actuation={self.Question_Actuation})"
     
 class InputToInstruction:
-    model_id = 'MLP-KTLim/llama-3-Korean-Bllossom-8B'
-
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_id,
-        cache_dir="/model"
-    )
-    model = AutoModelForCausalLM.from_pretrained(
-        model_id,
-        torch_dtype=torch.bfloat16,
-        device_map="auto",
-        cache_dir="/model"
-    )
-
-    terminators = [
-        tokenizer.eos_token_id,
-        tokenizer.convert_tokens_to_ids("<|eot_id|>")
-    ]
     
     PROMPT = \
 """너는 훌룡한 AI HVAC 챗봇이야. 거짓 정보들은 말하지 말아줘.
@@ -351,6 +330,13 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
         return semantic, instructions
 
 if __name__ == "__main__":
+    from src.main import load_text_model
+    
+    tokenizer, model, terminators = load_text_model()
+    InputToInstruction.model = model
+    InputToInstruction.tokenizer = tokenizer
+    InputToInstruction.terminators = terminators
+    
     result = InputToInstruction.execute(
         "지난 여름 우리반과 옆반의 실내온도 비교해줘"
     )
