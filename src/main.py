@@ -34,20 +34,18 @@ def input_to_instruction_set(user_input, current_metadata):
     - instructions (list[Instruction]): List of instructions.
     
     Example:
-        input: "지난 여름 우리집과 옆집의 전력사용량 비교해줘"
-        output: 
+        input: 오늘 우리반과 옆반의 온도차이 알려줘.
+        return:
             semantic: Semantic(
-                Temporal=[("지난 여름", "2022-06-01 00:00:00 ~ 2022-08-31 23:59:59")],
-                Spatial=[("우리집", "01_IB5"), ("옆집", "01_IB7")],
-                Modality=["전력사용량"],
+                Temporal=[("오늘", "2022-09-30 00:00:00 ~ 2022-09-30 23:59:59")],
+                Spatial=["우리반", "옆반"],
+                Modality=["온도"],
                 Type_Quantity=["diff"],
-                Target=["전력사용량"]
-                Question_Actuation=["비교해줘"]
+                Target=["온도"]
+                Question_Actuation=["알려줘"]
             ), instructions: [
-                Instruction(operation_flag="q", content="지난 여름 우리집 전력사용량 알려줘", save_variable="V_1"),
-                Instruction(operation_flag="q", content="지난 여름 옆집 전력사용량 알려줘", save_variable="V_2"),
-                Instruction(operation_flag="o", content="final_result = V_1 - V_2", save_variable="final_result"),
-                Instruction(operation_flag="r", content="final_result를 한국어로 답해줘", save_variable="final_result")
+                Instruction(operation_flag="q", content="오늘 우리반과 옆반의 온도차이 알려줘", save_variable="V_1"),
+                Instruction(operation_flag="r", using_varables="V_1", example="예 ) '우리반과 옆반의 온도차이는 2도입니다'")
             ]
     """
     return InputToInstruction.execute(user_input)
