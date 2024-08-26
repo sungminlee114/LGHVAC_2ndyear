@@ -4,7 +4,7 @@ logger = logging.getLogger(__name__)
 
 from collections import defaultdict
 
-from src.input_to_instructions.load_and_execute import InputToInstruction, Instruction
+from src.input_to_instructions.load_and_execute import InputToInstruction, Instruction, Semantic
 from src.db.manager import DBManager
 from src.instruction_to_sql import InstructionToSql
 from src.response_generation import ResponseGeneration
@@ -21,7 +21,7 @@ def get_current_metadata():
 def wait_for_input_from_user():
     return input("Enter your query: ")
 
-def input_to_instruction_set(user_input, current_metadata) -> list[Instruction]:
+def input_to_instruction_set(user_input, current_metadata):
     """
     Change text to instruction list.
     
@@ -30,6 +30,7 @@ def input_to_instruction_set(user_input, current_metadata) -> list[Instruction]:
     - current_metadata (dict): Not used yet.
     
     Returns:
+    - semantic (dict): Semantic information of the input text.
     - instructions (list[Instruction]): List of instructions.
     
     Example:
@@ -43,11 +44,12 @@ def input_to_instruction_set(user_input, current_metadata) -> list[Instruction]:
     """
     return InputToInstruction.execute(user_input)
 
-def execute_query(instruction:Instruction, execution_state:dict):
+def execute_query(semantic:Semantic, instruction:Instruction, execution_state:dict):
     """
     Execute query.
-    @민주
     """
+    
+    semantic_str = str(semantic)
     
     # Run the query generation LLM model
     sql_string_id = InstructionToSql.query_id(instruction.content)
@@ -57,11 +59,8 @@ def execute_query(instruction:Instruction, execution_state:dict):
     
     # Execute query
     
-    
     # Save the query result in execution state.
-    current_variable_name = f"a_{execution_state['op_counts'][instruction.operation_flag]}" # a_1, a_2, 3_a, ... 변수 이름 생성
-    execution_state['var'][current_variable_name] = sql_result
-    
+    execution_state['var'][instruction.save_variable] = sql_result
     return
 
 def execute_operation(instruction:Instruction, execution_state:dict):
@@ -102,10 +101,11 @@ def execute_response_generation(instruction:Instruction, execution_state:dict, u
     response = ResponseGeneration.execute(str(execution_state['var']['final_result']),user_input,current_metadata)
     print(f"답변: {response}")
 
-def execute_instruction_set(instruction_set:list[Instruction], user_input:str, current_metadata:dict):
+def execute_instruction_set(semantic:Semantic, instruction_set:list[Instruction], user_input:str, current_metadata:dict):
     """
     Implement the agent to execute a set of instructions.
     
+    semantic: The semantic information of the input text.
     instruction_set: A list of Instruction objects to be executed sequentially.
     user_input: The user's input, which may influence the execution flow.
     current_metadata: Additional metadata that may be relevant to the execution.
@@ -113,34 +113,31 @@ def execute_instruction_set(instruction_set:list[Instruction], user_input:str, c
     
     # This holds the state(e.x., variables) of the execution.
     execution_state = {
-        "op_counts": defaultdict(lambda: 0), # This holds the count of operations executed.
         "var": defaultdict(lambda: None) # This holds the variables generated during the execution.
     }
     
     for instruction in instruction_set:
         logger.info(f"Executing instruction: {instruction}")
         
-        execution_state["op_counts"][instruction.operation_flag] += 1
-        
         if instruction.operation_flag == "q":
             # Execute query
-            execute_query(instruction, execution_state)
+            execute_query(semantic, instruction, execution_state)
             
         elif instruction.operation_flag == "o":
             # Execute operation
-            execute_operation(instruction, execution_state)
+            execute_operation(semantic, instruction, execution_state)
         elif instruction.operation_flag == "r":
             # Execute response generation
-            execute_response_generation(instruction, execution_state, user_input, current_metadata)
+            execute_response_generation(semantic, instruction, execution_state, user_input, current_metadata)
 
 def main():
     while True:
         user_input = wait_for_input_from_user()
         current_metadata = get_current_metadata()
         
-        instruction_set = input_to_instruction_set(user_input, current_metadata)
+        semantic, instruction_set = input_to_instruction_set(user_input, current_metadata)
         
-        execute_instruction_set(instruction_set, user_input, current_metadata)
+        execute_instruction_set(semantic, instruction_set, user_input, current_metadata)
 
 
 if __name__ == "__main__":

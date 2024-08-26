@@ -298,7 +298,7 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
 """
 
     @classmethod
-    def execute(cls, input_text:str) -> list[Instruction]:
+    def execute(cls, input_text:str):
         """
         Change text to instruction list.
         
