@@ -55,6 +55,15 @@ def get_current_metadata():
         "user_name": "홍길동",
         "user_role": "customer", # customer, admin
         "idu_name": "01_IB5",
+        "idu_mapping": {
+            "01_IB5": ["우리반"],
+            "01_IB7": ["옆반"],
+        },
+        "modality_mapping": {
+            "roomtemp": ["실내온도"],
+            "settemp": ["설정온도"],
+            "oper": ["전원"],
+        },
         "current_datetime": "2022-09-30 12:00:00",
     }
 
@@ -78,8 +87,8 @@ def input_to_instruction_set(user_input, current_metadata):
         return:
             semantic: Semantic(
                 Temporal=[("오늘", "2022-09-30 00:00:00 ~ 2022-09-30 23:59:59")],
-                Spatial=["우리반", "옆반"],
-                Modality=["온도"],
+                Spatial=[('우리반', '01_IB5'), ('옆반', '01_IB7')]
+                Modality=[("온도", 'roomtemp')],
                 Type_Quantity=["diff"],
                 Target=["온도"]
                 Question_Actuation=["알려줘"]
@@ -88,25 +97,44 @@ def input_to_instruction_set(user_input, current_metadata):
                 Instruction(operation_flag="r", using_varables="V_1", example="예 ) '우리반과 옆반의 온도차이는 2도입니다'")
             ]
     """
-    return InputToInstruction.execute(user_input)
+    semantic, instructions = InputToInstruction.execute(user_input)
+    
+    # Map spatial context
+    for s_i, s in enumerate(semantic.Spatial):
+        s_idu = "None"
+        for idu, idu_repr in current_metadata['idu_mapping'].items():
+            if s in idu_repr:
+                s_idu = idu
+                break
+        semantic.Spatial[s_i] = (s, s_idu)
+    
+    # Map modality context
+    for m_i, m in enumerate(semantic.Modality):
+        m_col = "None"
+        for column, col_repr in current_metadata['modality_mapping'].items():
+            if m in col_repr:
+                m_col = column
+                break
+        semantic.Modality[m_i] = (m, m_col)
+    
+    
+    return semantic, instructions
 
 def execute_query(semantic:Semantic, instruction:Instruction, execution_state:dict):
     """
     Execute query.
     """
-    
-    semantic_str = str(semantic)
-    
+
     # Run the query generation LLM model
-    sql_string_id = InstructionToSql.query_id(instruction.content)
-    sql_id = DBManager.execute_sql(sql_string_id)
-    sql_string_value = InstructionToSql.query_sql(instruction.content,sql_id)
-    sql_value = DBManager.execute_sql(sql_string_value)
+    sql_query = InstructionToSql.execute(instruction.content,str(semantic))
     
     # Execute query
-    
+    logger.info(f"sql_query: {sql_query}")
+    sql_result = DBManager.execute_sql(sql_query)
+
     # Save the query result in execution state.
     execution_state['var'][instruction.save_variable] = sql_result
+    logger.info(f"Saving {sql_result} to {instruction.save_variable}")
     return
 
 def execute_response_generation(semantic:Semantic, instruction:Instruction, execution_state:dict, user_input:str, current_metadata:dict):
@@ -138,6 +166,7 @@ def execute_instruction_set(semantic:Semantic, instruction_set:list[Instruction]
         "var": defaultdict(lambda: None) # This holds the variables generated during the execution.
     }
     
+    logger.info(semantic)
     for instruction in instruction_set:
         logger.info(f"Executing instruction: {instruction}")
         

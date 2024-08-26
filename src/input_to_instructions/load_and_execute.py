@@ -76,7 +76,7 @@ Modality: ['실내온도', '설정온도', '전원']
 3. 'Semantic Parsing reasonsing': Semantic Parsing을 하는 과정에서 이유를 설명. 이 과정에서 사전정보에 없는 장소나 구체적인 시간/시간기간을 추측해야만 함.
 4. 'Semantic Parsing': Semantic Parsing 결과. dict 형태로 구성되며, Temporal, Spatial, Modality, Type/Quantity, Target, Question/Actuation key를 가짐.
 5. 'Instruction Set': Instruction Set 결과. list 형태로 구성되며, 각 원소는 [flag, content, variable]로 구성됨.
-출력은 무조건 예시의 dictionary 형태를 지켜줘. 무조건. 제일 중요해.
+출력은 무조건 예시의 dictionary 형태를 지켜줘. 무조건. 제일 중요해. 즉,시작과 끝에 무조건 중괄호가 있어야해.
 
 <Semantic Parsing 조건>
 Temporal: 시간 혹은 시간 범위를 나타내는 정보. 사전정보 참고. 대표적 representation과 Timestamp 형식의 튜플로 표현됨. 아무런 정보가 없을 경우 '지금'으로 표현되지만, 정보가 있는 경우 자제해야 함.
@@ -319,8 +319,20 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
             repetition_penalty = 1.0
         )
 
-        result_string:str = cls.tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)[1:-1]
-        result_dict = eval(result_string)
+        result_string:str = cls.tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)
+        if result_string[0] == '"':
+            result_string = result_string[1:-1]
+        
+        assert result_string[0] == '{'
+        
+        try:
+            result_dict = eval(result_string)
+        except Exception as e:
+            import traceback
+            traceback.print_exception(e)
+            
+            print(result_string)
+            
         
         semantic = Semantic(result_dict["Semantic Parsing"])
         instructions = [Instruction(instruction) for instruction in result_dict["Instruction Set"]]        
