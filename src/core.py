@@ -1,4 +1,15 @@
+__all__ = [
+    "load_models",
+    "get_current_metadata",
+    "wait_for_input_from_user",
+    "input_to_instruction_set",
+    "execute_query",
+    "execute_response_generation",
+    "execute_instruction_set",
+]
+
 import logging
+from typing import Callable
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -157,6 +168,9 @@ def execute_response_generation(semantic:Semantic, instruction:Instruction, exec
     execution_state: A dictionary that stores the state during the execution, including variables.
     user_input: The user's input, which may influence the response.
     current_metadata: Additional metadata that may be relevant to response generation.
+    
+    Returns:
+        - response (str): The generated response.
     """
     
     var = execution_state['var'][instruction.using_varables]
@@ -164,9 +178,10 @@ def execute_response_generation(semantic:Semantic, instruction:Instruction, exec
         response = "죄송합니다. 해당 정보를 찾을 수 없습니다. (이유 설명 필요)"
     else:
         response = ResponseGeneration.execute(str(var), user_input, current_metadata)
-    print(f"답변: {response}")
+    
+    return response
 
-def execute_instruction_set(semantic:Semantic, instruction_set:list[Instruction], user_input:str, current_metadata:dict):
+def execute_instruction_set(semantic:Semantic, instruction_set:list[Instruction], user_input:str, current_metadata:dict, response_function:Callable):
     """
     Implement the agent to execute a set of instructions.
     
@@ -191,18 +206,6 @@ def execute_instruction_set(semantic:Semantic, instruction_set:list[Instruction]
             
         elif instruction.operation_flag == "r":
             # Execute response generation
-            execute_response_generation(semantic, instruction, execution_state, user_input, current_metadata)
-
-def main():
-    load_models()
-    while True:
-        user_input = wait_for_input_from_user()
-        current_metadata = get_current_metadata()
-        
-        semantic, instruction_set = input_to_instruction_set(user_input, current_metadata)
-        
-        execute_instruction_set(semantic, instruction_set, user_input, current_metadata)
-
-
-if __name__ == "__main__":
-    main()
+            response = execute_response_generation(semantic, instruction, execution_state, user_input, current_metadata)
+            response_function(response)
+            

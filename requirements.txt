@@ -154,3 +154,5 @@ widgetsnbextension==4.0.11
 zipp==3.19.2
 sqlparse
 bitsandbytes
+flask
+flask-cors

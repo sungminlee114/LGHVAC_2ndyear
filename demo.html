@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        .chat-container {
+            background-color: #fff;
+            width: 400px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chat-header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #da0f47;
+        }
+        
+        .input-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .input-container input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .input-container button {
+            background-color: #da0f47;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .input-container button:hover {
+            background-color: #da0f47;
+        }
+        
+        .response-container {
+            margin-top: 20px;
+            background-color: #f1f1f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #333;
+            min-height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="chat-header">Simple Chatbot</div>
+
+        <div class="input-container">
+            <input type="text" id="sentenceInput" placeholder="Enter a sentence...">
+            <button onclick="sendRequest()">Send</button>
+        </div>
+
+        <div class="response-container" id="responseContainer">
+            Waiting for your input...
+        </div>
+    </div>
+
+    <script>
+        function sendRequest() {
+            const sentence = document.getElementById('sentenceInput').value;
+            const responseContainer = document.getElementById('responseContainer');
+    
+            if (!sentence) {
+                responseContainer.textContent = "Please ask me a question!";
+                return;
+            }
+    
+            // Reset the response container while waiting for response
+            responseContainer.textContent = "Thinking...";
+    
+            // Create a new EventSource to handle the stream
+            const eventSource = new EventSource(`http://1.233.219.93:8002/process?sentence=${encodeURIComponent(sentence)}`);
+    
+            eventSource.onmessage = function(event) {
+                // Append new responses to the response container
+                console.log(event.data);
+                if (responseContainer.textContent === "Thinking...") {
+                    responseContainer.textContent = "";
+                }
+                if (event.data === "finish") {
+                    eventSource.close();
+                } else {
+                    responseContainer.textContent += event.data + " ";
+                }
+                
+                // Close connection if finish flag is received
+            };
+    
+            eventSource.onerror = function(error) {
+                console.error("EventSource failed:", error);
+                responseContainer.textContent = "Error: Unable to reach server!";
+                eventSource.close();
+            };
+        }
+    </script>
+
+</body>
+</html>
