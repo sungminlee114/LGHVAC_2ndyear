@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Chatbot</title>
+    <title>LG전자-연세대 LLM 중간 데모</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,22 +22,46 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
         }
-        
+
         .chat-header {
             font-size: 24px;
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             text-align: center;
             color: #da0f47;
+        }
+
+        .chat-window {
+            flex: 1;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+
+        .chat-message {
+            margin: 5px 0;
+        }
+
+        .user-message {
+            text-align: right;
+            color: blue;
+        }
+
+        .bot-message {
+            text-align: left;
+            color: green;
         }
         
         .input-container {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
         }
-        
+
         .input-container input[type="text"] {
             flex: 1;
             padding: 10px;
@@ -45,7 +69,7 @@
             border-radius: 5px;
             font-size: 16px;
         }
-        
+
         .input-container button {
             background-color: #da0f47;
             color: white;
@@ -56,95 +80,110 @@
             cursor: pointer;
             margin-left: 10px;
         }
-        
+
         .input-container button:hover {
-            background-color: #da0f47;
+            background-color: #c30e3f;
         }
-        
-        .response-container {
-            margin-top: 20px;
-            background-color: #f1f1f1;
-            padding: 15px;
-            border-radius: 5px;
-            font-size: 16px;
-            color: #333;
-            min-height: 50px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #sentenceInput[disabled] {
-            background-color: #f1f1f1;
-        }
-
-        button[disabled] {
-            background-color: #f1f1f1;
-            cursor: not-allowed;
-        }
-        
     </style>
 </head>
 <body>
 
     <div class="chat-container">
-        <div class="chat-header">Simple Chatbot</div>
+        <div class="chat-header">LG전자-연세대 LLM 중간 데모</div>
 
-        <div class="input-container">
-            <input type="text" id="sentenceInput" placeholder="Enter a sentence...">
-            <button onclick="sendRequest()">Send</button>
+        <div class="chat-window" id="chatWindow">
+            <!-- Chat messages will appear here -->
         </div>
 
-        <div class="response-container" id="responseContainer">
-            Waiting for your input...
+        <div class="input-container">
+            <input type="text" id="sentenceInput" placeholder="Enter a message...">
+            <button onclick="sendRequest()">Send</button>
         </div>
     </div>
 
     <script>
+        // Load chat history from local storage
+        window.onload = function() {
+            const chatHistory = localStorage.getItem('chatHistory');
+            if (chatHistory) {
+                document.getElementById('chatWindow').innerHTML = chatHistory;
+                scrollChatWindow();
+            }
+        };
+
         function sendRequest() {
             const sentence = document.getElementById('sentenceInput').value;
-            const responseContainer = document.getElementById('responseContainer');
-    
+            const chatWindow = document.getElementById('chatWindow');
+
             if (!sentence) {
-                responseContainer.textContent = "Please ask me a question!";
                 return;
             }
 
-            // Deactivate the send button  and input field while waiting for response
+            // Append user message to chat window
+            const userMessage = document.createElement('div');
+            userMessage.classList.add('chat-message', 'user-message');
+            userMessage.textContent = sentence;
+            chatWindow.appendChild(userMessage);
+
+            // Save to local storage
+            saveChatHistory();
+
+            // Clear the input field
+            document.getElementById('sentenceInput').value = '';
+
+            // Scroll to the bottom
+            scrollChatWindow();
+
+            // Deactivate the send button and input field while waiting for response
             document.querySelector('button').disabled = true;
             document.querySelector('input').disabled = true;
 
-    
-            // Reset the response container while waiting for response
-            responseContainer.textContent = "Thinking...";
-    
             // Create a new EventSource to handle the stream
             const eventSource = new EventSource(`http://1.233.219.93:8002/process?sentence=${encodeURIComponent(sentence)}`);
-    
+
             eventSource.onmessage = function(event) {
-                // Append new responses to the response container
-                console.log(event.data);
-                if (responseContainer.textContent === "Thinking...") {
-                    responseContainer.textContent = "";
-                }
+                // Append bot response to chat window
                 if (event.data === "finish") {
                     eventSource.close();
                     document.querySelector('button').disabled = false;
                     document.querySelector('input').disabled = false;
                 } else {
-                    responseContainer.textContent += event.data + " ";
+                    const botMessage = document.createElement('div');
+                    botMessage.classList.add('chat-message', 'bot-message');
+                    botMessage.textContent = event.data;
+                    chatWindow.appendChild(botMessage);
+
+                    // Save chat history to local storage
+                    saveChatHistory();
+
+                    // Scroll to the bottom
+                    scrollChatWindow();
                 }
-                
-                // Close connection if finish flag is received
             };
-    
+
             eventSource.onerror = function(error) {
-                console.error("EventSource failed:", error);
-                responseContainer.textContent = "Error: Unable to reach server!";
+                // const errorMessage = document.createElement('div');
+                // errorMessage.classList.add('chat-message', 'bot-message');
+                // errorMessage.textContent = "Error: Unable to reach server!";
+                // chatWindow.appendChild(errorMessage);
+
+                // Save chat history to local storage
+                saveChatHistory();
+
                 eventSource.close();
                 document.querySelector('button').disabled = false;
                 document.querySelector('input').disabled = false;
             };
+        }
+
+        function scrollChatWindow() {
+            const chatWindow = document.getElementById('chatWindow');
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function saveChatHistory() {
+            const chatWindow = document.getElementById('chatWindow');
+            localStorage.setItem('chatHistory', chatWindow.innerHTML);
         }
     </script>
 
