@@ -168,6 +168,9 @@ def execute_query(semantic:Semantic, instruction:Instruction, execution_state:di
         execution_state['var'][instruction.save_variable] = None
         # logger.info(f"Instruction content contains 'None': {instruction.content}")
         return
+    elif "Insight" in instruction.content:
+        # TODO: Implement insight generation
+        pass
     else:
         # Run the query generation LLM model
         sql_query = InstructionToSql.execute(instruction.content,str(semantic))
