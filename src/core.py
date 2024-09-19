@@ -34,6 +34,13 @@ def load_models():
     ResponseGeneration.model = model
     ResponseGeneration.tokenizer = tokenizer
     ResponseGeneration.terminators = terminators
+    
+    tokenizer, model = load_sql_model()
+    InstructionToSql.model = model
+    InstructionToSql.tokenizer = tokenizer
+    
+    torch.cuda.empty_cache()
+    torch.cuda.synchronize()
 
 def load_text_model():
     model_id = 'MLP-KTLim/llama-3-Korean-Bllossom-8B'
@@ -58,7 +65,22 @@ def load_text_model():
     
 
 def load_sql_model():
-    pass
+    model_name = "defog/llama-3-sqlcoder-8b"
+    
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_name,
+        cache_dir="/model"
+    )
+
+    model = AutoModelForCausalLM.from_pretrained(
+        model_name,
+        trust_remote_code=True,
+        torch_dtype=torch.float16,
+        device_map="auto",
+        cache_dir="/model"
+    )
+    
+    return tokenizer, model
 
 def get_current_metadata():
     return {

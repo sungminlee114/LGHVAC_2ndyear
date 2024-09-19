@@ -4,19 +4,6 @@ import bitsandbytes
 from src.input_to_instructions.load_and_execute import Semantic
 
 class InstructionToSql:
-    model_name = "defog/llama-3-sqlcoder-8b"
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_name,
-        cache_dir="/model"
-    )
-
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name,
-        trust_remote_code=True,
-        torch_dtype=torch.float16,
-        device_map="auto",
-        cache_dir="/model"
-    )
 
     @classmethod
     def execute(cls, question: str, semantic: Semantic):
