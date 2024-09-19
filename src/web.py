@@ -48,8 +48,7 @@ def process_request():
                 while True:
                     try:
                         # Wait for new results from the queue
-                        result = result_queue.get(timeout=10)  # 10 seconds timeout for results
-                        print("Got result", result)
+                        result = result_queue.get(timeout=20)  # 10 seconds timeout for results
                         yield f"data: {result}\n\n"
                         if result == "finish":
                             break
