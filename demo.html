@@ -73,6 +73,16 @@
             justify-content: center;
             align-items: center;
         }
+
+        #sentenceInput[disabled] {
+            background-color: #f1f1f1;
+        }
+
+        button[disabled] {
+            background-color: #f1f1f1;
+            cursor: not-allowed;
+        }
+        
     </style>
 </head>
 <body>
@@ -99,6 +109,11 @@
                 responseContainer.textContent = "Please ask me a question!";
                 return;
             }
+
+            // Deactivate the send button  and input field while waiting for response
+            document.querySelector('button').disabled = true;
+            document.querySelector('input').disabled = true;
+
     
             // Reset the response container while waiting for response
             responseContainer.textContent = "Thinking...";
@@ -114,6 +129,8 @@
                 }
                 if (event.data === "finish") {
                     eventSource.close();
+                    document.querySelector('button').disabled = false;
+                    document.querySelector('input').disabled = false;
                 } else {
                     responseContainer.textContent += event.data + " ";
                 }
@@ -125,6 +142,8 @@
                 console.error("EventSource failed:", error);
                 responseContainer.textContent = "Error: Unable to reach server!";
                 eventSource.close();
+                document.querySelector('button').disabled = false;
+                document.querySelector('input').disabled = false;
             };
         }
     </script>
