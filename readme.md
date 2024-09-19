@@ -41,3 +41,6 @@ Database=PerSite_DB, Schema=public에는 두 개의 테이블이 있음.
 "user_role": "customer", # customer, admin
 "current_datetime": "2022-09-30 12:00:00",}
 ```
+
+## Web demo
+http://1.233.219.93:8001/demo.html
