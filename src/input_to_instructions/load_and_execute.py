@@ -12,6 +12,7 @@ class Instruction:
     -- if operation_flag is "q" --
     content: str
     save_variable: str
+    variable_mapping: list[tuple[str, str]], [("representation", "target_type"), ]
     
     -- if operation_flag is "r" --
     using_varables: str
@@ -24,6 +25,7 @@ class Instruction:
         if self.operation_flag in ["q"]:
             self.content:str = str(instruction[1])
             self.save_variable:str = str(instruction[2])
+            self.variable_mapping:list[tuple[str, str]] = instruction[3]
         elif self.operation_flag == "r":
             self.using_varables:str = str(instruction[1])
             self.example:str = str(instruction[2])
@@ -32,28 +34,26 @@ class Instruction:
         if self.operation_flag == "r":
             return f"Instruction({[self.operation_flag, self.using_varables, self.example]})"
         else:
-            return f"Instruction({[self.operation_flag, self.content, self.save_variable]})"
+            return f"Instruction({[self.operation_flag, self.content, self.save_variable, self.variable_mapping]})"
 
 class Semantic:
     """
     Temporal: list of tuple
     Spatial: list of tuple
     Modality: list
-    Type_Quantity: list
+    Operation: list
     Target: list
-    Question_Actuation: list
     """
     
     def __init__(self, semantic):
         self.Temporal = semantic["Temporal"]
         self.Spatial = semantic["Spatial"]
         self.Modality = semantic["Modality"]
-        self.Type_Quantity = semantic["Type/Quantity"]
+        self.Operation = semantic["Operation"]
         self.Target = semantic["Target"]
-        self.Question_Actuation = semantic["Question/Actuation"]
 
     def __repr__(self) -> str:
-        return f"Semantic(Temporal={self.Temporal}, Spatial={self.Spatial}, Modality={self.Modality}, Type_Quantity={self.Type_Quantity}, Target={self.Target}, Question_Actuation={self.Question_Actuation})"
+        return f"Semantic(Temporal={self.Temporal}, Spatial={self.Spatial}, Modality={self.Modality}, Operation={self.Operation}, Target={self.Target})"
     
 class InputToInstruction:
     
@@ -64,30 +64,24 @@ class InputToInstruction:
 "이 질문에 대한 답변은 다음과 같습니다"와 같은 문장은 절대로 사용하지 말아줘.
 
 <사전정보>
-위치: '영동일고등학교'.
-질문자: 이름:'홍길동', 분류: '손님'
-Modality: ['실내온도', '설정온도', '전원']
-현재시간: '2022-09-30 12:00:00'
+{current_metadata}
 
 <출력 형태 및 조건>
-출력은 1. '질문 요약 reasoning', 2. '질문 요약', 3. 'Semantic Parsing reasonsing', 4. 'Semantic Parsing'(dict), 5. 'Instruction Set'(list)
-1. '질문 요약 reasoning': 사용자의 질문을 요약하는 과정에서 이유를 설명. 쓰여있는 정보를 활용하고, 없으면 추측한다. Semantic parsing보다 추상적이어야 함.
-2. '질문 요약': 사용자의 질문을 요약한 내용.
-3. 'Semantic Parsing reasonsing': Semantic Parsing을 하는 과정에서 이유를 설명. 이 과정에서 사전정보에 없는 장소나 구체적인 시간/시간기간을 추측해야만 함.
-4. 'Semantic Parsing': Semantic Parsing 결과. dict 형태로 구성되며, Temporal, Spatial, Modality, Type/Quantity, Target, Question/Actuation key를 가짐.
-5. 'Instruction Set': Instruction Set 결과. list 형태로 구성되며, 각 원소는 [flag, content, variable]로 구성됨.
+출력은
+1. 'Formalized Input': 사용자의 질문을 요약한 내용.
+2. 'Input Semantic Parsing': Input Semantic Parsing 결과. dict 형태로 구성되며, Temporal, Spatial, Modality, Operation, Target key를 가짐.
+3. 'Instruction Set': Instruction Set 결과. list 형태로 구성되며, 각 원소는 [flag, content, variable]로 구성됨.
 출력은 무조건 예시의 dictionary 형태를 지켜줘. 무조건. 제일 중요해. 즉,시작과 끝에 무조건 중괄호가 있어야해.
 
-<Semantic Parsing 조건>
+<Input Semantic Parsing 조건>
 Temporal: 시간 혹은 시간 범위를 나타내는 정보. 사전정보 참고. 대표적 representation과 Timestamp 형식의 튜플로 표현됨. 아무런 정보가 없을 경우 '지금'으로 표현되지만, 정보가 있는 경우 자제해야 함.
 Spatial: 공간 혹은 공간 범위를 나타내는 정보. 사전정보 참고. 대표적 representation으로 표현됨. 아무런 정보가 없을 경우 '우리반'으로 표현되지만, 정보가 있는 경우 자제해야 함.
-Modality: 정보의 형태 혹은 정보의 속성. 사전정보를 참고해서 제일 유사한 단어로 표현해야 하지만, 사전정보에 없는 경우 추정해야 함.
-Type/Quantity: 정보의 종류 혹은 양. 
+Modality: 정보의 형태 혹은 정보의 속성. 사전정보를 참고해서 제일 유사한 단어로 표현해야 하지만, 사전정보에 없는 경우 추정해야 함. 데이터의 조작, 통계, 비교등 Operation에 대한 정보는 포함되면 안됨. 예) 평균온도 -> 온도
+Operation: 정보에 행해지는 조작.
 Target: 정보의 대상.
-Question/Actuation: 질문 혹은 행위.
 
 <Instruction Set 조건>
-공통: 'Semantic Parsing'의 정보를 활용하여 질문을 만들어야 함. 알 수 없음이 포함될 수 없다.
+공통: 'Input Semantic Parsing'의 정보를 활용하여 질문을 만들어야 함. 알 수 없음이 포함될 수 없다.
 q: Query을 나타내는 flag. 두 번째 인자는 Query Generator에서 사용할 예정이며, 세 번째 인자는 query의 결과를 저장할 변수명이다.
 r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 데 사용할 변수명이며, 세 번째 인자는 Response의 예시를 나타낸다.
 
@@ -102,40 +96,34 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
 입력: 오늘 우리반과 옆반의 온도차이 알려줘.
 출력:
 "{
-    "질문 요약 reasoning": "시간은 오늘이라고 쓰여 있다. 장소는 우리반과 옆반이라고 쓰여 있다. 온도는 실내온도로 추정된다.",
-    "질문 요약": "오늘 우리반과 옆반의 실내온도 차이 알려줘.",
-    "Semantic Parsing reasonsing": "오늘은 2022년 9월 30일이다.",
-    "Semantic Parsing": {
+    "Formalized Input": "오늘 우리반과 옆반의 실내온도 차이 알려줘.",
+    "Input Semantic Parsing": {
         "Temporal": [("오늘", "2022-09-30 00:00:00 ~ 2022-09-30 23:59:59")],
         "Spatial": ["우리반", "옆반"],
         "Modality": ["실내온도"],
-        "Type/Quantity": ["diff"],
+        "Operation": ["차이"],
         "Target": ["온도"],
-        "Question/Actuation": ["알려줘"]
     },
     "Instruction Set": [
-        ["q", "오늘 우리반과 옆반의 실내온도 차이 알려줘.", "V_1"],
+        ["q", "오늘 우리반과 옆반의 실내온도 차이 알려줘.", "V_1", [("실내온도 차이", "온도")]],
         ["r", "V_1", "예) '우리반이 옆반보다 2도 높아요'"]
     ]
 }"
 
 <좋은 예시2>
-입력: 지난 여름 우리반 평균 설정온도 알려줘.
+입력: 지난 여름 우리반 평균온도 알려줘.
 출력: 
 "{
-    "질문 요약 reasoning": "시간은 지난 여름라고 쓰여 있다. 지난 여름은 올해 여름이라는 뜻으로 추정된다. 장소는 우리반이라고 쓰여있다.",
-    "질문 요약": "올해 여름 우리반 평균 설정온도 알려줘.",
-    "Semantic Parsing reasonsing": "올해는 2022년이며, 여름은 6월 1일부터 8월 31일까지이다.",
-    "Semantic Parsing": {
+    "Formalized Input": "올해 여름 우리반 평균 설정온도 알려줘.",
+    "Input Semantic Parsing": {
         "Temporal": [("올해 여름", "2022-06-01 00:00:00 ~ 2022-08-31 23:59:59")],
         "Spatial": ["우리반"],
         "Modality": ["설정온도"],
-        "Type/Quantity": ["mean"],
+        "Operation": ["평균"],
         "Target": ["온도"],
-        "Question/Actuation": ["알려줘"]
     },
     "Instruction Set": [
-        ["q", "올해 여름 우리반 평균 설정온도 알려줘.", "V_1"],
+        ["q", "올해 여름 우리반 평균 설정온도 알려줘.", "V_1", [("올해 여름 우리반 평균 설정온도", "온도")]],
         ["r", "V_1", "예) '지난 여름 우리반의 평균 설정온도는 26도입니다.'"]
     ],
 }"
@@ -144,19 +132,16 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
 입력: 이번달 중 우리반 온도가 가장 더운날이 언제야?
 출력:
 "{
-    "질문 요약 reasoning": "시간은 이번달이라고 쓰여있다. 장소는 우리반이라고 쓰여 있다. 온도는 실내온도로 추정된다. 더운날은 온도가 가장 높은 날을 의미한다.",
-    "질문 요약": "이번달 우리반 실내온도가 가장 높은 날짜 알려줘.",
-    "Semantic Parsing reasonsing": "이번달은 9월 1일부터 9월 30일이다. 가장 높은 온도가 아닌 그 날짜를 알아야 한다.",
-    "Semantic Parsing": {
+    "Formalized Input": "이번달 우리반 실내온도가 최고인 날짜 알려줘.",
+    "Input Semantic Parsing": {
         "Temporal": [("이번달", "2022-09-01 00:00:00 ~ 2022-09-30 23:59:59")],
         "Spatial": ["우리반"],
         "Modality": ["실내온도"],
-        "Type/Quantity": ["argmax"],
+        "Operation": ["최고"],
         "Target": ["날짜"],
-        "Question/Actuation": ["알려줘"]
     },
     "Instruction Set": [
-        ["q", "이번달 우리반 실내온도가 가장 높은 날짜 알려줘.", "V_1"],
+        ["q", "이번달 우리반 실내온도가 최고인 날짜 알려줘.", "V_1", [("이번달 우리반 실내온도가 최고인 날", "날짜")]],
         ["r", "V_1", "예) '이번달 중 우리반의 온도가 가장 더운날은 2022년 9월 15일입니다.'"]
     ]
 }"
@@ -165,19 +150,16 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
 입력: 우리반과옆반중에온도가더낮은곳은어디야?
 출력: 
 "{
-    "질문 요약 reasoning": "시간은 지금으로 추측한다. 장소는 우리반과 옆반이라고 쓰여있다. 온도는 실내온도로 가정한다. 곳은 장소를 의미한다.",
-    "질문 요약": "지금 우리반과 옆반 중 실내온도가 더 낮은 장소 알려줘.",
-    "Semantic Parsing reasonsing": "지금은 2022년 9월 30일 12시 00분이다.",
-    "Semantic Parsing": {
+    "Formalized Input": "지금 우리반과 옆반 중 실내온도가 최소인 장소 알려줘.",
+    "Input Semantic Parsing": {
         "Temporal": [("지금", "2022-09-30 12:00:00")],
         "Spatial": ["우리반", "옆반"],
         "Modality": ["실내온도"],
-        "Type/Quantity": ["argmin"],
+        "Operation": ["최소"],
         "Target": ["장소"],
-        "Question/Actuation": ["알려줘"]
     },
     "Instruction Set": [
-        ["q", "지금 우리반과 옆반 중 실내온도가 더 낮은 장소 알려줘.", "V_1"],
+        ["q", "지금 우리반과 옆반 중 실내온도가 최소인 장소 알려줘.", "V_1", [("지금 우리반과 옆반 중 실내온도가 최소인 장소", "장소")]],
         ["r", "V_1", "예) '우리반의 온도가 옆반보다 더 낮아요.'"]
     ]
 }"
@@ -186,19 +168,16 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
 입력: 에어컨 켜져있어?
 출력: 
 "{
-    "질문 요약 reasoning": "시간은 지금으로 추측한다. 장소는 우리반으로 추측한다. 에어컨의 전원 여부를 알려달라는 의미이다.",
-    "질문 요약": "지금 우리반 전원 값 알려줘.",
-    "Semantic Parsing reasonsing": "지금은 2022년 9월 30일 12시 00분이다.",
-    "Semantic Parsing": {
+    "Formalized Input": "지금 우리반 전원 값 알려줘.",
+    "Input Semantic Parsing": {
         "Temporal": [("지금", "2022-09-30 12:00:00")],
         "Spatial": ["우리반"],
         "Modality": ["전원"],
-        "Type/Quantity": ["value"],
+        "Operation": [None],
         "Target": ["전원"],
-        "Question/Actuation": ["알려줘"]
     },
     "Instruction Set": [
-        ["q", "지금 우리반 전원 값 알려줘.", "V_1"],
+        ["q", "지금 우리반 전원 값 알려줘.", "V_1", [("지금 우리반 전원 값", "전원")]],
         ["r", "V_1", "예) '지금 우리반 에어컨은 켜져 있습니다.'"]
     ]
 }"
@@ -207,19 +186,16 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
 입력: 앞반 지금 전원 켜져있어?
 출력: 
 "{
-    "질문 요약 reasoning": "시간은 지금으로 추측한다. 장소는 앞반으로 쓰여있다. 전원에 대한 정보를 알고 싶어하는 것으로 추정된다.",
-    "질문 요약": "지금 앞반 전원 값 알려줘.",
-    "Semantic Parsing reasonsing": "지금은 2022년 9월 30일 12시 00분이다.",
-    "Semantic Parsing": {
+    "Formalized Input": "지금 앞반 전원 값 알려줘.",
+    "Input Semantic Parsing": {
         "Temporal": [("지금", "2022-09-30 12:00:00")],
         "Spatial": ["앞반"],
         "Modality": ["전원"],
-        "Type/Quantity": ["value"],
+        "Operation": [None],
         "Target": ["전원"],
-        "Question/Actuation": ["알려줘"]
     },
     "Instruction Set": [
-        ["q", "지금 앞반 전원 값 알려줘.", "V_1"],
+        ["q", "지금 앞반 전원 값 알려줘.", "V_1", [("지금 앞반 전원 값", "전원")]],
         ["r", "V_1", "예) '지금 앞반 에어컨은 꺼져 있습니다.'"]
     ]
 }"
@@ -228,19 +204,16 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
 입력: 우리집 지금 전력사용량 얼마야?
 출력: 
 "{
-    "질문 요약 reasoning": "시간은 지금으로 쓰여있다. 장소는 우리집으로 쓰여있다. 전력사용량을 알고 싶은것으로 추정된다.",
-    "질문 요약": "지금 우리집 전력사용량 알려줘.",
-    "Semantic Parsing reasonsing": "지금은 2022년 9월 30일 12시 00분이다.  전력사용량은 사전정보에 없는 정보이므로 추정해야 한다.",
-    "Semantic Parsing": {
+    "Formalized Input": "지금 우리집 전력사용량 알려줘.",
+    "Input Semantic Parsing": {
         "Temporal": [("지금", "2022-09-30 12:00:00")],
         "Spatial": ["우리집"],
         "Modality": ["전력사용량"],
-        "Type/Quantity": ["value"],
+        "Operation": [None],
         "Target": ["전력"],
-        "Question/Actuation": ["알려줘"]
     },
     "Instruction Set": [
-        ["q", "지금 우리집 전력사용량 알려줘.", "V_1"],
+        ["q", "지금 우리집 전력사용량 알려줘.", "V_1", [("지금 우리집 전력사용량", "전력")]],
         ["r", "V_1", "예) '지금 우리집 전력사용량은 100kWh입니다.'"]
     ]
 }"
@@ -249,31 +222,47 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
 입력: 어제 전원 껐어?
 출력: 
 "{
-    "질문 요약 reasoning": "시간은 어제로 쓰여있다. 장소는 우리반으로 추측한다. 전원값을 알고 싶어하는 것으로 추정된다.",
-    "질문 요약": "어제 전원 값 알려줘.",
-    "Semantic Parsing reasonsing": "어제는 2022년 9월 29일이다.",
-    "Semantic Parsing": {
+    "Formalized Input": "어제 전원 값 알려줘.",
+    "Input Semantic Parsing": {
         "Temporal": [("어제", "2022-09-29 00:00:00 ~ 2022-09-29 23:59:59")],
         "Spatial": ["우리반"],
         "Modality": ["전원"],
-        "Type/Quantity": ["value"],
+        "Operation": [None],
         "Target": ["전원"],
-        "Question/Actuation": ["알려줘"]
     },
     "Instruction Set": [
-        ["q", "어제 우리반 전원 값 알려줘.", "V_1"],
+        ["q", "어제 우리반 전원 값 알려줘.", "V_1", [("어제 우리반 전원 값", "전원")]],
         ["r", "V_1", "예) '어제 우리반 전원은 꺼져 있습니다.'"]
+    ]
+}"
+
+<좋은 예시9>
+입력: 지금 옆반 온도랑 우리반 온도 알려줘
+출력: 
+"{
+    "Formalized Input": "지금 우리반과 옆반 실내온도 알려줘.",
+    "Input Semantic Parsing": {
+        "Temporal": [("지금", "2022-09-30 12:00:00")],
+        "Spatial": ["우리반", "옆반"],
+        "Modality": ["실내온도"],
+        "Operation": [None],
+        "Target": ["온도"],
+    },
+    "Instruction Set": [
+        ["q", "지금 우리반과 옆반 실내온도 알려줘.", "V_1", [("지금 우리반 실내온도", "온도"), ("지금 옆반 실내온도", "온도")]],
+        ["r", "V_1", "예) '지금 우리반의 실내온도는 26도이고, 옆반의 실내온도는 25도입니다.'"]
     ]
 }"
 """
 
     @classmethod
-    def execute(cls, input_text:str):
+    def execute(cls, input_text:str, current_metadata:dict):
         """
         Change text to instruction list.
         
         Parameters:
         - input_text (str): Input text to be changed to a instruction list.
+        - current_metadata (dict): Metadata that may be relevant to the input text.
         
         Returns:
         - semantic (dict): Semantic information of the input text.
@@ -286,9 +275,8 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
                     Temporal=[("오늘", "2022-09-30 00:00:00 ~ 2022-09-30 23:59:59")],
                     Spatial=["우리반", "옆반"],
                     Modality=["온도"],
-                    Type_Quantity=["diff"],
+                    Operation=["diff"],
                     Target=["온도"]
-                    Question_Actuation=["알려줘"]
                 ), instructions: [
                     Instruction(operation_flag="q", content="오늘 우리반과 옆반의 온도차이 알려줘", save_variable="V_1"),
                     Instruction(operation_flag="r", using_varables="V_1", example="예 ) '우리반과 옆반의 온도차이는 2도입니다'")
@@ -296,8 +284,11 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
 
         """
         
+        # prompt = cls.PROMPT.format(current_metadata=current_metadata)
+        prompt = cls.PROMPT.replace("{current_metadata}", str(current_metadata))
+        
         messages = [
-            {"role": "system", "content": f"{cls.PROMPT}"},
+            {"role": "system", "content": f"{prompt}"},
             {"role": "user", "content": f"{input_text}"}
         ]
 
@@ -334,7 +325,7 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
             print(result_string)
             
         
-        semantic = Semantic(result_dict["Semantic Parsing"])
+        semantic = Semantic(result_dict["Input Semantic Parsing"])
         instructions = [Instruction(instruction) for instruction in result_dict["Instruction Set"]]        
                 
         logger.info(f"semantic: {semantic}, instructions: {instructions}")

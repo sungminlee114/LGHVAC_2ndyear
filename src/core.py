@@ -46,7 +46,7 @@ def load_text_model():
     
     bnb_config = BitsAndBytesConfig(
         llm_int8_enable_fp32_cpu_offload=True,
-        load_in_4bit=True,
+        load_in_8bit=True,
         bnb_4bit_use_double_quant=True,
         bnb_4bit_quant_type="nf4",
         bnb_4bit_compute_dtype=torch.bfloat16,
@@ -144,13 +144,12 @@ def input_to_instruction_set(user_input, current_metadata):
                 Modality=[("온도", 'roomtemp')],
                 Type_Quantity=["diff"],
                 Target=["온도"]
-                Question_Actuation=["알려줘"]
             ), instructions: [
                 Instruction(operation_flag="q", content="오늘 우리반과 옆반의 온도차이 알려줘", save_variable="V_1"),
                 Instruction(operation_flag="r", using_varables="V_1", example="예 ) '우리반과 옆반의 온도차이는 2도입니다'")
             ]
     """
-    semantic, instructions = InputToInstruction.execute(user_input)
+    semantic, instructions = InputToInstruction.execute(user_input, current_metadata)
     
     # Map spatial context
     for s_i, s in enumerate(semantic.Spatial):
@@ -190,15 +189,17 @@ def execute_query(semantic:Semantic, instruction:Instruction, execution_state:di
         return
     else:
         # Run the query generation LLM model
-        sql_query = InstructionToSql.execute(instruction.content,str(semantic))
+        sql_query = InstructionToSql.execute(instruction, str(semantic))
         
         # Execute query
-        logger.info(f"sql_query: {sql_query}")
         sql_result = DBManager.execute_sql(sql_query)
+        if len(sql_result) > 0:
+            sql_result = sql_result[0]
+        logger.info(f"sql_query: {sql_query}, sql_result: {sql_result}")
 
         # Save the query result in execution state.
-        execution_state['var'][instruction.save_variable] = sql_result
-        logger.info(f"Saving {sql_result} to {instruction.save_variable}")
+        execution_state['var'][instruction.save_variable] = {m: r for m, r in zip(instruction.variable_mapping, sql_result)}
+        logger.info(f"Saving {sql_result} to {instruction.save_variable} => {execution_state['var'][instruction.save_variable]}")
         return
 
 def execute_response_generation(semantic:Semantic, instruction:Instruction, execution_state:dict, user_input:str, current_metadata:dict):

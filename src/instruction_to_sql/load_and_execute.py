@@ -1,12 +1,14 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import bitsandbytes
-from src.input_to_instructions.load_and_execute import Semantic
+from src.input_to_instructions.load_and_execute import Instruction, Semantic
 
 class InstructionToSql:
 
     @classmethod
-    def execute(cls, question: str, semantic: Semantic):
+    def execute(cls, instruction: Instruction, semantic: Semantic):
+        question, variable_mapping = instruction.content, instruction.variable_mapping
+        
         prompt = """user
 
         Generate a SQL query to answer this question: `{question}`
@@ -30,6 +32,9 @@ class InstructionToSql:
                 metadata character varying(255) COLLATE pg_catalog."default",
                 CONSTRAINT idu_t_pkey PRIMARY KEY (id)
             )
+
+        The result of the SQL query should follow the order and count of the variable mapping. It consists of list of ("representation", "target_type")
+           variable mapping: {variable_mapping}
 
         Prior information:
             {semantic}
@@ -86,6 +91,7 @@ class InstructionToSql:
        Example :
        - question : 우리반에서 가장 더웠던 날이 언제야?
        - semantic : Semantic(Temporal=[('이번 달', '2022-09-01 00:00:00 ~ 2022-09-30 23:59:59')], Spatial=[('우리반', '01_IB5')], Modality=[('실내온도', 'roomtemp')], Type_Quantity=['argmax'], Target=['날짜'], Question_Actuation=['알려줘'])
+       - variable_mapping : [('우리반에서 가장 더웠던 날', '날짜')]
        - Reasoning Process
            1. SELECT Clause: The SELECT clause is informed by the Target in the semantic, which specifies that we want to retrieve the date and the maximum temperature; thus, we select the date and MAX(dt.roomtemp).
            2. FROM Clause: The FROM clause references the data_t table, which contains the relevant temperature data and aligns with the Modality indicating we are measuring room temperature.
@@ -111,7 +117,7 @@ class InstructionToSql:
         ```sql
         """
         # semantic을 포함하여 prompt를 업데이트
-        updated_prompt = prompt.format(question=question, semantic=semantic)
+        updated_prompt = prompt.format(question=question, semantic=semantic, variable_mapping=variable_mapping)
         inputs = cls.tokenizer(updated_prompt, return_tensors="pt").to("cuda")
         generated_ids = cls.model.generate(
             **inputs,
