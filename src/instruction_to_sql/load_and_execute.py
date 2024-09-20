@@ -58,13 +58,14 @@ class InstructionToSql:
             - Data Integrity: It is very important. Ensure the selected column is not NULL and not 'NaN'. But if selected column is boolean type, then do not include this.
 
         4. GROUP BY Clause:
-        - Connection to Semantic: Group results based on `semantic['Type_Quantity']`, which indicates whether to perform a statistical operation like avg, argmax.
+        - This clause applies only when the operation involves statistical operation like avg, argmax.
 
         5. ORDER BY Clause:
-        - Connection to Semantic: If `semantic['Type_Quantity']` indicates a statistical operation (e.g., AVG), order the results based on `semantic['Modality']` and the chosen aggregate function.
+        -  This clause applies only when the operation involves statistical operation like avg, argmax.
 
         6. Flexibility in Column Selection:
         - Connection to Semantic: `dt.column_name` and `dt.other_column` can be the same or different, allowing for varied analysis and presentation of dat
+        7. Only output the SQL query itself without any other sentences or words.
         
         Following columns can be used as dt.column_name and dt.other_column in your SQL queries. 
             id: The unique identifier for each record (integer).
@@ -90,13 +91,13 @@ class InstructionToSql:
                             ORDER BY aggregate_value [ASC|DESC];  -- This allows you to specify the order as needed.         
        Example :
        - question : 우리반에서 가장 더웠던 날이 언제야?
-       - semantic : Semantic(Temporal=[('이번 달', '2022-09-01 00:00:00 ~ 2022-09-30 23:59:59')], Spatial=[('우리반', '01_IB5')], Modality=[('실내온도', 'roomtemp')], Type_Quantity=['argmax'], Target=['날짜'], Question_Actuation=['알려줘'])
+       - semantic : Semantic(Temporal=[('이번 달', '2022-09-01 00:00:00 ~ 2022-09-30 23:59:59')], Spatial=[('우리반', '01_IB5')], Modality=[('실내온도', 'roomtemp')], Operation=['최고'], Target=['날짜'])
        - variable_mapping : [('우리반에서 가장 더웠던 날', '날짜')]
        - Reasoning Process
            1. SELECT Clause: The SELECT clause is informed by the Target in the semantic, which specifies that we want to retrieve the date and the maximum temperature; thus, we select the date and MAX(dt.roomtemp).
            2. FROM Clause: The FROM clause references the data_t table, which contains the relevant temperature data and aligns with the Modality indicating we are measuring room temperature.
            3. WHERE Clause: In the WHERE clause, we filter the results based on the timestamp range corresponding to the Temporal element, which defines "이번달" (this month). We also include a subquery to filter by idu_id, reflecting the Spatial element for the room "우리반" (01_IB5). Additionally, we ensure that roomtemp is neither NULL nor 'NaN' to maintain data integrity.
-           4. GROUP BY Clause: The GROUP BY clause is used to aggregate temperatures by date, aligning with the Type_Quantity that indicates we want to find the maximum value (argmax).
+           4. GROUP BY Clause: The GROUP BY clause is used to aggregate temperatures by date, aligning with the Operation that indicates we want to find the maximum value (argmax).
            5. ORDER BY Clause: The ORDER BY clause sorts the results by maximum temperature, making it easy to identify the hottest day.
            6. LIMIT Clause: Finally, the LIMIT 1 clause ensures we return only the single hottest day, directly addressing the user's request for the maximum temperature in the specified timeframe and room.
         - Correct answer :  SELECT dt."timestamp"::date AS date, MAX(dt.roomtemp) AS max_temp

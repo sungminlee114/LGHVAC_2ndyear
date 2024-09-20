@@ -78,7 +78,7 @@ def load_sql_model():
     
     bnb_config = BitsAndBytesConfig(
         llm_int8_enable_fp32_cpu_offload=True,
-        load_in_4bit=True,
+        load_in_8bit=True,
         bnb_4bit_use_double_quant=True,
         bnb_4bit_quant_type="nf4",
         bnb_4bit_compute_dtype=torch.bfloat16,
@@ -111,6 +111,8 @@ def get_current_metadata() -> dict:
         "idu_mapping": {
             "01_IB5": ["우리반"],
             "01_IB7": ["옆반"],
+            "1" : ["우리반"],
+            "2" : ["옆반"]
         },
         "modality_mapping": {
             "roomtemp": ["실내온도"],
@@ -174,7 +176,15 @@ def input_to_instruction_set(user_input, current_metadata):
 
 def execute_query(semantic:Semantic, instruction:Instruction, execution_state:dict):
     """
-    Execute query.
+    Execute a SQL query based on the provided semantic information and instruction.
+
+    Parameters:
+    - semantic (Semantic): Contains semantic information that defines the context of the query.
+    - instruction (Instruction): An object detailing the instruction for executing the query, including content to be transformed into SQL.
+    - execution_state (dict): A dictionary that maintains the state during execution, including variables to store results.
+
+    Returns:
+    - sql_query (str): The generated SQL query that was executed.
     """
 
     # Replace semantics in the instruction content to specific values.
@@ -198,11 +208,11 @@ def execute_query(semantic:Semantic, instruction:Instruction, execution_state:di
         logger.info(f"sql_query: {sql_query}, sql_result: {sql_result}")
 
         # Save the query result in execution state.
-        execution_state['var'][instruction.save_variable] = {m: r for m, r in zip(instruction.variable_mapping, sql_result)}
+        execution_state['var'][instruction.save_variable] = sql_result
         logger.info(f"Saving {sql_result} to {instruction.save_variable} => {execution_state['var'][instruction.save_variable]}")
-        return
+        return sql_query
 
-def execute_response_generation(semantic:Semantic, instruction:Instruction, execution_state:dict, user_input:str, current_metadata:dict):
+def execute_response_generation(semantic:Semantic, instruction:Instruction, query_mapping : list[tuple[str, str]], execution_state:dict, user_input:str, current_metadata:dict,sql_query:any):
     """
     Generate a response based on the provided instruction.
     
@@ -211,6 +221,7 @@ def execute_response_generation(semantic:Semantic, instruction:Instruction, exec
     execution_state: A dictionary that stores the state during the execution, including variables.
     user_input: The user's input, which may influence the response.
     current_metadata: Additional metadata that may be relevant to response generation.
+    sql_query (any): The SQL query that was executed to obtain the result, useful for context in the response.
     
     Returns:
         - response (str): The generated response.
@@ -220,7 +231,7 @@ def execute_response_generation(semantic:Semantic, instruction:Instruction, exec
     if var is None or len(var)==0:
         response = "죄송합니다. 해당 정보를 찾을 수 없습니다. (이유 설명 필요)"
     else:
-        response = ResponseGeneration.execute(str(var), instruction, user_input, current_metadata)
+        response = ResponseGeneration.execute(str(var), instruction, query_mapping, user_input, current_metadata, sql_query)
     
     return response
 
@@ -242,13 +253,14 @@ def execute_instruction_set(semantic:Semantic, instruction_set:list[Instruction]
     logger.info(semantic)
     for instruction in instruction_set:
         logger.info(f"Executing instruction: {instruction}")
-        
+    
         if instruction.operation_flag == "q":
             # Execute query
-            execute_query(semantic, instruction, execution_state)
+            sql_query = execute_query(semantic, instruction, execution_state)
+            query_mapping = instruction.variable_mapping
             
         elif instruction.operation_flag == "r":
             # Execute response generation
-            response = execute_response_generation(semantic, instruction, execution_state, user_input, current_metadata)
+            response = execute_response_generation(semantic, instruction, query_mapping, execution_state, user_input, current_metadata,sql_query)
             response_function(response)
             
