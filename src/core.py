@@ -196,7 +196,7 @@ def execute_response_generation(semantic:Semantic, instruction:Instruction, exec
     """
     
     var = execution_state['var'][instruction.using_varables]
-    if var is None:
+    if var is None or len(var)==0:
         response = "죄송합니다. 해당 정보를 찾을 수 없습니다. (이유 설명 필요)"
     else:
         response = ResponseGeneration.execute(str(var), user_input, current_metadata)
