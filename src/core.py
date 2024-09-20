@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 from collections import defaultdict
 
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 
 from src.db.manager import DBManager
 from src.input_to_instructions.load_and_execute import InputToInstruction, Instruction, Semantic
@@ -43,6 +43,15 @@ def load_models():
     torch.cuda.synchronize()
 
 def load_text_model():
+    
+    bnb_config = BitsAndBytesConfig(
+        llm_int8_enable_fp32_cpu_offload=True,
+        load_in_4bit=True,
+        bnb_4bit_use_double_quant=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.bfloat16,
+    )
+    
     model_id = 'MLP-KTLim/llama-3-Korean-Bllossom-8B'
 
     tokenizer = AutoTokenizer.from_pretrained(
@@ -52,6 +61,7 @@ def load_text_model():
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
         torch_dtype=torch.bfloat16,
+        quantization_config=bnb_config,
         device_map="auto",
         cache_dir="/model"
     )
@@ -65,6 +75,15 @@ def load_text_model():
     
 
 def load_sql_model():
+    
+    bnb_config = BitsAndBytesConfig(
+        llm_int8_enable_fp32_cpu_offload=True,
+        load_in_4bit=True,
+        bnb_4bit_use_double_quant=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.bfloat16,
+    )
+    
     model_name = "defog/llama-3-sqlcoder-8b"
     
     tokenizer = AutoTokenizer.from_pretrained(
@@ -77,12 +96,13 @@ def load_sql_model():
         trust_remote_code=True,
         torch_dtype=torch.float16,
         device_map="auto",
-        cache_dir="/model"
+        cache_dir="/model",
+        quantization_config=bnb_config
     )
     
     return tokenizer, model
 
-def get_current_metadata():
+def get_current_metadata() -> dict:
     return {
         "site_name": "YongDongIllHighSchool",
         "user_name": "홍길동",
@@ -109,7 +129,7 @@ def input_to_instruction_set(user_input, current_metadata):
     
     Parameters:
     - input_text (str): Input text to be changed to a instruction list.
-    - current_metadata (dict): Not used yet.
+    - current_metadata (dict): Metadata that may be relevant to the input text.
     
     Returns:
     - semantic (dict): Semantic information of the input text.
@@ -199,7 +219,7 @@ def execute_response_generation(semantic:Semantic, instruction:Instruction, exec
     if var is None or len(var)==0:
         response = "죄송합니다. 해당 정보를 찾을 수 없습니다. (이유 설명 필요)"
     else:
-        response = ResponseGeneration.execute(str(var), user_input, current_metadata)
+        response = ResponseGeneration.execute(str(var), instruction, user_input, current_metadata)
     
     return response
 

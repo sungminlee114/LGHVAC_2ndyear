@@ -2,11 +2,17 @@ import os
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
+from src.input_to_instructions.load_and_execute import Instruction
+
 class ResponseGeneration:
+    PROMPT = '''
+    친절한 답변 해줘. 답변은 "-입니다" 로 끝나게 적성해줘. 조사가 문법에 맞게 작성되게 해줘.
+    원본 질문, 답변에 사용될 값, 답변 예시가 주어졌을 때, 질문과 답변을 합쳐서 친절한 답변을 작성해줘.
+    '''
  
     
     @classmethod
-    def execute(cls, sql_result: str, user_input: str, current_metadata: dict) -> str:
+    def execute(cls, sql_result: str, instruction:Instruction, user_input: str, current_metadata: dict) -> str:
         """
         Generate a response based on the SQL result and user input.
 
@@ -19,19 +25,16 @@ class ResponseGeneration:
         - str: A generated response combining the SQL result and user input in a polite and natural manner.
         """
         
-        new_str = "질문인 "+user_input + "와 답변인 " + sql_result + "를 합쳐서 한줄의 친절한 답변 문장으로 써줘."
-        PROMPT = '''
-        친절한 답변 해주세요. 답변은 "-입니다" 로 끝나게 적성해줘. 조사가 문법에 맞게 작성되게 해줘. 전력 사용량의 단위는 Wh 야. 
-        답변 문장의 형태는 다음과 같아. {user_input} 은 {sql_result} 입니다. 
-        예시)
-        1. user_input: 오늘 우리집 3시의 전력사용량 알려줘
-          sql_result: 30
-          답변: 오늘 우리집 3시의 전력사용량은 30Wh입니다.
-
+        
+        INPUT = f'''
+        원본 질문: {user_input}
+        답변에 사용될 값: {sql_result}
+        답변 예시: {instruction.example}
         '''
+        
         messages = [
-            {"role": "system", "content": f"{PROMPT}"},
-            {"role": "user", "content": f"{new_str}"}
+            {"role": "system", "content": f"{cls.PROMPT}"},
+            {"role": "user", "content": f"{INPUT}"}
         ]
 
         input_ids = cls.tokenizer.apply_chat_template(
@@ -42,8 +45,9 @@ class ResponseGeneration:
 
         outputs = cls.model.generate(
             input_ids,
-            max_new_tokens=2048,
+            max_new_tokens=512,
             eos_token_id=cls.terminators,
+            pad_token_id=cls.tokenizer.eos_token_id,
             do_sample=True,
             temperature=0.6,
             top_p=0.9,

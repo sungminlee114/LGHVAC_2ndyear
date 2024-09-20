@@ -126,9 +126,6 @@ class InstructionToSql:
         )
         outputs = cls.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)
 
-        torch.cuda.empty_cache()
-        torch.cuda.synchronize()
-
         return outputs[0].split("```sql")[1].split(";")[0]
   
   
