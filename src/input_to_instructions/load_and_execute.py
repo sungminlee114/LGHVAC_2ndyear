@@ -25,16 +25,15 @@ class Instruction:
         if self.operation_flag in ["q"]:
             self.content:str = str(instruction[1])
             self.save_variable:str = str(instruction[2])
-            self.variable_mapping:list[list[str, str]] = instruction[3]
+            self.value = instruction[3]
         elif self.operation_flag == "r":
-            self.using_varables:str = str(instruction[1])
-            self.example:str = str(instruction[2])
+            self.example:str = str(instruction[1])
     
     def __repr__(self) -> str:
         if self.operation_flag == "r":
-            return f"Instruction({[self.operation_flag, self.using_varables, self.example]})"
+            return f"Instruction({[self.operation_flag, self.example]})"
         else:
-            return f"Instruction({[self.operation_flag, self.content, self.save_variable, self.variable_mapping]})"
+            return f"Instruction({[self.operation_flag, self.content, self.save_variable, self.value]})"
 
 class Semantic:
     """
@@ -88,6 +87,7 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
 <절대로 하지 말아야 할 것>
 출력 앞 뒤에 불필요한 내용이 있거나 dictionary 형태를 지키지 않으면 절대로 안됨(즉, 중괄호가 무조건 있어야함). 특히 '~~질문에 대한 답변은 다음과 같습니다.나 주어진예시를~~'와 같은 문장은 절대로 작성하지 않아야 함.
 이미 명시적으로 시간/공간 정보가 input에 있는데, 없다고 잘못 판단하면 안됨.
+q tag 를 가진 instruction 의 경우, instruction[3] 에 sql 을 위한 세부 문장 외에 다른 문장은 넣지 말것.
 
 <예시들과 다른 입력이 들어올 경우>
 예시들과 조금 다르더라도 출력의 형식은 무조건 지켜야함.
@@ -105,8 +105,9 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
         "Target": ["온도"],
     },
     "Instruction Set": [
-        ["q", "오늘 우리반과 옆반의 실내온도 차이 알려줘.", "V_1", [["오늘 우리반 실내온도 알려줘", "값"],["오늘 옆반 실내온도 알려줘","값"]],
-        ["r", "V_1", "예) '우리반이 옆반보다 2도 높아요'"]
+        ["q", "오늘 우리반 실내온도 알려줘.", "우리반 실내온도", "값"],
+        ["q", "오늘 옆반 실내온도 알려줘.", "옆반 실내온도", "값"],
+        ["r", "예) '우리반이 옆반보다 2도 높아요'"]
     ]
 }"
 
@@ -123,8 +124,8 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
         "Target": ["온도"],
     },
     "Instruction Set": [
-        ["q", "올해 여름 우리반 평균 설정온도 알려줘.", "V_1", [["올해 여름 우리반 평균 설정온도 알려줘","값"]]
-        ["r", "V_1", "예) '지난 여름 우리반의 평균 설정온도는 26도입니다.'"]
+        ["q", "올해 여름 우리반 평균 설정온도 알려줘.", "올해 여름 우리반 평균 설정온도","값"]
+        ["r", "예) '지난 여름 우리반의 평균 설정온도는 26도입니다.'"]
     ],
 }"
 
@@ -141,8 +142,8 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
         "Target": ["날짜"],
     },
     "Instruction Set": [
-        ["q", "이번달 우리반 실내온도가 최고인 날짜 알려줘.", "V_1", [["이번달 우리반 실내온도가 최고인 날짜 알려줘","값"]],
-        ["r", "V_1", "예) '이번달 중 우리반의 온도가 가장 더운날은 2022년 9월 15일입니다.'"]
+        ["q", "이번달 우리반 실내온도가 최고인 날짜 알려줘.","이번달 우리반 실내온도가 최고인 날짜" ,"값"],
+        ["r", "예) '이번달 중 우리반의 온도가 가장 더운날은 2022년 9월 15일입니다.'"]
     ]
 }"
 
@@ -159,8 +160,9 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
         "Target": ["장소"],
     },
     "Instruction Set": [
-        ["q", "지금 우리반과 옆반 중 실내온도가 최소인 장소 알려줘.", "V_1", [["우리반의 온도 알려줘","값"],["옆반의 온도 알려줘","값"]]],
-        ["r", "V_1", "예) '우리반의 온도가 옆반보다 더 낮아요.'"]
+        ["q", "우리반 실내온도 알려줘","우리반 실내온도","값"], 
+        ["q","옆반의 온도 알려줘 알려줘","옆반의 실내온도","값"],
+        ["r", "예) '우리반의 온도가 옆반보다 더 낮아요.'"]
     ]
 }"
 
@@ -177,8 +179,8 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
         "Target": ["전원"],
     },
     "Instruction Set": [
-        ["q", "지금 우리반 전원 값 알려줘.", "V_1", [["지금 우리반 전원 값", "값"]]],
-        ["r", "V_1", "예) '지금 우리반 에어컨은 켜져 있습니다.'"]
+        ["q", "지금 우리반 전원 값 알려줘.","지금 우리반 전원 값","값"],
+        ["r", "예) '지금 우리반 에어컨은 켜져 있습니다.'"]
     ]
 }"
 
@@ -195,8 +197,8 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
         "Target": ["전원"],
     },
     "Instruction Set": [
-        ["q", "지금 앞반 전원 값 알려줘.", "V_1", [["지금 앞반 전원 값 알려줘", "값"]]],
-        ["r", "V_1", "예) '지금 앞반 에어컨은 꺼져 있습니다.'"]
+        ["q", "지금 앞반 전원 값 알려줘.","지금 앞반 전원 값", "값"],
+        ["r", "예) '지금 앞반 에어컨은 꺼져 있습니다.'"]
     ]
 }"
 
@@ -213,8 +215,8 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
         "Target": ["전력"],
     },
     "Instruction Set": [
-        ["q", "지금 우리집 전력사용량 알려줘.", "V_1", [["지금 우리집 전력사용량 알려줘", "값"]]],
-        ["r", "V_1", "예) '지금 우리집 전력사용량은 100kWh입니다.'"]
+        ["q", "지금 우리집 전력사용량 알려줘.","지금 우리집 전력사용량", "값"],
+        ["r", "예) '지금 우리집 전력사용량은 100kWh입니다.'"]
     ]
 }"
 
@@ -231,8 +233,8 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
         "Target": ["전원"],
     },
     "Instruction Set": [
-        ["q", "어제 우리반 전원 값 알려줘.", "V_1", [["어제 우리반 전원 값 알려줘", "값"]]],
-        ["r", "V_1", "예) '어제 우리반 전원은 꺼져 있습니다.'"]
+        ["q", "어제 우리반 전원 값 알려줘.","어제 우리반 전원 값", "값"],
+        ["r", "예) '어제 우리반 전원은 꺼져 있습니다.'"]
     ]
 }"
 
@@ -249,8 +251,8 @@ r: Response를 나타내는 flag. 두 번째 인자는 Response를 제작하는 
         "Target": ["온도"],
     },
     "Instruction Set": [
-        ["q", "지금 우리반과 옆반 실내온도 알려줘.", "V_1", [["지금 우리반 실내온도 알려줘", "값"], ["지금 옆반 실내온도 알려줘", "값"]]],
-        ["r", "V_1", "예) '지금 우리반의 실내온도는 26도이고, 옆반의 실내온도는 25도입니다.'"]
+        ["q","지금 우리반 실내온도 알려줘","우리반 실내온도","값"], ["q","지금 옆반 실내온도 알려줘","옆반 실내온도","값"],
+        ["r", "예) '지금 우리반의 실내온도는 26도이고, 옆반의 실내온도는 25도입니다.'"]
     ]
 }"
 """

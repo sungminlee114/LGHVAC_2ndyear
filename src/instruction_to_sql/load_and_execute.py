@@ -50,13 +50,13 @@ class InstructionToSql:
         3. WHERE Clause:
         - Apply filters using conditions from `semantic['Temporal']` to specify date ranges or timestamps.
         - Use subqueries or joins to match `idu_id` based on room names from `idu_t`, reflecting `semantic['Spatial']`.
-        - Ensure data integrity by checking for NULL and 'NaN' values. Very important! But you don't have to include this on Boolean.
+        - Always incude for NULL and 'NaN' values. Very important! But you don't have to include this on Boolean.
 
         4. GROUP BY Clause:
         - Include a GROUP BY clause if needed based on the aggregation or grouping requirements.
 
         5. ORDER BY Clause:
-        - Include sorting criteria based on the result of aggregate functions when applicable.
+        - Include sorting criteria based on the result of aggregate functions when applicable. see the semantic['Modality']
 
         6. Handling Multiple Tables:
         - Clearly define how each table connects, using JOINs or subqueries to manage complex relationships.
