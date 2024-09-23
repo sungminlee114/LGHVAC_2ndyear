@@ -191,28 +191,43 @@ def execute_query(semantic:Semantic, instruction:Instruction, execution_state:di
     for semantics in [semantic.Temporal, semantic.Spatial, semantic.Modality]:
         for i, (k, v) in enumerate(semantics):
             instruction.content = instruction.content.replace(k, v)
-    
+            for mapping in instruction.variable_mapping :
+                mapping[0]=mapping[0].replace(k,v)
+    print(instruction.variable_mapping)
     # If the instruction content contains "None", skip the execution.
+    
     if "None" in instruction.content:
         execution_state['var'][instruction.save_variable] = None
         # logger.info(f"Instruction content contains 'None': {instruction.content}")
         return
     else:
-        # Run the query generation LLM model
-        sql_query = InstructionToSql.execute(instruction, str(semantic))
         
-        # Execute query
-        sql_result = DBManager.execute_sql(sql_query)
-        if len(sql_result) > 0:
-            sql_result = sql_result[0]
-        logger.info(f"sql_query: {sql_query}, sql_result: {sql_result}")
+        for mapping in instruction.variable_mapping :
+            print(mapping)
+            current_instruction = mapping[0]
+            print(current_instruction)
+            sql_query = InstructionToSql.execute(current_instruction, str(semantic))
+            print(sql_query)
+            sql_result = DBManager.execute_sql(sql_query)
+            if len(sql_result) > 0:
+                sql_result = sql_result[0]
+                mapping[1] = sql_result
+            else :
+                mapping[1] = None
+                break
+        execution_state['var'][instruction.save_variable] = mapping[1]
+             
+             
+        # Run the query generation LLM model
+       
 
         # Save the query result in execution state.
-        execution_state['var'][instruction.save_variable] = sql_result
-        logger.info(f"Saving {sql_result} to {instruction.save_variable} => {execution_state['var'][instruction.save_variable]}")
-        return sql_query
+        #execution_state['var'][instruction.save_variable] = sql_result
+        #logger.info(f"Saving {sql_result} to {instruction.save_variable} => {execution_state['var'][instruction.save_variable]}")
+        print(instruction.variable_mapping)
+        return 
 
-def execute_response_generation(semantic:Semantic, instruction:Instruction, query_mapping : list[tuple[str, str]], execution_state:dict, user_input:str, current_metadata:dict,sql_query:any):
+def execute_response_generation(instruction:Instruction, specific_query,query_mapping : list[list[str, str]], execution_state:dict, user_input:str, current_metadata:dict):
     """
     Generate a response based on the provided instruction.
     
@@ -226,13 +241,12 @@ def execute_response_generation(semantic:Semantic, instruction:Instruction, quer
     Returns:
         - response (str): The generated response.
     """
-    
     var = execution_state['var'][instruction.using_varables]
-    if var is None or len(var)==0:
+    if var is None :
         response = "죄송합니다. 해당 정보를 찾을 수 없습니다. (이유 설명 필요)"
     else:
-        response = ResponseGeneration.execute(str(var), instruction, query_mapping, user_input, current_metadata, sql_query)
-    
+      response = ResponseGeneration.execute(instruction,specific_query,query_mapping, user_input, current_metadata)
+      print(instruction.example)
     return response
 
 def execute_instruction_set(semantic:Semantic, instruction_set:list[Instruction], user_input:str, current_metadata:dict, response_function:Callable):
@@ -256,11 +270,14 @@ def execute_instruction_set(semantic:Semantic, instruction_set:list[Instruction]
     
         if instruction.operation_flag == "q":
             # Execute query
-            sql_query = execute_query(semantic, instruction, execution_state)
+            execute_query(semantic, instruction, execution_state)
             query_mapping = instruction.variable_mapping
+            specific_query = instruction.content
+            
             
         elif instruction.operation_flag == "r":
             # Execute response generation
-            response = execute_response_generation(semantic, instruction, query_mapping, execution_state, user_input, current_metadata,sql_query)
+           
+            response = execute_response_generation(instruction, specific_query ,query_mapping, execution_state, user_input, current_metadata)
             response_function(response)
             

@@ -6,9 +6,10 @@ from src.input_to_instructions.load_and_execute import Instruction, Semantic
 class InstructionToSql:
 
     @classmethod
-    def execute(cls, instruction: Instruction, semantic: Semantic):
-        question, variable_mapping = instruction.content, instruction.variable_mapping
+    def execute(cls, current_instruction:str, semantic: Semantic):
+        question = current_instruction
         
+          
         prompt = """user
 
         Generate a SQL query to answer this question: `{question}`
@@ -33,74 +34,55 @@ class InstructionToSql:
                 CONSTRAINT idu_t_pkey PRIMARY KEY (id)
             )
 
-        The result of the SQL query should follow the order and count of the variable mapping. It consists of list of ("representation", "target_type")
-           variable mapping: {variable_mapping}
 
         Prior information:
             {semantic}
-        
-        Prior information usage:
-            Replace t[0] in question to t[1] for t in semantic['Temporal']
-            Replace s[0] in question to s[1] for s in semantic['Spatial']
-            Replace m[0] in question to m[1] for m in semantic['Modality']
+   
             
         SQL Query Construction Linked to Semantic
         1. SELECT Clause:
-        - Connection to Semantic: Select columns based on `semantic['Target']`, specifying the values to retrieve, such as the date and the result of an aggregate function (e.g., AVG, MAX).
+        - Based on `semantic['Operation']`, identify whether to use aggregate functions (e.g., AVG, MAX, MIN) or simple column selections.
+        - Specify columns from `semantic['Target']`, such as temperature differences, maximum temperatures, etc.
 
         2. FROM Clause:
-        - Connection to Semantic: Data is sourced from the `data_t` table, which contains measurements relevant to the `Modality` (e.g., temperature).
+        - Use `data_t` as the primary table. If necessary, join with `idu_t` or other relevant tables based on the context.
 
         3. WHERE Clause:
-        - Connection to Semantic:
-            - Timestamp Condition: Filter records using conditions derived from `semantic['Temporal']`, such as a specific date or a date range.
-            - Room ID Filter: Use a subquery to select the `idu_id` based on the specific name from `idu_t`, linked to `semantic['Spatial']`.
-            - Data Integrity: It is very important. Ensure the selected column is not NULL and not 'NaN'. But if selected column is boolean type, then do not include this.
+        - Apply filters using conditions from `semantic['Temporal']` to specify date ranges or timestamps.
+        - Use subqueries or joins to match `idu_id` based on room names from `idu_t`, reflecting `semantic['Spatial']`.
+        - Ensure data integrity by checking for NULL and 'NaN' values. Very important! But you don't have to include this on Boolean.
 
         4. GROUP BY Clause:
-        - This clause applies only when the operation involves statistical operation like avg, argmax.
+        - Include a GROUP BY clause if needed based on the aggregation or grouping requirements.
 
         5. ORDER BY Clause:
-        -  This clause applies only when the operation involves statistical operation like avg, argmax.
+        - Include sorting criteria based on the result of aggregate functions when applicable.
 
-        6. Flexibility in Column Selection:
-        - Connection to Semantic: `dt.column_name` and `dt.other_column` can be the same or different, allowing for varied analysis and presentation of dat
-        7. Only output the SQL query itself without any other sentences or words.
-        
-        Following columns can be used as dt.column_name and dt.other_column in your SQL queries. 
+        6. Handling Multiple Tables:
+        - Clearly define how each table connects, using JOINs or subqueries to manage complex relationships.
+
+        7. Only output the SQL query itself without any additional sentences or words. important!
+
+        The following columns can be used as dt.column_name and dt.other_column in your SQL queries:
             id: The unique identifier for each record (integer).
             idu_id: The identifier for the associated room or unit (integer).
             roomtemp: The room temperature (double precision).
             settemp: The set temperature (double precision).
-            oper: A boolean indicating the operational status (e.g., true or false).  false means "꺼짐", true means "켜짐".
+            oper: A boolean indicating the operational status (e.g., true or false).
             timestamp: The timestamp when the record was created (timestamp without time zone).
 
-        - Correct answer:  
-                            '''sql
-                            SELECT dt.column_name, AGG_FUNC(dt.other_column) AS aggregate_value
-                            FROM data_t dt
-                            WHERE (dt."timestamp" = 'specific_timestamp' OR dt."timestamp" BETWEEN 'start_date' AND 'end_date')
-                            AND dt.idu_id IN (
-                                SELECT id
-                                FROM idu_t
-                                WHERE name = 'specific_name'
-                            )
-                            AND dt.column_name IS NOT NULL
-                            AND dt.column_name IS DISTINCT FROM 'NaN'
-                            GROUP BY dt.idu_id
-                            ORDER BY aggregate_value [ASC|DESC];  -- This allows you to specify the order as needed.         
-       Example :
+        Example :
        - question : 우리반에서 가장 더웠던 날이 언제야?
        - semantic : Semantic(Temporal=[('이번 달', '2022-09-01 00:00:00 ~ 2022-09-30 23:59:59')], Spatial=[('우리반', '01_IB5')], Modality=[('실내온도', 'roomtemp')], Operation=['최고'], Target=['날짜'])
        - variable_mapping : [('우리반에서 가장 더웠던 날', '날짜')]
        - Reasoning Process
-           1. SELECT Clause: The SELECT clause is informed by the Target in the semantic, which specifies that we want to retrieve the date and the maximum temperature; thus, we select the date and MAX(dt.roomtemp).
+           1. SELECT Clause: The SELECT clause is informed by the Target in the semantic, which specifies that we want to retrieve the date; thus, we select the date.
            2. FROM Clause: The FROM clause references the data_t table, which contains the relevant temperature data and aligns with the Modality indicating we are measuring room temperature.
            3. WHERE Clause: In the WHERE clause, we filter the results based on the timestamp range corresponding to the Temporal element, which defines "이번달" (this month). We also include a subquery to filter by idu_id, reflecting the Spatial element for the room "우리반" (01_IB5). Additionally, we ensure that roomtemp is neither NULL nor 'NaN' to maintain data integrity.
-           4. GROUP BY Clause: The GROUP BY clause is used to aggregate temperatures by date, aligning with the Operation that indicates we want to find the maximum value (argmax).
-           5. ORDER BY Clause: The ORDER BY clause sorts the results by maximum temperature, making it easy to identify the hottest day.
+           4. GROUP BY Clause: The GROUP BY clause is informed by the Target, which indicates we want to find the date. We will group the data by dt."timestamp" to aggregate temperature readings by each date.
+           5. ORDER BY Clause: The ORDER BY clause utilizes the Operation element, which specifies "highest" (or similar terms). We sort the results by maximum temperature to identify the hottest day easily. Specifically, we can use MAX(dt.roomtemp) to determine the highest temperature for each date.
            6. LIMIT Clause: Finally, the LIMIT 1 clause ensures we return only the single hottest day, directly addressing the user's request for the maximum temperature in the specified timeframe and room.
-        - Correct answer :  SELECT dt."timestamp"::date AS date, MAX(dt.roomtemp) AS max_temp
+        - Correct answer :  SELECT dt."timestamp"::date AS date
                             FROM data_t dt
                             WHERE dt."timestamp" BETWEEN '2022-09-01 00:00:00' AND '2022-09-30 23:59:59'
                             AND dt.idu_id IN (
@@ -111,14 +93,75 @@ class InstructionToSql:
                             AND dt.roomtemp IS NOT NULL
                             AND dt.roomtemp IS DISTINCT FROM 'NaN'
                             GROUP BY date
-                            ORDER BY max_temp DESC
+                            ORDER BY MAX(dt.roomtemp) DESC
                             LIMIT 1;
+                
+        Example : 
+       - question : 우리반과 옆반의 현재온도 차이 알려줘
+       - semantic : Semantic(Temporal=[('지금', '2022-09-30 12:00:00')], Spatial=['우리반', '옆반'], Modality=['실내온도'], Operation=['차이'], Target=['온도'])
+       - variable_mapping : [('지금 우리반 실내온도 차이', '온도')]
+       - Reasoning Process
+        1. SELECT Clause: The `Target` specifies "온도" (temperature), indicating we need to calculate the temperature difference between the two rooms. We will select the absolute difference of the room temperatures: `ABS(dt1.roomtemp - dt2.roomtemp)`.
+        2. FROM Clause: We will join the `data_t` table on itself, using `dt1` for "우리반" (01_IB5) and `dt2` for "옆반" (01_IB7). This approach allows us to directly compare the temperatures from both rooms for the same timestamp.
+        3. WHERE Clause:
+            - The `Temporal` element indicates we need to filter records for the current timestamp. We ensure both instances (dt1 and dt2) have timestamps matching '2022-09-30 12:00:00'.
+            - The `Spatial` information specifies which rooms to look at, filtering `dt1` for "우리반" (01_IB5) and `dt2` for "옆반" (01_IB7) by matching the `idu_id`.
+            - We check that the room temperature values in both instances are neither NULL nor 'NaN'.
+        4. GROUP BY Clause: Not needed since we are calculating a single temperature difference.
+        5. ORDER BY Clause: Not necessary since we are calculating a single temperature difference.
 
+        - Correct Answer:
+                SELECT ABS(dt1.roomtemp - dt2.roomtemp) 
+                FROM data_t dt1
+                JOIN data_t dt2 ON dt1."timestamp" = dt2."timestamp"
+                WHERE 
+                    dt1.idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5') 
+                    AND dt2.idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7') 
+                    AND dt1."timestamp" = '2022-09-30 12:00:00' 
+                    AND dt1.roomtemp IS NOT NULL 
+                    AND dt1.roomtemp IS DISTINCT FROM 'NaN' 
+                    AND dt2.roomtemp IS NOT NULL 
+                    AND dt2.roomtemp IS DISTINCT FROM 'NaN';
+                            
+        Example : 
+        - question : 이번달 우리반의 온도 평균과 옆반의 온도평균의 차이 알려줘
+        - semantic : Semantic(Temporal=[('이번달', '2022-09-01 00:00:00 ~ 2022-09-30 23:59:59')], Spatial=['우리반', '옆반'], Modality=['실내온도'], Operation=['평균', '차이'], Target=['온도'])
+        - variable_mapping : [('이번달 우리반 실내온도 평균', '온도'), ('이번달 옆반 실내온도 평균', '온도'), ('이번달 우리반과 옆반 실내온도 평균 차이', '차이')]])
+        - Reasoning Process
+        Reasoning Process:
+            1. SELECT Clause: The Target specifies "온도" (temperature), so we will select the difference of the average temperatures: AVG(dt1.roomtemp) - AVG(dt2.roomtemp).
+            2. FROM Clause: We will join the data_t table on itself. We use dt1 for "우리반" and dt2 for "옆반" to compare their average temperatures, as we need to match timestamps for averaging.
+            3. WHERE Clause:
+            - The Temporal information specifies that we need records for the current month, so we set the timestamp range accordingly.
+            - We filter dt1 for "우리반" (01_IB5) and dt2 for "옆반" (01_IB7) by matching the idu_id.
+            - Both roomtemp values must be neither NULL nor 'NaN'.
+            4. GROUP BY Clause: We will group by the identifiers for both rooms to ensure we get the correct averages.
+            5. ORDER BY Clause: Not necessary since we are interested in the difference between averages.
+        - Correct Answer : 
+            SELECT 
+                AVG(dt1.roomtemp) - AVG(dt2.roomtemp) 
+            FROM 
+                data_t dt1
+            JOIN 
+                data_t dt2 ON dt1."timestamp" = dt2."timestamp"
+            WHERE 
+                dt1.idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5') 
+                AND dt2.idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7') 
+                AND dt1."timestamp" BETWEEN '2022-09-01 00:00:00' AND '2022-09-30 23:59:59' 
+                AND dt1.roomtemp IS NOT NULL 
+                AND dt1.roomtemp IS DISTINCT FROM 'NaN' 
+                AND dt2.roomtemp IS NOT NULL 
+                AND dt2.roomtemp IS DISTINCT FROM 'NaN'
+            GROUP BY 
+                dt1.idu_id, dt2.idu_id;
+
+        
         The following SQL query best answers the question `{question}`:
         ```sql
+
         """
         # semantic을 포함하여 prompt를 업데이트
-        updated_prompt = prompt.format(question=question, semantic=semantic, variable_mapping=variable_mapping)
+        updated_prompt = prompt.format(question=question, semantic=semantic)
         inputs = cls.tokenizer(updated_prompt, return_tensors="pt").to("cuda")
         generated_ids = cls.model.generate(
             **inputs,
