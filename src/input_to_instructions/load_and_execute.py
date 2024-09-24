@@ -280,8 +280,9 @@ q tag 를 가진 instruction 의 경우, instruction[3] 에 sql 을 위한 세�
                     Operation=["diff"],
                     Target=["온도"]
                 ), instructions: [
-                    Instruction(operation_flag="q", content="오늘 우리반과 옆반의 온도차이 알려줘", save_variable="V_1"),
-                    Instruction(operation_flag="r", using_varables="V_1", example="예 ) '우리반과 옆반의 온도차이는 2도입니다'")
+                    Instruction(operation_flag="q", content="오늘 우리반 온도 알려줘", save_variable="오늘 우리반 온도","값"),
+                    Instruction(operation_flag="q", content="오늘 옆반 온도 알려줘", save_variable="오늘 옆반 온도","값"),
+                    Instruction(operation_flag="r", example="예 ) '우리반과 옆반의 온도차이는 2도입니다'")
                 ]
 
         """
@@ -330,7 +331,8 @@ q tag 를 가진 instruction 의 경우, instruction[3] 에 sql 을 위한 세�
         semantic = Semantic(result_dict["Input Semantic Parsing"])
         instructions = [Instruction(instruction) for instruction in result_dict["Instruction Set"]]        
                 
-        logger.info(f"semantic: {semantic}, instructions: {instructions}")
+        logger.info(f"semantic: {semantic}")
+        logger.info(f"instructions: {instructions}")
         
         return semantic, instructions
 

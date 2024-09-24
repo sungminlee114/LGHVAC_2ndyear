@@ -21,7 +21,7 @@ class ResponseGeneration:
     만약 질문에 알맞은 값이 없다면, 답변 예시를 그대로 사용하지 말고 답변할 수 없다고 해줘.
     대답을 추론하는 과정은 말할 필요 없어. 그냥 결론만 말해줘.
     추론 과정은 답변하지 않지만 앞에 질몬이 뭐였는지는 요약해줘.
-    
+    답변은 한번만 해줘.
     '''
  
     
@@ -31,21 +31,21 @@ class ResponseGeneration:
         Generate a response based on the SQL result and user input.
 
         Parameters:
-        - sql_result (str): The result from a SQL query to be included in the response.
-        - user_input (str): The user's question that needs to be addressed.
-        - current_metadata (dict): Additional metadata about the current context (not used in this method).
-        - sql_query (any) : The SQL query string that was executed to obtain the `sql_result`. This can be useful for debugging or for generating responses that reference the original query.
-
+        - instruction (Instruction): An object containing details for generating the response, including an example response format.
+        - query_mapping (list[list[str, str]]): A mapping that links specific questions to their corresponding answers derived from SQL results.
+        - user_input (str): The user's question that needs to be addressed in the response.
+        - current_metadata (dict): Additional metadata about the current context, including mappings for user-friendly output (e.g., `idu_mapping`).
 
         Returns:
         - str: A generated response combining the SQL result and user input in a polite and natural manner.
         """
         
+        formatted_metadata = formatted_metadata = "\n".join([f"\t\t{key}: {value}" for key, value in current_metadata.items()])
         
         INPUT = f'''
         원본 질문: {user_input}
         query_mapping: {query_mapping}
-        current_metadata: {current_metadata}
+        current_metadata: \n{formatted_metadata}
         답변 예시: {instruction.example}
         '''
         

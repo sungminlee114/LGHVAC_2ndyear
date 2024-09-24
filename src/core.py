@@ -111,8 +111,6 @@ def get_current_metadata() -> dict:
         "idu_mapping": {
             "01_IB5": ["우리반"],
             "01_IB7": ["옆반"],
-            "1" : ["우리반"],
-            "2" : ["옆반"]
         },
         "modality_mapping": {
             "roomtemp": ["실내온도"],
@@ -147,8 +145,9 @@ def input_to_instruction_set(user_input, current_metadata):
                 Type_Quantity=["diff"],
                 Target=["온도"]
             ), instructions: [
-                Instruction(operation_flag="q", content="오늘 우리반과 옆반의 온도차이 알려줘", save_variable="V_1"),
-                Instruction(operation_flag="r", using_varables="V_1", example="예 ) '우리반과 옆반의 온도차이는 2도입니다'")
+                    Instruction(operation_flag="q", content="오늘 우리반 온도 알려줘", save_variable="오늘 우리반 온도","값"),
+                    Instruction(operation_flag="q", content="오늘 옆반 온도 알려줘", save_variable="오늘 옆반 온도","값"),
+                    Instruction(operation_flag="r", example="예 ) '우리반과 옆반의 온도차이는 2도입니다'")
             ]
     """
     semantic, instructions = InputToInstruction.execute(user_input, current_metadata)
@@ -171,20 +170,17 @@ def input_to_instruction_set(user_input, current_metadata):
                 break
         semantic.Modality[m_i] = (m, m_col)
     
-    
+    logger.info(f"semantic: {semantic}")
     return semantic, instructions
 
-def execute_query(semantic:Semantic, instruction:Instruction, execution_state:dict):
+def execute_query(semantic:Semantic, instruction:Instruction):
     """
     Execute a SQL query based on the provided semantic information and instruction.
 
     Parameters:
     - semantic (Semantic): Contains semantic information that defines the context of the query.
     - instruction (Instruction): An object detailing the instruction for executing the query, including content to be transformed into SQL.
-    - execution_state (dict): A dictionary that maintains the state during execution, including variables to store results.
-
-    Returns:
-    - sql_query (str): The generated SQL query that was executed.
+  
     """
 
     # Replace semantics in the instruction content to specific values.
@@ -212,28 +208,17 @@ def execute_query(semantic:Semantic, instruction:Instruction, execution_state:di
         # Save the query result in execution state.
         instruction.value = sql_result
         return 
-
-             
-             
-        # Run the query generation LLM model
-       
-
-        # Save the query result in execution state.
-        #execution_state['var'][instruction.save_variable] = sql_result
-        #logger.info(f"Saving {sql_result} to {instruction.save_variable} => {execution_state['var'][instruction.save_variable]}")
-  
     return 
+ 
 
 def execute_response_generation(instruction:Instruction, query_mapping : list[list[str, str]], user_input:str, current_metadata:dict):
     """
     Generate a response based on the provided instruction.
     
-    semantic: The semantic information of the input text.
     instruction: An Instruction object containing the response generation details.
-    execution_state: A dictionary that stores the state during the execution, including variables.
+    query_mapping (list[list[str, str]]): A mapping that associates SQL query results with their corresponding variable names.
     user_input: The user's input, which may influence the response.
     current_metadata: Additional metadata that may be relevant to response generation.
-    sql_query (any): The SQL query that was executed to obtain the result, useful for context in the response.
     
     Returns:
         - response (str): The generated response.
@@ -243,7 +228,7 @@ def execute_response_generation(instruction:Instruction, query_mapping : list[li
             response = "죄송합니다. 해당 정보를 찾을 수 없습니다. (이유 설명 필요)"
         else:
             response = ResponseGeneration.execute(instruction, query_mapping, user_input, current_metadata)
-            print(instruction.example)
+        
     return response
 
 def execute_instruction_set(semantic:Semantic, instruction_set:list[Instruction], user_input:str, current_metadata:dict, response_function:Callable):
@@ -256,19 +241,15 @@ def execute_instruction_set(semantic:Semantic, instruction_set:list[Instruction]
     current_metadata: Additional metadata that may be relevant to the execution.
     """
     
-    # This holds the state(e.x., variables) of the execution.
-    execution_state = {
-        "var": defaultdict(lambda: None) # This holds the variables generated during the execution.
-    }
     
-    logger.info(semantic)
     query_mapping = []
     for instruction in instruction_set:
+        print('')
         logger.info(f"Executing instruction: {instruction}")
         
         if instruction.operation_flag == "q":
             # Execute query
-            execute_query(semantic, instruction, execution_state)
+            execute_query(semantic, instruction)
             query_mapping.append([instruction.save_variable,instruction.value])
             
         elif instruction.operation_flag == "r":
