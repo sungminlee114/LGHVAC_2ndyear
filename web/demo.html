@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LG전자-연세대 LLM 중간 데모</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Pretendard', sans-serif;
             background-color: #f4f4f9;
             margin: 0;
             padding: 0;
@@ -15,25 +16,20 @@
             align-items: center;
             height: 100vh;
         }
-        
+
         .chat-container {
             background-color: #fff;
-            width: 400px;
+            width: 100%;
+            height: 90%;
+            max-width: 800px;
+            max-height: 90%;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
         }
-
-        .chat-header {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-align: center;
-            color: #da0f47;
-        }
-
+        
         .chat-window {
             flex: 1;
             padding: 10px;
@@ -41,22 +37,53 @@
             border-radius: 5px;
             overflow-y: auto;
             margin-bottom: 10px;
+            height: 100%;
+            
+            /* Flex 컨테이너로 설정 */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* 기본적으로 왼쪽 정렬 */
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #da0f47;
+        }
+
+        .chat-header img {
+            height: 40px; /* 원하는 높이로 조절 가능 */
+            margin-left: 10px;
         }
 
         .chat-message {
             margin: 5px 0;
+            padding: 10px;
+            border-radius: 15px;
+            max-width: 60%;
+            display: inline-block;
+            word-wrap: break-word;
+            position: relative;
         }
 
         .user-message {
-            text-align: right;
-            color: blue;
-        }
-
-        .bot-message {
-            text-align: left;
-            color: green;
+            background-color: #cce5ff;
+            color: #004085;
+            text-align: left; /* 텍스트는 왼쪽 정렬 */
+            align-self: flex-end; /* 오른쪽 끝으로 배치 */
         }
         
+        .bot-message {
+            background-color: #e2ffe2;
+            color: #155724;
+            text-align: left;
+            /* align-self: flex-start; 기본값이므로 생략 가능 */
+        }
+
         .input-container {
             display: flex;
             justify-content: space-between;
@@ -89,7 +116,13 @@
 <body>
 
     <div class="chat-container">
-        <div class="chat-header">LG전자-연세대 LLM 중간 데모</div>
+        <div class="chat-header">
+            LG전자-연세대 HVAC LLM 시스템 중간 데모
+            <div style="margin-left: auto;">
+                <img src="lg_logo.png" alt="LG Logo">
+                <img src="yonsei_logo.png" alt="Yonsei Logo">
+            </div>
+        </div>
 
         <div class="chat-window" id="chatWindow">
             <!-- Chat messages will appear here -->
@@ -102,6 +135,12 @@
     </div>
 
     <script>
+        document.getElementById('sentenceInput').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                sendRequest();
+            }
+        });
+
         // Load chat history from local storage
         window.onload = function() {
             const chatHistory = localStorage.getItem('chatHistory');
@@ -162,12 +201,6 @@
             };
 
             eventSource.onerror = function(error) {
-                // const errorMessage = document.createElement('div');
-                // errorMessage.classList.add('chat-message', 'bot-message');
-                // errorMessage.textContent = "Error: Unable to reach server!";
-                // chatWindow.appendChild(errorMessage);
-
-                // Save chat history to local storage
                 saveChatHistory();
 
                 eventSource.close();
