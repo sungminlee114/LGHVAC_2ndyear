@@ -19,7 +19,7 @@
 
         .chat-container {
             background-color: #fff;
-            width: 100%;
+            width: 90%;
             height: 90%;
             max-width: 800px;
             max-height: 90%;
@@ -53,6 +53,7 @@
             font-weight: bold;
             margin-bottom: 10px;
             color: #da0f47;
+            flex-wrap: wrap;
         }
 
         .chat-header img {
@@ -64,10 +65,11 @@
             margin: 5px 0;
             padding: 10px;
             border-radius: 15px;
-            max-width: 60%;
+            max-width: 80%;
             display: inline-block;
             word-wrap: break-word;
             position: relative;
+            font-size: 16px;
         }
 
         .user-message {
@@ -84,32 +86,94 @@
             /* align-self: flex-start; 기본값이므로 생략 가능 */
         }
 
+        .system-message {
+            background-color: #fff3cd;
+            color: #856404;
+            text-align: center;
+            align-self: center;
+            max-width: 90%;
+            font-style: italic;
+        }
+
         .input-container {
             display: flex;
             justify-content: space-between;
+            align-items: stretch; /* Ensure elements stretch to the same height */
+            flex-wrap: wrap;
         }
 
         .input-container input[type="text"] {
             flex: 1;
+            min-width: 200px;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 16px;
+            box-sizing: border-box;
         }
 
         .input-container button {
             background-color: #da0f47;
             color: white;
             border: none;
-            padding: 10px 15px;
+            padding: 0 15px; /* Adjusted padding for height consistency */
             border-radius: 5px;
             font-size: 16px;
             cursor: pointer;
             margin-left: 10px;
+            min-width: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Removed margin-top to align heights */
+            height: 100%; /* Make buttons match the input height */
         }
 
         .input-container button:hover {
             background-color: #c30e3f;
+        }
+
+        /* Style for the New Session button */
+        .input-container .new-session-button {
+            background-color: #4CAF50; /* Green color */
+        }
+
+        .input-container .new-session-button:hover {
+            background-color: #45a049;
+        }
+
+        /* Disabled button styles */
+        .input-container button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .chat-header {
+                font-size: 20px;
+            }
+
+            .input-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .input-container button {
+                margin-left: 0;
+                width: 100%;
+                height: 40px; /* Fixed height for mobile */
+                margin-top: 10px;
+            }
+
+            .input-container .new-session-button {
+                margin-top: 10px;
+            }
+
+            /* Ensure input and buttons have consistent height on mobile */
+            .input-container input[type="text"] {
+                height: 40px;
+            }
         }
     </style>
 </head>
@@ -118,7 +182,7 @@
     <div class="chat-container">
         <div class="chat-header">
             LG전자-연세대 HVAC LLM 시스템 중간 데모
-            <div style="margin-left: auto;">
+            <div style="margin-left: auto; display: flex; align-items: center;">
                 <img src="lg_logo.png" alt="LG Logo">
                 <img src="yonsei_logo.png" alt="Yonsei Logo">
             </div>
@@ -130,12 +194,18 @@
 
         <div class="input-container">
             <input type="text" id="sentenceInput" placeholder="Enter a message...">
-            <button onclick="sendRequest()">Send</button>
+            <button id="sendButton" onclick="sendRequest()">Send</button>
+            <button class="new-session-button" id="newSessionButton" onclick="newSession()">New Session</button>
         </div>
     </div>
 
     <script>
-        document.getElementById('sentenceInput').addEventListener('keyup', function(event) {
+        const sendButton = document.getElementById('sendButton');
+        const newSessionButton = document.getElementById('newSessionButton');
+        const sentenceInput = document.getElementById('sentenceInput');
+        const chatWindow = document.getElementById('chatWindow');
+
+        sentenceInput.addEventListener('keyup', function(event) {
             if (event.key === 'Enter') {
                 sendRequest();
             }
@@ -145,37 +215,34 @@
         window.onload = function() {
             const chatHistory = localStorage.getItem('chatHistory');
             if (chatHistory) {
-                document.getElementById('chatWindow').innerHTML = chatHistory;
+                chatWindow.innerHTML = chatHistory;
                 scrollChatWindow();
             }
         };
 
         function sendRequest() {
-            const sentence = document.getElementById('sentenceInput').value;
-            const chatWindow = document.getElementById('chatWindow');
+            const sentence = sentenceInput.value.trim();
 
             if (!sentence) {
                 return;
             }
 
             // Append user message to chat window
-            const userMessage = document.createElement('div');
-            userMessage.classList.add('chat-message', 'user-message');
-            userMessage.textContent = sentence;
-            chatWindow.appendChild(userMessage);
+            appendMessage('user', sentence);
 
             // Save to local storage
             saveChatHistory();
 
             // Clear the input field
-            document.getElementById('sentenceInput').value = '';
+            sentenceInput.value = '';
 
             // Scroll to the bottom
             scrollChatWindow();
 
             // Deactivate the send button and input field while waiting for response
-            document.querySelector('button').disabled = true;
-            document.querySelector('input').disabled = true;
+            sendButton.disabled = true;
+            newSessionButton.disabled = true;
+            sentenceInput.disabled = true;
 
             // Create a new EventSource to handle the stream
             const eventSource = new EventSource(`http://1.233.219.93:8002/process?sentence=${encodeURIComponent(sentence)}`);
@@ -184,13 +251,11 @@
                 // Append bot response to chat window
                 if (event.data === "finish") {
                     eventSource.close();
-                    document.querySelector('button').disabled = false;
-                    document.querySelector('input').disabled = false;
+                    sendButton.disabled = false;
+                    newSessionButton.disabled = false;
+                    sentenceInput.disabled = false;
                 } else {
-                    const botMessage = document.createElement('div');
-                    botMessage.classList.add('chat-message', 'bot-message');
-                    botMessage.textContent = event.data;
-                    chatWindow.appendChild(botMessage);
+                    appendMessage('bot', event.data);
 
                     // Save chat history to local storage
                     saveChatHistory();
@@ -201,22 +266,74 @@
             };
 
             eventSource.onerror = function(error) {
+                console.error("EventSource failed:", error);
+                // appendMessage('system', 'An error occurred while processing your request.');
+
+                // Save chat history to local storage
                 saveChatHistory();
 
                 eventSource.close();
-                document.querySelector('button').disabled = false;
-                document.querySelector('input').disabled = false;
+                sendButton.disabled = false;
+                newSessionButton.disabled = false;
+                sentenceInput.disabled = false;
             };
         }
 
         function scrollChatWindow() {
-            const chatWindow = document.getElementById('chatWindow');
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
 
         function saveChatHistory() {
-            const chatWindow = document.getElementById('chatWindow');
             localStorage.setItem('chatHistory', chatWindow.innerHTML);
+        }
+
+        // Function to append messages to the chat window
+        function appendMessage(type, text) {
+            const message = document.createElement('div');
+            message.classList.add('chat-message');
+
+            if (type === 'user') {
+                message.classList.add('user-message');
+            } else if (type === 'bot') {
+                message.classList.add('bot-message');
+            } else if (type === 'system') {
+                message.classList.add('system-message');
+            }
+
+            message.textContent = text;
+            chatWindow.appendChild(message);
+        }
+
+        // New Session function to clear chat history with confirmation
+        function newSession() {
+            const confirmNewSession = confirm("Are you sure you want to start a new session? This will clear the chat history.");
+            if (!confirmNewSession) {
+                return;
+            }
+
+            // Disable buttons during the process
+            sendButton.disabled = true;
+            newSessionButton.disabled = true;
+            sentenceInput.disabled = true;
+
+            // Clear local storage
+            localStorage.removeItem('chatHistory');
+
+            // Clear chat window
+            chatWindow.innerHTML = '';
+
+            // Removed the system message indicating a new session has started
+
+            // Save the new state to local storage
+            saveChatHistory();
+
+            // Scroll to the bottom
+            scrollChatWindow();
+
+            // Re-enable buttons
+            sendButton.disabled = false;
+            newSessionButton.disabled = false;
+            sentenceInput.disabled = false;
         }
     </script>
 
