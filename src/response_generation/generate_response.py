@@ -22,7 +22,7 @@ class ResponseGeneration:
     대답을 추론하는 과정은 말할 필요 없어. 그냥 결론만 말해줘.
     추론 과정은 답변하지 않지만 앞에 질몬이 뭐였는지는 요약해줘.
     답변은 한번만 해줘.
-    sql query 다음에 "assistant" 안나오도록 해줘. 중요해.
+    sql query 다음에 "assistant" 안나오도록 해줘. 
     '''
  
     
