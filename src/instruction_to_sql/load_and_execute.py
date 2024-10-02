@@ -9,7 +9,7 @@ class InstructionToSql:
     def execute(cls, current_instruction:str, semantic: Semantic):
         question = current_instruction
         print(question)
-          
+        print(semantic)  
         prompt = """user
 
         Generate a SQL query to answer this question: `{question}`

@@ -27,7 +27,7 @@ class ResponseGeneration:
  
     
     @classmethod
-    def execute(cls,instruction:Instruction, query_mapping, user_input: str, current_metadata: dict) -> str:
+    def execute(cls,full_semantic, instruction:Instruction, query_mapping, user_input: str, current_metadata: dict) -> str:
         """
         Generate a response based on the SQL result and user input.
 

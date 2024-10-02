@@ -151,30 +151,34 @@ def input_to_instruction_set(user_input, current_metadata):
                     Instruction(operation_flag="r", example="예 ) '우리반과 옆반의 온도차이는 2도입니다'")
             ]
     """
-    semantic, instructions = InputToInstruction.execute(user_input, current_metadata)
-    
-    # Map spatial context
-    for s_i, s in enumerate(semantic.Spatial):
-        s_idu = "None"
-        for idu, idu_repr in current_metadata['idu_mapping'].items():
-            if s in idu_repr:
-                s_idu = idu
-                break
-        semantic.Spatial[s_i] = (s, s_idu)
-    
-    # Map modality context
-    for m_i, m in enumerate(semantic.Modality):
-        m_col = "None"
-        for column, col_repr in current_metadata['modality_mapping'].items():
-            if m in col_repr:
-                m_col = column
-                break
-        semantic.Modality[m_i] = (m, m_col)
-    
-    logger.info(f"semantic: {semantic}")
-    return semantic, instructions
+    full_semantic, instructions = InputToInstruction.execute(user_input, current_metadata)
+    # Map spatial and modality context for each instruction's semantic
+    for instruction in instructions:
+        if instruction.operation_flag == "r":
+            continue  # Skip instructions with tag "r"
+        # Map spatial context for the instruction's semantic
+        for s_i, s in enumerate(instruction.semantic.Spatial):
+            s_idu = "None"
+            for idu, idu_repr in current_metadata['idu_mapping'].items():
+                if s in idu_repr:
+                    s_idu = idu
+                    break
+            instruction.semantic.Spatial[s_i] = (s, s_idu)
 
-def execute_query(semantic:Semantic, instruction:Instruction):
+        # Map modality context for the instruction's semantic
+        for m_i, m in enumerate(instruction.semantic.Modality):
+            m_col = "None"
+            for column, col_repr in current_metadata['modality_mapping'].items():
+                if m in col_repr:
+                    m_col = column
+                    break
+            instruction.semantic.Modality[m_i] = (m, m_col)
+
+   
+    logger.info(f"instructions: {instructions}")
+    return full_semantic, instructions
+
+def execute_query(instruction:Instruction):
     """
     Execute a SQL query based on the provided semantic information and instruction.
 
@@ -186,7 +190,7 @@ def execute_query(semantic:Semantic, instruction:Instruction):
     - sql_query (str): The generated SQL query.
     """
    # Replace semantics in the instruction content to specific values.
-    for semantics in [semantic.Temporal, semantic.Spatial, semantic.Modality]:
+    for semantics in [instruction.semantic.Temporal, instruction.semantic.Spatial, instruction.semantic.Modality]:
         for i, (k, v) in enumerate(semantics):
             instruction.content = instruction.content.replace(k, v)    
   
@@ -199,7 +203,7 @@ def execute_query(semantic:Semantic, instruction:Instruction):
         return
     else:
         # Run the query generation LLM model
-        sql_query = InstructionToSql.execute(instruction, str(semantic))
+        sql_query = InstructionToSql.execute(instruction, str(instruction.semantic))
         
         # Execute query
         sql_result = DBManager.execute_sql(sql_query)
@@ -212,7 +216,7 @@ def execute_query(semantic:Semantic, instruction:Instruction):
         return sql_query
  
 
-def execute_response_generation(instruction:Instruction, query_mapping : list[list[str, str]], user_input:str, current_metadata:dict):
+def execute_response_generation(full_semantic, instruction:Instruction, query_mapping : list[list[str, str]], user_input:str, current_metadata:dict):
     """
     Generate a response based on the provided instruction.
     
@@ -228,11 +232,11 @@ def execute_response_generation(instruction:Instruction, query_mapping : list[li
         if v is None :
             response = "죄송합니다. 해당 정보를 찾을 수 없습니다. (이유 설명 필요)"
         else:
-            response = ResponseGeneration.execute(instruction, query_mapping, user_input, current_metadata)
+            response = ResponseGeneration.execute(full_semantic, instruction, query_mapping, user_input, current_metadata)
         
     return response
 
-def execute_instruction_set(semantic:Semantic, instruction_set:list[Instruction], user_input:str, current_metadata:dict, response_function:Callable):
+def execute_instruction_set(full_semantic:Semantic,instruction_set:list[Instruction], user_input:str, current_metadata:dict, response_function:Callable):
     """
     Implement the agent to execute a set of instructions.
     
@@ -247,12 +251,12 @@ def execute_instruction_set(semantic:Semantic, instruction_set:list[Instruction]
         
         if instruction.operation_flag == "q":
             # Execute query
-            execute_query(semantic, instruction)
+            execute_query(instruction)
             query_mapping.append([instruction.save_variable,instruction.value])
             
         elif instruction.operation_flag == "r":
             # Execute response generation
-            response = execute_response_generation(instruction, query_mapping, user_input, current_metadata)
+            response = execute_response_generation(full_semantic, instruction, query_mapping, user_input, current_metadata)
             response_function(response)
             
 def execute_instruction_set_web(semantic:Semantic, instruction_set:list[Instruction], user_input:str, current_metadata:dict, response_function:Callable):
