@@ -43,4 +43,4 @@ Database=PerSite_DB, Schema=public에는 두 개의 테이블이 있음.
 ```
 
 ## Web demo
-http://1.233.219.93:8001/demo.html
+http://1.233.219.93:9010/web/demo.html

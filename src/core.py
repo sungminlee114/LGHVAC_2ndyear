@@ -6,6 +6,7 @@ __all__ = [
     "execute_query",
     "execute_response_generation",
     "execute_instruction_set",
+    "execute_instruction_set_web",
 ]
 
 import logging
@@ -180,7 +181,9 @@ def execute_query(semantic:Semantic, instruction:Instruction):
     Parameters:
     - semantic (Semantic): Contains semantic information that defines the context of the query.
     - instruction (Instruction): An object detailing the instruction for executing the query, including content to be transformed into SQL.
-  
+    
+    Returns:
+    - sql_query (str): The generated SQL query.
     """
 
     # Replace semantics in the instruction content to specific values.
@@ -207,8 +210,7 @@ def execute_query(semantic:Semantic, instruction:Instruction):
 
         # Save the query result in execution state.
         instruction.value = sql_result
-        return 
-    return 
+        return sql_query
  
 
 def execute_response_generation(instruction:Instruction, query_mapping : list[list[str, str]], user_input:str, current_metadata:dict):
@@ -240,11 +242,8 @@ def execute_instruction_set(semantic:Semantic, instruction_set:list[Instruction]
     user_input: The user's input, which may influence the execution flow.
     current_metadata: Additional metadata that may be relevant to the execution.
     """
-    
-    
     query_mapping = []
     for instruction in instruction_set:
-        print('')
         logger.info(f"Executing instruction: {instruction}")
         
         if instruction.operation_flag == "q":
@@ -254,7 +253,30 @@ def execute_instruction_set(semantic:Semantic, instruction_set:list[Instruction]
             
         elif instruction.operation_flag == "r":
             # Execute response generation
-            print(query_mapping)
             response = execute_response_generation(instruction, query_mapping, user_input, current_metadata)
             response_function(response)
             
+def execute_instruction_set_web(semantic:Semantic, instruction_set:list[Instruction], user_input:str, current_metadata:dict, response_function:Callable):
+    """
+    This function is a duplicate of execute_instruction_set, but with additional support for web-based responses.
+    """
+    query_mapping = []
+    for instruction in instruction_set:
+        logger.info(f"Executing instruction: {instruction}")
+        
+        yield from response_function(f"<h1 Executing instruction: {instruction}>")
+        if instruction.operation_flag == "q":
+            # Execute query
+            generated_sql = execute_query(semantic, instruction)
+            query_mapping.append([instruction.save_variable,instruction.value])
+            generated_sql = generated_sql.replace("\n", "").replace("         ", "")
+            yield from response_function("<h2 Generated SQL:>")
+            yield from response_function(generated_sql)
+            yield from response_function(f"<h2 Query result:>")
+            yield from response_function(str(instruction.value))
+        
+        elif instruction.operation_flag == "r":
+            # Execute response generation
+            response = execute_response_generation(instruction, query_mapping, user_input, current_metadata)
+            yield from response_function("<h2 Generated response:>")
+            yield from response_function(f"<h3 {response}>")

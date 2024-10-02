@@ -54,6 +54,9 @@ class Semantic:
     def __repr__(self) -> str:
         return f"Semantic(Temporal={self.Temporal}, Spatial={self.Spatial}, Modality={self.Modality}, Operation={self.Operation}, Target={self.Target})"
     
+    def pformat(self) -> str:
+        return f"Semantic(\n\tTemporal={self.Temporal},\n\tSpatial={self.Spatial},\n\tModality={self.Modality},\n\tOperation={self.Operation},\n\tTarget={self.Target})"
+    
 class InputToInstruction:
     
     PROMPT = \
@@ -318,6 +321,8 @@ q tag 를 가진 instruction 의 경우, instruction[3] 에 sql 을 위한 세�
             result_string = result_string[1:-1]
         
         assert result_string[0] == '{'
+        
+        result_string = result_string.replace('\\\"', '"')
         
         try:
             result_dict = eval(result_string)
