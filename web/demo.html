@@ -17,11 +17,15 @@
             height: 100vh;
         }
 
+        div {
+            display: inline-block;
+        }
+
         .chat-container {
             background-color: #fff;
             width: 90%;
             height: 90%;
-            max-width: 800px;
+            max-width: 1200px;
             max-height: 90%;
             padding: 20px;
             border-radius: 10px;
@@ -38,6 +42,9 @@
             overflow-y: auto;
             margin-bottom: 10px;
             height: 100%;
+            border-width: 1px;
+            border-style: solid;
+            border-color: #ddd;
             
             /* Flex 컨테이너로 설정 */
             display: flex;
@@ -61,29 +68,63 @@
             margin-left: 10px;
         }
 
+        .normal {
+            color: #000;
+
+        }
+
+        .h1 {
+            margin: 5px 0 0 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #da0f47;
+        }
+    
+        .h2 {
+            margin: 5px 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: #555;
+            text-decoration: underline;
+        }
+
+        .h3 {
+            color: #003876;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
         .chat-message {
             margin: 5px 0;
             padding: 10px;
             border-radius: 15px;
-            max-width: 80%;
+            border: #000;
+            max-width: 95%;
             display: inline-block;
             word-wrap: break-word;
             position: relative;
             font-size: 16px;
+            white-space: pre-wrap; /* Preserve newlines */
+            line-height: 23px;
+            /* Add these two lines */
+            background-color: #ffffff; /* White background */
+            color: #000000; /* Black text */
         }
 
         .user-message {
-            background-color: #cce5ff;
-            color: #004085;
             text-align: left; /* 텍스트는 왼쪽 정렬 */
             align-self: flex-end; /* 오른쪽 끝으로 배치 */
+            border-width: 1px;
+            border-style: solid;
+            border-color: #ddd;
         }
         
         .bot-message {
-            background-color: #e2ffe2;
-            color: #155724;
             text-align: left;
             /* align-self: flex-start; 기본값이므로 생략 가능 */
+            border-width: 1px;
+            border-style: solid;
+            border-color: #ddd;
         }
 
         .system-message {
@@ -148,8 +189,34 @@
             cursor: not-allowed;
         }
 
+        .suggestion-container {
+            display: flex;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        
+        .suggestion-button {
+            background-color: #e0e0e0; /* Gray background */
+            color: #000; /* Black text */
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 5px;
+            border-width: 1px;
+            border-style: solid;
+            border-color: #ddd;
+        }
+        
+        .suggestion-button:hover {
+            background-color: #cccccc;
+        }
+
         /* Responsive adjustments */
-        @media (max-width: 600px) {
+        @media (max-width: 1200px) {
             .chat-header {
                 font-size: 20px;
             }
@@ -192,6 +259,10 @@
             <!-- Chat messages will appear here -->
         </div>
 
+        <div class="suggestion-container">
+            <!-- Suggested input buttons will be added here -->
+        </div>
+
         <div class="input-container">
             <input type="text" id="sentenceInput" placeholder="Enter a message...">
             <button id="sendButton" onclick="sendRequest()">Send</button>
@@ -204,94 +275,169 @@
         const newSessionButton = document.getElementById('newSessionButton');
         const sentenceInput = document.getElementById('sentenceInput');
         const chatWindow = document.getElementById('chatWindow');
-
+        let waitingMessageElement = null;
+    
+        // 봇 응답을 누적할 변수
+        let botResponseBuffer = '';
+    
         sentenceInput.addEventListener('keyup', function(event) {
             if (event.key === 'Enter') {
                 sendRequest();
             }
         });
-
-        // Load chat history from local storage
+    
+        // 페이지 로드 시 채팅 기록 불러오기
         window.onload = function() {
             const chatHistory = localStorage.getItem('chatHistory');
             if (chatHistory) {
                 chatWindow.innerHTML = chatHistory;
                 scrollChatWindow();
             }
+    
+            createSuggestedButtons(); // 제안 버튼 생성 함수 호출 위치 이동
         };
-
+    
+        // XSS 공격 방지를 위한 HTML 이스케이프 함수
+        const escapeHTML = (str) => {
+            return str.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        };
+    
+        // 특수 태그를 HTML 요소로 포맷팅하는 함수
+        const formatText = (str) => {
+            const escapedStr = escapeHTML(str);
+    
+            // <h1 TEXT> 및 <h2 TEXT>를 대응하는 HTML 태그로 변환
+            let formattedStr = escapedStr
+                .replace(/&lt;h1 (.*?)&gt;/g, '<div class="h1">$1</div>')
+                .replace(/&lt;h2 (.*?)&gt;/g, '<div class="h2">$1</div>')
+                .replace(/&lt;h3 (.*?)&gt;/g, '<div class="h3">$1</div>')
+                .replace(/^((?!<div class="h[123]">).+)$/gm, '<div class="normal">$1</div>')
+                .replace(/&lt;br&gt;/g, '\n');
+    
+            return formattedStr;
+        };
+    
         function sendRequest() {
             const sentence = sentenceInput.value.trim();
-
+    
             if (!sentence) {
                 return;
             }
-
-            // Append user message to chat window
+    
+            console.log('User:', sentence);
+    
+            // 사용자 메시지를 채팅 창에 추가
             appendMessage('user', sentence);
-
-            // Save to local storage
+    
+            // 로컬 스토리지에 저장
             saveChatHistory();
-
-            // Clear the input field
+    
+            // 입력 필드 초기화
             sentenceInput.value = '';
-
-            // Scroll to the bottom
+    
+            // 채팅 창 아래로 스크롤
             scrollChatWindow();
-
-            // Deactivate the send button and input field while waiting for response
+    
+            // 응답 대기 중에 버튼과 입력 필드 비활성화
             sendButton.disabled = true;
             newSessionButton.disabled = true;
             sentenceInput.disabled = true;
+    
+            // 대기 메시지 표시
+            showWaitingMessage();
+    
+            // 봇 응답 버퍼 초기화
+            botResponseBuffer = '';
+    
+            // 봇의 메시지 박스를 생성하고 참조를 저장
+            const botMessageElement = appendMessage('bot', ''); // 초기에는 빈 메시지
+            // Hide the bot message box until the first response is received
+            botMessageElement.style.display = 'none';
 
-            // Create a new EventSource to handle the stream
-            const eventSource = new EventSource(`http://1.233.219.93:8002/process?sentence=${encodeURIComponent(sentence)}`);
-
+            // EventSource 생성하여 스트림 처리
+            const eventSource = new EventSource(`http://1.233.219.93:9011/process?sentence=${encodeURIComponent(sentence)}`);
+            
             eventSource.onmessage = function(event) {
-                // Append bot response to chat window
+                // 대기 메시지 제거
+                removeWaitingMessage();
+                botMessageElement.style.display = 'block'; // Show the bot message box
+    
                 if (event.data === "finish") {
                     eventSource.close();
                     sendButton.disabled = false;
                     newSessionButton.disabled = false;
                     sentenceInput.disabled = false;
-                } else {
-                    appendMessage('bot', event.data);
-
-                    // Save chat history to local storage
+    
+                    // 채팅 기록 저장
                     saveChatHistory();
-
-                    // Scroll to the bottom
+                } else {
+                    // 봇 응답 누적
+                    console.log('Data:', event.data);
+                    botResponseBuffer += event.data + '\n';
+    
+                    // 봇 메시지 요소의 내용을 업데이트
+                    botMessageElement.innerHTML = formatText(botResponseBuffer);
+    
+                    // 채팅 창 아래로 스크롤
                     scrollChatWindow();
                 }
             };
-
+    
             eventSource.onerror = function(error) {
                 console.error("EventSource failed:", error);
-                // appendMessage('system', 'An error occurred while processing your request.');
-
-                // Save chat history to local storage
+    
+                // 대기 메시지 제거
+                removeWaitingMessage();
+    
+                // 에러 메시지를 봇 메시지 요소에 표시
+                botMessageElement.innerText = 'An error occurred while processing your request.';
+    
+                // 채팅 기록 저장
                 saveChatHistory();
-
+    
                 eventSource.close();
                 sendButton.disabled = false;
                 newSessionButton.disabled = false;
                 sentenceInput.disabled = false;
             };
         }
-
+    
+        // 대기 메시지를 표시하는 함수
+        function showWaitingMessage() {
+            waitingMessageElement = document.createElement('div');
+            waitingMessageElement.classList.add('chat-message', 'system-message');
+            waitingMessageElement.style.backgroundColor = '#e0e0e0'; // 회색 배경
+            waitingMessageElement.style.color = '#555555'; // 회색 글자색
+            waitingMessageElement.innerText = '응답 대기 중...';
+            chatWindow.appendChild(waitingMessageElement);
+            scrollChatWindow();
+        }
+    
+        // 대기 메시지를 제거하는 함수
+        function removeWaitingMessage() {
+            if (waitingMessageElement) {
+                chatWindow.removeChild(waitingMessageElement);
+                waitingMessageElement = null;
+            }
+        }
+    
         function scrollChatWindow() {
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
-
+    
         function saveChatHistory() {
             localStorage.setItem('chatHistory', chatWindow.innerHTML);
         }
-
-        // Function to append messages to the chat window
+    
+        // 메시지를 채팅 창에 추가하는 함수
         function appendMessage(type, text) {
             const message = document.createElement('div');
             message.classList.add('chat-message');
-
+    
             if (type === 'user') {
                 message.classList.add('user-message');
             } else if (type === 'bot') {
@@ -299,42 +445,76 @@
             } else if (type === 'system') {
                 message.classList.add('system-message');
             }
-
-            message.textContent = text;
+    
+            // 포맷팅 적용
+            message.innerHTML = formatText(text);
+    
             chatWindow.appendChild(message);
+            scrollChatWindow(); // 메시지가 추가될 때마다 아래로 스크롤
+    
+            // 이후에 메시지 요소를 업데이트할 수 있도록 반환
+            return message;
         }
-
-        // New Session function to clear chat history with confirmation
+    
+        // 새 세션을 시작하는 함수 (확인 후 채팅 기록 삭제)
         function newSession() {
-            const confirmNewSession = confirm("Are you sure you want to start a new session? This will clear the chat history.");
+            const confirmNewSession = confirm("새 세션을 시작하시겠습니까? 채팅 기록이 삭제됩니다.");
             if (!confirmNewSession) {
                 return;
             }
-
-            // Disable buttons during the process
+    
+            // 처리 중에 버튼 비활성화
             sendButton.disabled = true;
             newSessionButton.disabled = true;
             sentenceInput.disabled = true;
-
-            // Clear local storage
+    
+            // 로컬 스토리지 지우기
             localStorage.removeItem('chatHistory');
-
-            // Clear chat window
+    
+            // 채팅 창 비우기
             chatWindow.innerHTML = '';
-
-            // Removed the system message indicating a new session has started
-
-            // Save the new state to local storage
+    
+            // 새로운 상태를 로컬 스토리지에 저장
             saveChatHistory();
-
-            // Scroll to the bottom
+    
+            // 아래로 스크롤
             scrollChatWindow();
-
-            // Re-enable buttons
+    
+            // 버튼 활성화
             sendButton.disabled = false;
             newSessionButton.disabled = false;
             sentenceInput.disabled = false;
         }
+    
+        const suggestedInputs = [
+            '현재 우리반 실내온도 알려줘.',
+            '지금 우리반 에어컨 전원 꺼져있어?',
+            '지금 가장 더운반 알려줘.',
+            '우리반과 옆반의 현재 온도차이 알려줘.',
+            '오늘 우리반 평균온도 알려줘',
+            '이번달 우리반 가장 더웠던 날이 언제야?',
+            '10년전 우리반 온도 알려줘',
+            '요번달에 가장 더웠던 날 갈켜주소',
+            '우리반과 옆반 중 오늘 하루 평균온도가 더 높은곳을 알려줘',
+            '우리ㅣ 반 형ㄴ재온도 알려줘',
+        ];
+    
+        // 제안 입력 버튼을 생성하는 함수
+        function createSuggestedButtons() {
+            const suggestionContainer = document.querySelector('.suggestion-container');
+            suggestedInputs.forEach(input => {
+                const button = document.createElement('button');
+                button.classList.add('suggestion-button');
+                button.innerText = input;
+                button.addEventListener('click', () => {
+                    sentenceInput.value = input; // 입력 필드에 버튼 텍스트 설정
+                    sendRequest(); // 자동으로 요청 전송
+                });
+                suggestionContainer.appendChild(button);
+            });
+        }
+    
+        // 제안 버튼 생성 함수 호출 위치를 window.onload 안으로 이동
     </script>
 
 </body>

@@ -180,7 +180,11 @@ class InstructionToSql:
             pad_token_id=cls.tokenizer.eos_token_id,
             max_new_tokens=400,
             do_sample=True,
+<<<<<<< HEAD
             temperature=0.00001,
+=======
+            temperature=0.001,
+>>>>>>> origin/1st_review
             top_p=0.9,
             top_k=50,
         )
