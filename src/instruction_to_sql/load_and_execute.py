@@ -8,7 +8,7 @@ class InstructionToSql:
     @classmethod
     def execute(cls, current_instruction:str, semantic: Semantic):
         question = current_instruction
-        
+        print(question)
           
         prompt = """user
 
@@ -97,39 +97,29 @@ class InstructionToSql:
                             GROUP BY date
                             ORDER BY MAX(dt.roomtemp) DESC
                             LIMIT 1;
-                
+         
         Example : 
-       - question : 우리반과 옆반의 현재온도 차이 알려줘
-       - semantic : Semantic(Temporal=[('지금', '2022-09-30 12:00:00')], Spatial=['우리반', '옆반'], Modality=['실내온도'], Operation=['차이'], Target=['온도'])
+       - question : 현재 옆반 온도 알려줘
+       - semantic : Semantic(Temporal=[('현재', '2022-09-30 12:00:00')], Spatial=['옆반'], Modality=['실내온도'], Operation=[None], Target=['온도'])
        - Reasoning Process
-        1. SELECT Clause: The `Target` specifies "온도" (temperature), indicating we need to calculate the temperature difference between the two rooms. We will select the absolute difference of the room temperatures: `ABS(dt1.roomtemp - dt2.roomtemp)`.
-        2. FROM Clause: We will join the `data_t` table on itself, using `dt1` for "우리반" (01_IB5) and `dt2` for "옆반" (01_IB7). This approach allows us to directly compare the temperatures from both rooms for the same timestamp.
-        3. WHERE Clause:
-            - The `Temporal` element indicates we need to filter records for the current timestamp. We ensure both instances (dt1 and dt2) have timestamps matching '2022-09-30 12:00:00'.
-            - The `Spatial` information specifies which rooms to look at, filtering `dt1` for "우리반" (01_IB5) and `dt2` for "옆반" (01_IB7) by matching the `idu_id`.
-            - We check that the room temperature values in both instances are neither NULL nor 'NaN'. Since Modality is not "전원", include IS NOT NULL in sql query.
-        4. Check the SELECT value is not null. For this, include IS NOT NULL in sql query. Since SELECT value is not Boolean type (ABS(dt1.roomtemp - dt2.roomtemp)), include the IS NOT NULL in sql query. 
-        5. GROUP BY Clause: Not needed since we are calculating a single temperature difference.
-        6. ORDER BY Clause: Not necessary since we are calculating a single temperature difference.
+            1. SELECT Clause: The `SELECT` clause is informed by the `Target` in the semantic, which specifies that we want to retrieve the temperature (`온도`). Therefore, we select `dt.roomtemp` to fetch the room temperature data.
+            2. FROM Clause: The `FROM` clause references the `data_t` table, which contains relevant temperature data. This aligns with the `Modality` indicating we are measuring indoor temperature (`실내온도`).
+            3. WHERE Clause:
+                - We filter results based on the timestamp defined by the `Temporal` element, specifically for the current time, which is set to `'2022-09-30 12:00:00'`.
+                - We include a subquery to filter by `idu_id`, which corresponds to the spatial context of the room `옆반` (the adjacent room). The subquery selects the `id` from `idu_t` where the room name matches `옆반`.
+                - Additionally, we ensure that `roomtemp` is not `NULL` and is distinct from `'NaN'` to maintain data integrity. This is done using the conditions `dt.roomtemp IS NOT NULL` and `dt.roomtemp IS DISTINCT FROM 'NaN'`.
+            4. Check for Non-Null Values: It is essential to check that the `SELECT` value is not `NULL`. This is enforced in the SQL query by including `dt.roomtemp IS NOT NULL`.
+            5. GROUP BY Clause: Since the `Target` indicates we want to find the temperature readings for specific timestamps, we do not need to group by date in this case.
+            6. ORDER BY Clause: In this specific query, since we are targeting a single timestamp, we do not need to apply an ORDER BY clause. 
+            7. LIMIT Clause: Finally, the `LIMIT 1` clause ensures we return only a single result, specifically the temperature reading for the given timestamp, thus addressing the user's request directly.
 
-        - Correct Answer:
-                SELECT ABS(dt1.roomtemp - dt2.roomtemp) 
-                FROM data_t dt1
-                JOIN data_t dt2 ON dt1."timestamp" = dt2."timestamp"
-                WHERE 
-                    dt1.idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5') 
-                    AND dt2.idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7') 
-                    AND dt1."timestamp" = '2022-09-30 12:00:00' 
-                    AND dt1.roomtemp IS NOT NULL 
-                    AND dt1.roomtemp IS DISTINCT FROM 'NaN' 
-                    AND dt2.roomtemp IS NOT NULL 
-                    AND dt2.roomtemp IS DISTINCT FROM 'NaN';
+        - Correct answer :  SELECT dt.roomtemp FROM data_t dt WHERE dt."timestamp" = '2022-09-30 12:00:00' AND dt.idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7') AND dt.roomtemp IS NOT NULL AND dt.roomtemp IS DISTINCT FROM 'NaN';
+         
                             
         Example : 
         - question : 이번달 우리반의 온도 평균과 옆반의 온도평균의 차이 알려줘
         - semantic : Semantic(Temporal=[('이번달', '2022-09-01 00:00:00 ~ 2022-09-30 23:59:59')], Spatial=['우리반', '옆반'], Modality=['실내온도'], Operation=['평균', '차이'], Target=['온도'])
         - Reasoning Process
-        Reasoning Process:
             1. SELECT Clause: The Target specifies "온도" (temperature), so we will select the difference of the average temperatures: AVG(dt1.roomtemp) - AVG(dt2.roomtemp).
             2. FROM Clause: We will join the data_t table on itself. We use dt1 for "우리반" and dt2 for "옆반" to compare their average temperatures, as we need to match timestamps for averaging.
             3. WHERE Clause:
@@ -156,6 +146,24 @@ class InstructionToSql:
                 AND dt2.roomtemp IS DISTINCT FROM 'NaN'
             GROUP BY 
                 dt1.idu_id, dt2.idu_id;
+                           
+        Example : 
+        - question : 지금 옆반 에어컨 전원 꺼져있어?
+        - semantic : Semantic(Temporal=[('지금', '2022-09-30 12:00:00')], Spatial=['옆반'], Modality=['전원'], Operation=[None], Target=['전원'])
+        - Reasoning Process
+            1. SELECT Clause: The SELECT clause is informed by the Target in the semantic, which specifies that we want to retrieve the operational status (전원). Therefore, we select dt.oper to fetch the operational data for the air conditioning system.
+            2. FROM Clause: The FROM clause references the data_t table, which contains relevant operational data. This aligns with the Modality indicating we are measuring the system's operational status. 
+            3. WHERE Clause:
+                - We filter results based on the timestamp defined by the Temporal element, specifically for the current time, set to '2022-09-30 12:00:00'.
+                - We filter dt2 for "옆반" (01_IB7) by matching the idu_id.
+                - Since oper is a boolean value, it does not require a check for 'NaN'.
+            4. Check for Non-Null Values: Since oper is a boolean value, there’s no need to check for NULL or 'NaN' in the SQL query.
+            5. GROUP BY Clause: Not needed in this case, as we are targeting a specific timestamp.
+            6. ORDER BY Clause: Not required since we are interested in a single result.
+            7. LIMIT Clause: Finally, the `LIMIT 1` clause ensures we return only a single result, specifically the temperature reading for the given timestamp, thus addressing the user's request directly.
+        - Correct Answer : SELECT dt.oper FROM data_t dt WHERE dt."timestamp" = '2022-09-30 12:00:00' AND dt.idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7');
+      
+
 
         
         The following SQL query best answers the question `{question}`:
@@ -172,7 +180,7 @@ class InstructionToSql:
             pad_token_id=cls.tokenizer.eos_token_id,
             max_new_tokens=400,
             do_sample=True,
-            temperature=0.6,
+            temperature=0.00001,
             top_p=0.9,
             top_k=50,
         )

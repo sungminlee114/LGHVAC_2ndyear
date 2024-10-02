@@ -182,11 +182,10 @@ def execute_query(semantic:Semantic, instruction:Instruction):
     - instruction (Instruction): An object detailing the instruction for executing the query, including content to be transformed into SQL.
   
     """
-
-    # Replace semantics in the instruction content to specific values.
+   # Replace semantics in the instruction content to specific values.
     for semantics in [semantic.Temporal, semantic.Spatial, semantic.Modality]:
         for i, (k, v) in enumerate(semantics):
-            instruction.content = instruction.content.replace(k, v)
+            instruction.content = instruction.content.replace(k, v)    
   
     
     # If the instruction content contains "None", skip the execution.
