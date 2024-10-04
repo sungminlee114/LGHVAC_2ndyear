@@ -216,7 +216,7 @@ def execute_query(instruction:Instruction):
         return sql_query
  
 
-def execute_response_generation(full_semantic, instruction:Instruction, query_mapping : list[list[str, str]], user_input:str, current_metadata:dict):
+def execute_response_generation(instruction:Instruction, query_mapping : list[list[str, str]], user_input:str, current_metadata:dict):
     """
     Generate a response based on the provided instruction.
     
@@ -232,11 +232,11 @@ def execute_response_generation(full_semantic, instruction:Instruction, query_ma
         if v is None or len(v)==0 :
             response = "죄송합니다. 해당 정보를 찾을 수 없습니다. (이유 설명 필요)"
         else:
-            response = ResponseGeneration.execute(full_semantic, instruction, query_mapping, user_input, current_metadata)
+            response = ResponseGeneration.execute(instruction, query_mapping, user_input, current_metadata)
         
     return response
 
-def execute_instruction_set(full_semantic:Semantic,instruction_set:list[Instruction], user_input:str, current_metadata:dict, response_function:Callable):
+def execute_instruction_set(semantic:Semantic,instruction_set:list[Instruction], user_input:str, current_metadata:dict, response_function:Callable):
     """
     Implement the agent to execute a set of instructions.
     
@@ -256,7 +256,7 @@ def execute_instruction_set(full_semantic:Semantic,instruction_set:list[Instruct
             
         elif instruction.operation_flag == "r":
             # Execute response generation
-            response = execute_response_generation(full_semantic, instruction, query_mapping, user_input, current_metadata)
+            response = execute_response_generation(instruction, query_mapping, user_input, current_metadata)
             response_function(response)
             
 def execute_instruction_set_web(semantic:Semantic, instruction_set:list[Instruction], user_input:str, current_metadata:dict, response_function:Callable):
