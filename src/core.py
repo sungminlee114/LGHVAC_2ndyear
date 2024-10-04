@@ -229,7 +229,7 @@ def execute_response_generation(full_semantic, instruction:Instruction, query_ma
         - response (str): The generated response.
     """
     for k,v in query_mapping :
-        if v is None :
+        if v is None or len(v)==0 :
             response = "죄송합니다. 해당 정보를 찾을 수 없습니다. (이유 설명 필요)"
         else:
             response = ResponseGeneration.execute(full_semantic, instruction, query_mapping, user_input, current_metadata)

@@ -23,6 +23,7 @@ class ResponseGeneration:
     추론 과정은 답변하지 않지만 앞에 질몬이 뭐였는지는 요약해줘.
     답변은 한번만 해줘.
     sql query 다음에 "assistant" 안나오도록 해줘. 
+    query_mapping 에서 mapping 된 값이 None 이면 값이 없다고 대답해줘.
     '''
  
     
