@@ -270,7 +270,7 @@ def execute_instruction_set_web(semantic:Semantic, instruction_set:list[Instruct
         yield from response_function(f"<h1 Executing instruction: {instruction}>")
         if instruction.operation_flag == "q":
             # Execute query
-            generated_sql = execute_query(semantic, instruction)
+            generated_sql = execute_query(instruction)
             query_mapping.append([instruction.save_variable,instruction.value])
             generated_sql = generated_sql.replace("\n", "").replace("         ", "")
             yield from response_function("<h2 Generated SQL:>")
