@@ -100,9 +100,9 @@ class InputToInstruction:
 
     <좋은예시1>
 
-    입력: "오늘 우리반과 옆반의 온도차이 알려줘.",
+    입력: "오늘 우리반과 옆반의 평균 온도차이 알려줘,
     출력: "{
-        "Formalized Input": "오늘 우리반과 옆반의 실내온도 차이 알려줘.",
+        "Formalized Input": "오늘 우리반과 옆반의 평균 실내온도 차이 알려줘.",
         "Input Semantic Parsing": {
             "Temporal": [("오늘", "2022-09-30 00:00:00 ~ 2022-09-30 23:59:59")],
             "Spatial": ["우리반", "옆반"],
@@ -111,21 +111,21 @@ class InputToInstruction:
             "Target": ["온도"]
         },
         "Instruction Set": [
-                ["q", "오늘 우리반 실내온도 알려줘.", "오늘 우리반 실내온도", "값", {
+                ["q", "오늘 우리반 평균 실내온도 알려줘.", "오늘 우리반 평균 실내온도", "값", {
                     "Temporal": [("오늘", "2022-09-30 00:00:00 ~ 2022-09-30 23:59:59")],
                     "Spatial": ["우리반"],
                     "Modality": ["실내온도"],
                     "Operation": [None],
                     "Target": ["온도"]
                 }],
-                ["q", "오늘 옆반 실내온도 알려줘.", "오늘 옆반 실내온도", "값", {
+                ["q", "오늘 옆반 평균 실내온도 알려줘.", "오늘 옆반 평균 실내온도", "값", {
                     "Temporal": [("오늘", "2022-09-30 00:00:00 ~ 2022-09-30 23:59:59")],
                     "Spatial": ["옆반"],
                     "Modality": ["실내온도"],
                     "Operation": [None],
                     "Target": ["온도"]
                 }],
-                ["r", "예) '우리반과 옆반의 온도차이는 2도입니다.'"]
+                ["r", "예) '우리반과 옆반의 평균 온도차이는 2도입니다.'"]
         ]
     }"
 
@@ -145,7 +145,7 @@ class InputToInstruction:
                     "Temporal": [("올해 여름", "2022-06-01 00:00:00 ~ 2022-08-31 23:59:59")],
                     "Spatial": ["우리반"],
                     "Modality": ["설정온도"],
-                    "Operation": [None],
+                    "Operation": ["평균"],
                     "Target": ["온도"]
                 }],
                 ["r", "예) '지난 여름 우리반의 평균 설정온도는 26도입니다.'"]
@@ -160,7 +160,7 @@ class InputToInstruction:
             "Temporal": [("이번달", "2022-09-01 00:00:00 ~ 2022-09-30 23:59:59")],
             "Spatial": ["우리반"],
             "Modality": ["실내온도"],
-            "Operation": ["최고"],
+            "Operation": ["최고인"],
             "Target": ["날짜"]
         },
         "Instruction Set": [
@@ -168,7 +168,7 @@ class InputToInstruction:
                     "Temporal": [("이번달", "2022-09-01 00:00:00 ~ 2022-09-30 23:59:59")],
                     "Spatial": ["우리반"],
                     "Modality": ["실내온도"],
-                    "Operation": [None],
+                    "Operation": ["최고인"],
                     "Target": ["날짜"]
                 }],
                 ["r", "예) '이번달 중 우리반의 온도가 가장 더운날은 2022년 9월 15일입니다.'"]
@@ -176,14 +176,14 @@ class InputToInstruction:
     }"
 
 <좋은예시4>
-    입력: "우리반과 옆반중에 온도가 더 낮은곳은 어디야?",
+    입력: "우리반과 옆반중에 온도가 더 추운곳은 어디야?",
     출력: "{
         "Formalized Input": "지금 우리반과 옆반 중 실내온도가 최소인 장소 알려줘.",
         "Input Semantic Parsing": {
             "Temporal": [("지금", "2022-09-30 12:00:00")],
             "Spatial": ["우리반", "옆반"],
             "Modality": ["실내온도"],
-            "Operation": ["최소"],
+            "Operation": ["최소인"],
             "Target": ["장소"]
         },
         "Instruction Set": [
@@ -328,14 +328,14 @@ class InputToInstruction:
     }"
     
     <좋은예시10>
-    입력: 현재 옆반 온도랑 우리반 온도 알려줘
+    입력: 현재 옆반 온도랑 우리반 온도 차이 알려줘
     출력: "{
-        "Formalized Input": "현재 우리반과 옆반 실내온도 알려줘.",
+        "Formalized Input": "현재 우리반과 옆반 실내온도 차이 알려줘.",
         "Input Semantic Parsing": {
             "Temporal": [("현재", "2022-09-30 12:00:00")],
             "Spatial": ["우리반", "옆반"],
             "Modality": ["실내온도"],
-            "Operation": [None],
+            "Operation": ["차이"],
             "Target": ["온도"]
         },
         "Instruction Set": [
@@ -353,7 +353,7 @@ class InputToInstruction:
                 "Operation": [None],
                 "Target": ["온도"]
             }],
-            ["r", "예) '현재 우리반의 실내온도는 26도이고, 옆반의 실내온도는 25도입니다.'"]
+           ["r", "예) '우리반과 옆반의 실내 온도차이는 2도입니다.'"]
         ]
     }"
     
