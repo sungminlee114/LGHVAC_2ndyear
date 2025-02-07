@@ -2,6 +2,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+import pandas as pd
 import psycopg2
 from psycopg2 import sql
 
@@ -187,6 +188,82 @@ class DBInstance:
             logger.error(f"An error occurred while selecting data from {table_name}: {e}")
             return None
 
+    def select_data_v2(self, table_name, columns=None, conditions=None, subquery=None):
+        """
+        Select data from the database table with the option for subqueries and conditions.
+        
+        Args:
+            table_name (str): Name of the table to query.
+            columns (list, optional): List of columns to include in the SELECT statement.
+            conditions (list, optional): List of raw SQL conditions to include in the WHERE clause.
+            subquery (str, optional): Raw SQL for a subquery to include in the WHERE clause.
+            
+        Returns:
+            df (pd.DataFrame): A DataFrame containing the selected data.
+            
+        Example:
+            result = select_data_v2(
+                table_name='data_t',
+                columns=['idu_id', 'roomtemp'],
+                conditions=[
+                    "timestamp = '2022-09-30 00:00:00'",
+                    "roomtemp IS NOT NULL",
+                    "roomtemp IS DISTINCT FROM 'NaN'"
+                ],
+                subquery="idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+            )
+            print(result) # DataFrame containing the selected data
+        """
+
+        try:
+            # Start building the base SELECT query
+            select_query = sql.SQL("SELECT {} FROM {}").format(
+                sql.SQL(', ').join(map(sql.Identifier, columns)) if columns else sql.SQL('*'),
+                sql.Identifier(table_name)
+            )
+            
+            # Initialize a list for WHERE clause components
+            where_clauses = []
+
+            # Add subquery if provided
+            if subquery and subquery != "~":
+                where_clauses.append(subquery)
+            
+            # Add raw conditions if provided
+            if conditions:
+                where_clauses.extend(conditions)
+            
+            # for each column: check NULL and NaN
+            for col in columns:
+                where_clauses.append(sql.SQL("{} IS NOT NULL").format(sql.Identifier(col)))
+                where_clauses.append(sql.SQL("{} IS DISTINCT FROM 'NaN'").format(sql.Identifier(col)))
+            
+            # Add WHERE clause if there are any conditions or subqueries
+            if where_clauses:
+                where_part = " AND ".join(where_clauses)
+                select_query += sql.SQL(" WHERE {}").format(sql.SQL(where_part))
+            
+            logger.info(f"Select query as string: {select_query.as_string(self.connection)}")
+            # Execute the query
+            self.cursor.execute(select_query)
+            rows = self.cursor.fetchall()
+            logger.info("Data selected from {} successfully".format(table_name))
+            
+            # Convert the results to a list of dictionaries
+            colnames = [desc[0] for desc in self.cursor.description]
+            # return [dict(zip(colnames, row)) for row in rows]
+            result_dict = {col: [] for col in colnames}
+            for row in rows:
+                for col, value in zip(colnames, row):
+                    result_dict[col].append(value)
+            df = pd.DataFrame(result_dict)
+            return df
+            # return result_dict
+        except Exception as e:
+            logger.error("An error occurred while selecting data from {}: {}".format(table_name, e))
+            return None
+
+        
     
     def create_continuous_aggregate(self, agg_name, select_query):
         """
@@ -239,14 +316,69 @@ if __name__ == "__main__":
     # Exampe usage of the DBInstance class
     db_instance = DBInstance(dbname='PerSite_DB')
     
-    # Insert data into the hypertable
-    data_to_insert = [
-        {'idu_id': 1, 'roomtemp': 25.0, 'settemp': 22.0, 'oper': True, 'timestamp': '2022-01-01 00:00:00'},
-        {'idu_id': 2, 'roomtemp': 26.0, 'settemp': 23.0, 'oper': False, 'timestamp': '2022-01-01 00:01:00'},
-        {'idu_id': 1, 'roomtemp': 24.0, 'settemp': 21.0, 'oper': True, 'timestamp': '2022-01-01 00:02:00'},
-        {'idu_id': 2, 'roomtemp': 27.0, 'settemp': 24.0, 'oper': False, 'timestamp': '2022-01-01 00:03:00'},
-        {'idu_id': 1, 'roomtemp': 25.0, 'settemp': 22.0, 'oper': True, 'timestamp': '2022-01-01 00:04:00'},
-        {'idu_id': 2, 'roomtemp': 26.0, 'settemp': 23.0, 'oper': False, 'timestamp': '2022-01-01 00:05:00'},
-    ]
-    db_instance.insert_data('data_t', data_to_insert)
+    if False:
+        # Insert data into the hypertable
+        data_to_insert = [
+            {'idu_id': 1, 'roomtemp': 25.0, 'settemp': 22.0, 'oper': True, 'timestamp': '2022-01-01 00:00:00'},
+            {'idu_id': 2, 'roomtemp': 26.0, 'settemp': 23.0, 'oper': False, 'timestamp': '2022-01-01 00:01:00'},
+            {'idu_id': 1, 'roomtemp': 24.0, 'settemp': 21.0, 'oper': True, 'timestamp': '2022-01-01 00:02:00'},
+            {'idu_id': 2, 'roomtemp': 27.0, 'settemp': 24.0, 'oper': False, 'timestamp': '2022-01-01 00:03:00'},
+            {'idu_id': 1, 'roomtemp': 25.0, 'settemp': 22.0, 'oper': True, 'timestamp': '2022-01-01 00:04:00'},
+            {'idu_id': 2, 'roomtemp': 26.0, 'settemp': 23.0, 'oper': False, 'timestamp': '2022-01-01 00:05:00'},
+        ]
+        db_instance.insert_data('data_t', data_to_insert)
+    
+    if True:
+        import json
+        
+        print(
+            db_instance.select_data_v2(
+                'idu_t',
+                columns=['id', 'name'],
+                conditions=["name in ('01_IB5', '01_IB7')"]
+            )
+        )
+        
+        
+        print(db_instance.select_data_v2(
+            table_name='data_t',
+            columns=['idu_id', 'roomtemp'],
+            conditions=[
+                "timestamp = '2022-09-30 00:00:00'",
+                "roomtemp IS NOT NULL",
+                "roomtemp IS DISTINCT FROM 'NaN'"
+            ],
+            subquery="idu_id in (SELECT id FROM idu_t WHERE name in ('01_IB5', '01_IB7'))"
+        ))
+        args = json.loads(
+            """{
+            "table_name": "data_t",
+            "columns": ["idu_id", "timestamp", "roomtemp"],
+            "conditions": [
+                "timestamp BETWEEN '2022-09-30 00:00:00' AND '2022-09-30 00:59:59'",
+                "roomtemp IS NOT NULL",
+                "roomtemp IS DISTINCT FROM 'NaN'"
+            ],
+            "subquery": "idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5', '01_IB7'))"
+            }"""
+        )
+        
+        result = db_instance.select_data_v2(**args)
+        # print(result[0]["timestamp"])
+        print(result)
+        
+        # print(db_instance.select_data_v2(
+        #     table_name='data_t',
+        #     columns=['idu_id', 'roomtemp'],
+        #     conditions=[
+        #         "timestamp = '2022-09-30 00:00:00'",
+        #         "roomtemp IS NOT NULL",
+        #         "roomtemp IS DISTINCT FROM 'NaN'"
+        #     ],
+        #     subquery="idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+        # ))
+    
+    
     db_instance.close()
+    
+    

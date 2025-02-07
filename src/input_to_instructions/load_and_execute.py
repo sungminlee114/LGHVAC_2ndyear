@@ -388,6 +388,8 @@ class InputToInstruction:
                 ]
 
         """
+        import time
+        start_time = time.time()
         
         # prompt = cls.PROMPT.format(current_metadata=current_metadata)
         prompt = cls.PROMPT.replace("{current_metadata}", str(current_metadata))
@@ -432,6 +434,8 @@ class InputToInstruction:
         full_semantic = Semantic(result_dict["Input Semantic Parsing"])
         instructions = [Instruction(instruction) for instruction in result_dict["Instruction Set"]] 
         logger.info(f"instructions: {instructions}")
+        end_time = time.time()
+        logger.info(f"Time taken: {end_time - start_time}")
         
         return full_semantic, instructions, 
 

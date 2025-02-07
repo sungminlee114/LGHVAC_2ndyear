@@ -10,7 +10,7 @@
 
 # PgAdmin and TimescaleDB
 ## How to access to pgadmin
-Goto http://1.233.218.4:9913/
+Goto http://1.233.219.93:9913/
 
 ## How to view data in pgadmin
 At the menubar on the left, go through TimescaleDB -> Databases -> `[DatabaseName(=PerSite_DB)]` -> Schemas -> `[SchemaName(=public)]` -> Tables -> `[TableName]`, right-click the table, select View/Edit Data -> All rows

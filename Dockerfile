@@ -81,27 +81,27 @@ RUN rm *.py
 RUN pip install torch
 # RUN pip install --no-cache-dir --extra-index-url https://pypi.nvidia.com cuml-cu12
 
-RUN \
-    pip install \
-    scikit-learn \
-    tqdm \
-    matplotlib \
-    pandas \
-    scikit-build \
-    requests \
-    einops \
-    scipy \ 
-    numba \
-    scikit-learn \
-    scikit-learn-extra \
-    notebook \
-    tensorboard \
-    openpyxl \
-    ipykernel \
-    ipywidgets \
-    diffusers \
-    accelerate \
-    transformers
+# RUN \
+#     pip install \
+#     scikit-learn \
+#     tqdm \
+#     matplotlib \
+#     pandas \
+#     scikit-build \
+#     requests \
+#     einops \
+#     scipy \ 
+#     numba \
+#     scikit-learn \
+#     scikit-learn-extra \
+#     notebook \
+#     tensorboard \
+#     openpyxl \
+#     ipykernel \
+#     ipywidgets \
+#     diffusers \
+#     accelerate \
+#     transformers
 
 # OpenCV
 RUN \ 

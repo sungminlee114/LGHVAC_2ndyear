@@ -1,2 +1,5 @@
 .vscode
 *.pyc
+*.pt
+*.safetensors
+finetuning/try_lora/fine_tuned_models/*

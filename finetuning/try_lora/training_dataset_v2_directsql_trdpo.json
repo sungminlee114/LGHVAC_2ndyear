@@ -1,0 +1,191 @@
+[
+    {
+      "Input": "오늘 우리반과 옆반의 평균 온도차이 알려줘",
+      "Response": {
+        "Formalized Input": "오늘 우리반의 평균 설정온도 알려줘.",
+        "Input Semantic Parsing": {
+          "Temporal": {
+            "오늘": "2023-09-30 00:00:00 ~ 2023-09-30 23:59:59"
+          },
+          "Spatial": {
+            "우리반": "01_IB5"
+          },
+          "Modality": {
+            "설정온도": "settemp"
+          },
+          "Operation": [
+            "평균"
+          ]
+        },
+        "Strategy": {
+          "Objective": "우리반의 오늘 설정온도의 평균을 계산.",
+          "Expected Outputs": [
+            "우리반의 오늘 설정온도는 21.3℃입니다."
+          ],
+          "Step": [
+            "우리반의 오늘 설정온도 쿼리결과 qr_settemp_ours에 저장",
+            "qr_settemp_ours의 settemp 평균 계산"
+          ]
+        },
+        "Instruction Set": [
+          {
+            "type": "q",
+            "run": {
+              "args": {
+                "table_name": "data_t",
+                "columns": ["settemp"],
+                "conditions": [
+                  "timestamp BETWEEN '2023-09-30 00:00:00' AND '2023-09-30 23:59:59'"
+                ],
+                "subquery": "idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5'))"
+              }
+            },
+            "result": {
+              "name": "qr_settemp_ours의"
+            }
+          },
+          {
+            "type": "o",
+            "python_script_to_process": "avg_settemp_ours = qr_settemp_ours의['settemp'].mean()",
+            "return": [
+              "avg_settemp_ours"
+            ]
+          },
+          {
+            "type": "r",
+            "templates": [
+              "우리반 평균 설정온도는 {avg_settemp_ours}℃입니다."
+            ]
+          }
+        ]
+      }
+    },
+  
+    {
+      "Input": "올해 여름 우리반 평균온도 알려줘",
+      "Response": {
+        "Formalized Input": "올해 여름 우리반의 평균 습도 알려줘.",
+        "Input Semantic Parsing": {
+          "Temporal": {
+            "올해 여름": "2022-07-01 00:00:00 ~ 2022-08-31 23:59:59"
+          },
+          "Spatial": {
+            "우리반": "01_IB5"
+          },
+          "Modality": {
+            "습도": "humidity"
+          },
+          "Operation": [
+            "평균"
+          ]
+        },
+        "Strategy": {
+          "Objective": "우리반의 올해 여름 습도 데이터 평균 계산",
+          "Expected Outputs": [
+            "올해 여름 우리반의 평균 습도는 60%입니다."
+          ],
+          "Step": [
+            "우리반의 올해 여름 습도 데이터 쿼리결과 qr_humidity_summer에 저장",
+            "qr_humidity_summer의 humidity 평균값 반환"
+          ]
+        },
+        "Instruction Set": [
+          {
+            "type": "q",
+            "run": {
+              "args": {
+                "table_name": "data_t",
+                "columns": ["humidity"],
+                "conditions": [
+                  "timestamp BETWEEN '2022-07-01 00:00:00' AND '2022-08-31 23:59:59'"
+                ],
+                "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+              }
+            },
+            "result": {
+              "name": "qr_humidity_summer"
+            }
+          },
+          {
+            "type": "o",
+            "python_script_to_process": "avg_humidity = qr_humidity_summer['humidity'].mean()",
+            "return": [
+              "avg_humidity"
+            ]
+          },
+          {
+            "type": "r",
+            "templates": [
+              "올해 여름 우리반의 평균 습도는 {avg_humidity}%입니다."
+            ]
+          }
+        ]
+      }
+    },
+  
+    {
+      "Input": "이번달 중 우리반 온도가 가장 더운날이 언제야?",
+      "Response": {
+        "Formalized Input": "이번달 우리반 에어컨이 가장 많이 꺼져있던 날 알려줘.",
+        "Input Semantic Parsing": {
+          "Temporal": {
+            "이번달": "2022-09-01 00:00:00 ~ 2022-09-30 23:59:59"
+          },
+          "Spatial": {
+            "우리반": "01_IB5"
+          },
+          "Modality": {
+            "에어컨 전원": "oper"
+          },
+          "Operation": [
+            "가장 많이 꺼짐"
+          ]
+        },
+        "Strategy": {
+          "Objective": "하루 중 꺼져있던 시간이 최장인 날짜 구하기",
+          "Expected Outputs": [
+            "가장 오래 꺼져있던 날은 9월 15일 (13시간 꺼짐)입니다."
+          ],
+          "Step": [
+            "우리반의 이번달 oper 데이터 쿼리결과 qr_oper_thismonth에 저장",
+            "날짜별 oper=false인 시간 합산 결과 qr_opertime_perday에 저장",
+            "qr_opertime_perday에서 최대값 찾아서 가장 많이 꺼져있던 날짜 및 시간 반환" 
+          ]
+        },
+        "Instruction Set": [
+          {
+            "type": "q",
+            "run": {
+              "args": {
+                "table_name": "data_t",
+                "columns": ["timestamp", "oper"],
+                "conditions": [
+                  "timestamp BETWEEN '2022-09-01 00:00:00' AND '2022-09-30 23:59:59'"
+                ],
+                "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+              }
+            },
+            "result": {
+              "name": "qr_oper_thismonth"
+            }
+          },
+          {
+            "type": "o",
+            "python_script_to_process": "qr_oper_thismonth['timestamp'] = pd.to_datetime(qr_oper_thismonth['timestamp']); qr_oper_thismonth['oper'] = qr_oper_thismonth['oper'].astype(bool); qr_oper_thismonth['day'] = qr_oper_thismonth['timestamp'].dt.date; qr_opertime_perday = qr_oper_thismonth.groupby('day')['oper'].sum(); max_off_day = qr_opertime_perday.idxmax().strftime('%m-%d'); max_off_hours = qr_opertime_perday.max()",
+           
+            "return": [
+                "max_off_day",
+                "max_off_hours"
+            ]
+          },
+          {
+            "type": "r",
+            "templates": [
+              "이번달 우리반은 {max_off_day}에 {max_off_hours}시간 꺼져있었습니다."
+            ]
+          }
+        ]
+      }
+    }
+  ]
+  
