@@ -216,9 +216,22 @@ class DBInstance:
         """
 
         try:
-            # Start building the base SELECT query
+            # columns 리스트에서 각 항목이 문자열이면, 만약 "raw:" 접두어가 있다면 raw SQL로 처리하고,
+            # 그렇지 않으면 sql.Identifier로 처리하도록 함.
+            if columns:
+                formatted_columns = []
+                for col in columns:
+                    if isinstance(col, str) and col.startswith("raw:"):
+                        # "raw:" 뒤의 부분을 raw SQL로 감쌈
+                        formatted_columns.append(sql.SQL(col[4:]))
+                    else:
+                        formatted_columns.append(sql.Identifier(col))
+                select_columns = sql.SQL(', ').join(formatted_columns)
+            else:
+                select_columns = sql.SQL('*')
+            
             select_query = sql.SQL("SELECT {} FROM {}").format(
-                sql.SQL(', ').join(map(sql.Identifier, columns)) if columns else sql.SQL('*'),
+                select_columns,
                 sql.Identifier(table_name)
             )
             
@@ -235,12 +248,15 @@ class DBInstance:
             
             # for each column: check NULL and NaN
             for col in columns:
+                # 만약 col이 "raw:" 접두어가 붙은 문자열이라면, 여기서는 해당 컬럼에 대한 NULL 체크는 생략할 수 있음.
+                if isinstance(col, str) and col.startswith("raw:"):
+                    continue
                 where_clauses.append(sql.SQL("{} IS NOT NULL").format(sql.Identifier(col)))
                 where_clauses.append(sql.SQL("{} IS DISTINCT FROM 'NaN'").format(sql.Identifier(col)))
             
             # Add WHERE clause if there are any conditions or subqueries
             if where_clauses:
-                where_part = " AND ".join(where_clauses)
+                where_part = " AND ".join([str(clause) if not isinstance(clause, sql.Composed) else clause.as_string(self.connection) for clause in where_clauses])
                 select_query += sql.SQL(" WHERE {}").format(sql.SQL(where_part))
             
             logger.info(f"Select query as string: {select_query.as_string(self.connection)}")
