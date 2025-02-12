@@ -1,0 +1,2066 @@
+[
+    {
+        "Input": "오늘 우리반과 옆반의 평균 온도차이 알려줘",
+        "Response": {
+            "Formalized Input": "오늘 우리반과 옆반의 평균 실내온도 차이 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "오늘": "2022-09-30 00:00:00 ~ 2022-09-30 23:59:59"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5",
+                    "옆반": "01_IB7"
+                },
+                "Modality": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "오늘 우리반과 옆반 각각의 평균 실내온도 쿼리 후, 두 값의 차이를 계산함.",
+                "Expected Outputs": [
+                    "우리반(19.3℃)이 옆반(17.0℃)보다 2.3℃ 높습니다."
+                ],
+                "Step": [
+                    "우리반의 오늘 실내온도 쿼리결과 qr_roomtemp_ours 에 저장",
+                    "옆반의 오늘 실내온도 쿼리결과 qr_roomtemp_beside 에 저장",
+                    "각 반의 실내온도 평균 계산",
+                    "각 반의 평균 실내온도와 차이 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "roomtemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-09-30 00:00:00' AND '2022-09-30 23:59:59'"
+                            ],
+                            "subquery": "idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5'))"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_roomtemp_ours"
+                    }
+                },
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "roomtemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-09-30 00:00:00' AND '2022-09-30 23:59:59'"
+                            ],
+                            "subquery": "idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB7'))"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_roomtemp_beside"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "avg_roomtemp_ours = qr_roomtemp_ours['roomtemp'].mean(); avg_roomtemp_beside = qr_roomtemp_beside['roomtemp'].mean(); temp_diff = avg_roomtemp_ours - avg_roomtemp_beside",
+                    "return": [
+                        "avg_roomtemp_ours",
+                        "avg_roomtemp_beside",
+                        "temp_diff"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "{room_with_higher_temp}({avg_roomtemp_higher}℃)이 {room_with_lower_temp}({avg_roomtemp_lower}℃) 보다 {temp_diff}℃ 만큼 높습니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "올해 여름 우리반 평균온도 알려줘",
+        "Response": {
+            "Formalized Input": "올해 여름 우리반의 평균 실내온도 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "올해 여름": "2022-06-01 00:00:00 ~ 2022-08-31 23:59:59"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                },
+                "Modality": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "우리반의 실내온도 데이터 중 올해 여름 데이터만 쿼리 후, 평균값 계산.",
+                "Expected Outputs": [
+                    "올해 여름 우리반의 평균 온도는 26℃ 입니다."
+                ],
+                "Step": [
+                    "우리반의 실내온도 데이터 중 올해 여름 데이터만 쿼리결과 qr_roomtemp_summer에 저장",
+                    "qr_roomtemp_summer에서 roomtemp의 평균값 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "roomtemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-06-01 00:00:00' AND '2022-08-31 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_roomtemp_summer"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "avg_roomtemp = qr_roomtemp_summer['roomtemp'].mean()",
+                    "return": [
+                        "avg_roomtemp"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "올해 여름 우리반의 평균 온도는 {avg_roomtemp}℃ 입니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "이번달 중 우리반 온도가 가장 더운날이 언제야?",
+        "Response": {
+            "Formalized Input": "이번달 우리반 실내온도가 최고인 날짜 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "이번달": "2022-09-01 00:00:00 ~ 2022-09-30 23:59:59"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                },
+                "Modality": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "우리반의 실내온도 데이터 중 이번달 데이터만 쿼리 후, 가장 높은 온도를 가진 날짜를 찾음.",
+                "Expected Outputs": [
+                    "이번달 우리반은 15일에 30℃로 가장 더웠습니다."
+                ],
+                "Step": [
+                    "우리반의 실내온도 데이터 중 이번달 데이터만 쿼리결과 qr_roomtemp_thismonth에 저장",
+                    "qr_roomtemp_thismonth에서 실내온도의 최고값 및 해당 날짜 찾기",
+                    "최고온도 및 해당 날짜 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "timestamp",
+                                "roomtemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-09-01 00:00:00' AND '2022-09-30 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_roomtemp_thismonth"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "max_temp = qr_roomtemp_thismonth['roomtemp'].max(); max_temp_date = qr_roomtemp_thismonth.loc[qr_roomtemp_thismonth['roomtemp'].idxmax(), 'timestamp']",
+                    "return": [
+                        "max_temp",
+                        "max_temp_date"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "이번달 우리반은 {max_temp_date}일에 {max_temp}℃로 가장 더웠습니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "지난주 설정온도 변화 추이 알려줘",
+        "Response": {
+            "Formalized Input": "지난주 우리반의 설정온도 변화 추이 시각화 해줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "지난주": "2022-09-23 00:00:00 ~ 2022-09-29 23:59:59"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                },
+                "Modality": {
+                    "설정온도": "settemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "지난주 우리반의 설정온도 데이터를 쿼리 후, 변화 추이를 시각화하고, 대표적이고 중요한 통계적 정보를 제공함.",
+                "Expected Outputs": [
+                    "(그래프) X축: 날짜, Y축: 설정온도, 변화 추이 그래프",
+                    "지난주 우리반의 설정온도는 25℃에서 27℃로 2℃ 증가했습니다.",
+                    "지난주 우리반의 설정온도는 평균 26℃, 최저 25℃, 최고 27℃였습니다."
+                ],
+                "Step": [
+                    "우리반의 지난주 설정온도 데이터 쿼리결과 qr_settemp_lastweek에 저장",
+                    "qr_settemp_lastweek를 시각화하여 변화 추이 그래프 생성",
+                    "qr_settemp_lastweek에서 설정온도의 평균, 최저, 최고값 계산",
+                    "그래프 및 통계적 정보 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "settemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-09-23 00:00:00' AND '2022-09-29 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_settemp_lastweek"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "settemp_rawdata = qr_settemp_lastweek['settemp']; settemp_mean = settemp_rawdata.mean(); settemp_min = settemp_rawdata.min(); settemp_max = settemp_rawdata.max(); settemp_diff = settemp_max - settemp_min",
+                    "return": [
+                        "settemp_rawdata",
+                        "settemp_mean",
+                        "settemp_min",
+                        "settemp_max",
+                        "settemp_diff"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "(그래프) X축: 날짜, Y축: 설정온도, 변화 추이 그래프, 데이터: {settemp_rawdata}",
+                        "지난주 우리반의 설정온도는 {settemp_mean}℃에서 {settemp_max}℃로 {settemp_diff}℃ 증가했습니다.",
+                        "지난주 우리반의 설정온도는 평균 {settemp_mean}℃, 최저 {settemp_min}℃, 최고 {settemp_max}℃였습니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "우리반의 가장 최근 설정 온도 알려줘",
+        "Response": {
+            "Formalized Input": "우리반의 가장 최근 설정온도를 알려줘.",
+            "Input Semantic Parsing": {
+                "Spatial": {
+                    "우리반": "01_IB5"
+                },
+                "Modality": {
+                    "설정온도": "settemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "우리반의 가장 최근 설정온도를 조회.",
+                "Expected Outputs": [
+                    "우리반의 가장 최근 설정온도는 2시간 전 설정한 26℃입니다."
+                ],
+                "Step": [
+                    "우리반의 모든 기간의 설정온도 데이터를 쿼리해 qr_settemp에 저장",
+                    "qr_settemp에 마지막 설정온도와 시간 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "timestamp",
+                                "settemp"
+                            ],
+                            "conditions": [],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_settemp"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "qr_settemp = qr_settemp.sort_values(by='timestamp'); latest_settemp = qr_settemp['settemp'].values[-1]; latest_settemp_time = qr_settemp['timestamp'].values[-1]",
+                    "return": [
+                        "latest_settemp",
+                        "latest_settemp_time"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "우리반의 가장 최근 설정온도는 {latest_settemp_time}에 설정한 {latest_settemp}℃입니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "우리반 왜이리 덥노",
+        "Response": {
+            "Formalized Input": "지금 우리반 왜 더울까?",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "지금": "2022-09-30 12:00:00"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                }
+            },
+            "Strategy": {
+                "Objective": "우리반이 더운 이유를 분석하기 위해 설정온도, 실내온도, 에어컨 작동 상태 데이터 쿼리 후 종합적으로 비교 분석함.",
+                "Expected Outputs": [
+                    "지금 우리반은 27.3℃인데 에어컨 설정온도는 28℃로 실내온도보다 높네요. 설정온도를 낮추면 시원해질 거에요.",
+                    "지금 우리반은 30.6℃로 더운데 에어컨이 꺼져있네요. 에어컨을 켜면 시원해질 거에요.",
+                    "지금 우리반은 30.6℃인데요, 에어컨이 켜진지 5분밖에 안되었기 때문입니다."
+                ],
+                "Step": [
+                    "우리반의 최근(1시간) 실내온도, 설정온도, 에어컨 전원 데이터를 쿼리해 qr_ours_recent에 저장",
+                    "최근 데이터중 가장 최신 데이터를 선택하여 현재 실내온도, 설정온도, 에어컨 전원 상태를 추출",
+                    "에어컨이 꺼져있거나 설정온도가 실내온도보다 높은 경우, 켜져있던 시간을 계산하여 반환",
+                    "데이터를 바탕으로 더운 이유를 분석하여 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "timestamp",
+                                "roomtemp",
+                                "settemp",
+                                "oper"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-09-30 11:00:00' AND '2022-09-30 12:00:00'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_ours_recent"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "sd = qr_ours_recent.sort_values(by='timestamp'); current_roomtemp = sd['roomtemp'].iloc[-1]; current_settemp = sd['settemp'].iloc[-1]; current_oper = sd['oper'].iloc[-1]; latest_oper_on_time = (str(int((sd['timestamp'].iloc[-1] - sd.loc[sd['oper'] == True, 'timestamp'].iloc[-1]) / np.timedelta64(1, 'm'))) + \"분\") if current_oper else \"0분\"",
+                    "return": [
+                        "current_roomtemp",
+                        "current_settemp",
+                        "current_oper",
+                        "latest_oper_on_time"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "지금 우리반은 {current_roomtemp}℃인데 에어컨 설정온도는 {current_settemp}℃로 실내온도보다 높네요. 설정온도를 낮추면 시원해질 거에요.",
+                        "지금 우리반은 {current_roomtemp}℃로 더운데 에어컨이 꺼져있네요. 에어컨을 켜면 시원해질 거에요.",
+                        "지금 우리반은 {current_roomtemp}℃인데요, 에어컨이 켜진지 {latest_oper_on_time}밖에 안되었기 때문입니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "What time is it now?",
+        "Response": {
+            "Formalized Input": "지금 몇 시인지 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "지금": "2022-09-30 12:00:00"
+                },
+                "Modality": {
+                    "시간": "current_time"
+                }
+            },
+            "Strategy": {
+                "Objective": "현재 시간을 메타데이터에서 읽어서 반환",
+                "Expected Outputs": [
+                    "현재 시간은 14:35입니다.",
+                    "지금은 오후 2시 35분입니다."
+                ],
+                "Step": [
+                    "시간 데이터를 대답"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "r",
+                    "templates": [
+                        "현재 시간은 2022-09-30 12:00:00입니다.",
+                        "지금은 오후 12시 입니다."
+                    ]
+                }
+            ]
+        }
+    },
+    
+    {
+        "Input": "What is the current temperature in our class?",
+        "Response": {
+            "Formalized Input": "우리반의 현재 실내온도를 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "현재": "2022-09-30 12:00:00"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                },
+                "Modality": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "우리반의 현재 실내온도를 조회함.",
+                "Expected Outputs": [
+                    "The current temperature in our class is 24℃."
+                ],
+                "Step": [
+                    "우리반의 현재 실내온도 데이터를 쿼리해 qr_roomtemp에 저장",
+                    "qr_roomtemp에서 실내온도 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "roomtemp"
+                            ],
+                            "conditions": [
+                                "timestamp = '2022-09-30 12:00:00'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_roomtemp"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "roomtemp = qr_roomtemp['roomtemp'].values[0]",
+                    "return": [
+                        "roomtemp"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "The current temperature in our class is {roomtemp}℃."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "내일 실내온도 어떨거 같아?",
+        "Response": {
+            "Formalized Input": "내일 우리반의 실내온도 예측해줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "내일": "2022-10-01 00:00:00"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                },
+                "Modality": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "우리반의 내일 실내온도를 예측하기 위해 기존 데이터를 분석하여 예측함.",
+                "Expected Outputs": [
+                    "예측하기는 아직 지원되지 않는 기능입니다."
+                ],
+                "Step": [
+                    "예측하지 않음"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "r",
+                    "templates": [
+                        "예측하기는 아직 지원되지 않는 기능입니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "10년 전 오늘 우리반 온도는?",
+        "Response": {
+            "Formalized Input": "10년 전 오늘 우리반의 실내온도를 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "10년 전 오늘": "2012-09-30 00:00:00 ~ 2012-09-30 23:59:59"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                },
+                "Modality": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "10년 전 오늘 우리반의 실내온도를 조회함.",
+                "Expected Outputs": [
+                    "10년 전 오늘 우리반의 실내온도는 24℃였습니다."
+                ],
+                "Step": [
+                    "우리반의 10년 전 오늘 실내온도 데이터를 쿼리해 qr_roomtemp에 저장",
+                    "qr_roomtemp에서 실내온도 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "roomtemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2012-09-30 00:00:00' AND '2012-09-30 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_roomtemp"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "roomtemp = qr_roomtemp['roomtemp'].values[0]",
+                    "return": [
+                        "roomtemp"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "10년 전 오늘 우리반의 실내온도는 {roomtemp}℃였습니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "롯데캐슬의 현재 온도 알려줘",
+        "Response": {
+            "Formalized Input": "롯데캐슬의 현재 실내온도를 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "현재": "2022-09-30 12:00:00"
+                },
+                "Spatial": {
+                    "롯데캐슬": "Unknown"
+                },
+                "Modality": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "Unknown spatial entity의 정의를 사용자에게 물어보고, 해당 정보를 변수에 저장함",
+                "Expected Outputs": [
+                    "롯데캐슬이 어떤 곳인지 알려주세요."
+                ],
+                "Step": [
+                    "Unknown spatial entity의 정의를 사용자에게 물어봄.",
+                    "사용자의 답변을 변수에 저장"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "r",
+                    "templates": [
+                        "롯데캐슬이 어떤 곳인지 알려주세요."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "다음 대통령 선거는 언제인가요?",
+        "Response": {
+            "Formalized Input": "다음 대통령 선거의 일자를 알려줘.",
+            "Input Semantic Parsing": {},
+            "Strategy": {
+                "Objective": "HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
+                "Expected Outputs": [
+                    "HVAC 시스템과 관련 없는 질문입니다."
+                ],
+                "Step": [
+                    "답변 불가 메시지 출력"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "r",
+                    "templates": [
+                        "HVAC 시스템과 관련 없는 질문입니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "1층 평균 실내온도 알려줘",
+        "Response": {
+            "Formalized Input": "1층의 평균 실내온도를 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "현재": "2022-09-30 12:00:00"
+                },
+                "Spatial": {
+                    "1층": "Unknown"
+                },
+                "Modality": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "Unknown spatial entity의 정의를 사용자에게 물어보고, 해당 정보를 변수에 저장함",
+                "Expected Outputs": [
+                    "1층이 어떤 곳인지 알려주세요."
+                ],
+                "Step": [
+                    "Unknown spatial entity의 정의를 사용자에게 물어봄.",
+                    "사용자의 답변을 변수에 저장"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "r",
+                    "templates": [
+                        "1층이 어떤 곳인지 알려주세요."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "에어컨 꺼진 방들 알려줘",
+        "Response": {
+            "Formalized Input": "지금 에어컨이 꺼져있는 방들을 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "지금": "2022-09-30 12:00:00"
+                },
+                "Modality": {
+                    "에어컨 전원": "oper"
+                }
+            },
+            "Strategy": {
+                "Objective": "현재 에어컨이 꺼져있는 방들을 조회함.",
+                "Expected Outputs": [
+                    "현재 에어컨이 꺼져있는 방은 01_IB7입니다."
+                ],
+                "Step": [
+                    "현재 에어컨 전원이 꺼진 데이터를 쿼리해 qr_aircon_oper_off에 저장",
+                    "qr_aircon_oper_off에서 방 이름 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "oper",
+                                "raw:(SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name"
+                            ],
+                            "conditions": [
+                                "timestamp = '2022-09-30 12:00:00'"
+                            ],
+                            "subquery": "oper=false"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_aircon_oper_off"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "rooms_with_aircon_off = [row['idu_name'] for row in qr_aircon_oper_off.to_dict('records')];",
+                    "return": [
+                        "rooms_with_aircon_off"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "현재 에어컨이 꺼져있는 방은 {rooms_with_aircon_off}입니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "우리반 이번달 제일 추웠던 날은 언제냐?",
+        "Response": {
+            "Formalized Input": "이번달 우리반의 하루 평균 실내온도가 가장 낮았던 날 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "이번달": "2022-09-01 00:00:00 ~ 2022-09-30 23:59:59"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                },
+                "Modality": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "이번달 우리반의 실내온도 데이터 쿼리 후, 하루 평균 온도가 가장 낮은 날짜를 반환함.",
+                "Expected Outputs": [
+                    "이번달 우리반은 20일에 평균 24.3℃로 가장 추웠습니다."
+                ],
+                "Step": [
+                    "우리반의 이번달 실내온도 데이터를 쿼리해 qr_roomtemp_month에 저장",
+                    "qr_roomtemp_month에서 하루 평균 온도계산",
+                    "가장 낮은 평균 온도 값 및 해당 날짜 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "timestamp",
+                                "roomtemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-09-01 00:00:00' AND '2022-09-30 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_roomtemp_month"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "qr_roomtemp_month['date'] = qr_roomtemp_month['timestamp'].dt.date; avg_roomtemp_month = qr_roomtemp_month.groupby('date')['roomtemp'].mean(); min_temp_date = avg_roomtemp_month.idxmin(); min_temp = avg_roomtemp_month.min()",
+                    "return": [
+                        "min_temp",
+                        "min_temp_date"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "이번달 우리반은 {min_temp_date}일에 {min_temp}℃로 가장 추웠습니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "우리반과 옆반 이번주 설정온도 차이 보여줘",
+        "Response": {
+            "Formalized Input": "이번주 우리반과 옆반의 설정온도 차이 시각화 해줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "이번주": "2022-09-26 00:00:00 ~ 2022-10-02 23:59:59"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5",
+                    "옆반": "01_IB7"
+                },
+                "Modality": {
+                    "설정온도": "settemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "이번주 우리반과 옆반의 설정온도의 차이의 추이를 시각화",
+                "Expected Outputs": [
+                    "(그래프) X축: 날짜, Y축: 설정온도 차이, 차이 추이 그래프",
+                    "이번주 우리반의 평균 설정온도는 25℃이고, 옆반은 26℃로 1℃ 차이가 있습니다."
+                ],
+                "Step": [
+                    "우리반과 옆반의 이번주 설정온도 데이터를 각각 쿼리결과 qr_settemp_ours와 qr_settemp_beside에 저장",
+                    "qr_settemp_ours와 qr_settemp_beside를 시각화하여 설정온도 차이 추이 그래프 생성",
+                    "qr_settemp_ours와 qr_settemp_beside에서 설정온도의 평균값 계산",
+                    "그래프, 설정온도의 평균값들 및 차이 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "settemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-09-26 00:00:00' AND '2022-10-02 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_settemp_ours"
+                    }
+                },
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "settemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-09-26 00:00:00' AND '2022-10-02 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_settemp_beside"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "settemp_ours = qr_settemp_ours['settemp']; settemp_beside = qr_settemp_beside['settemp']; settemp_diff = settemp_ours - settemp_beside",
+                    "return": [
+                        "settemp_ours",
+                        "settemp_beside",
+                        "settemp_diff"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "(그래프) X축: 날짜, Y축: 설정온도 차이, 차이 추이 그래프, 데이터: {settemp_diff}",
+                        "이번주 우리반의 평균 설정온도는 {settemp_ours.mean()}℃이고, 옆반은 {settemp_beside.mean()}℃로 {settemp_diff.mean()}℃ 차이가 있습니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "어제 우리반 에어컨 작동 시간 알려줘",
+        "Response": {
+            "Formalized Input": "어제 우리반의 에어컨 전원 작동 시간을 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "어제": "2022-09-29 00:00:00 ~ 2022-09-29 23:59:59"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                },
+                "Modality": {
+                    "에어컨 전원": "oper"
+                }
+            },
+            "Strategy": {
+                "Objective": "어제 우리반의 에어컨 전원 작동 데이터를 쿼리 후, on/off 전환 시점을 분석하여 작동 구간 및 전체 작동 시간을 계산함.",
+                "Expected Outputs": [
+                    "어제 우리반은 오전 10시 31분부터 오후 3시 45분까지 총 5시간 14분 동안 에어컨을 작동했습니다.",
+                    "어제 우리반은 오전 8시 30부터 총 15시간 30분 동안 에어컨을 작동했습니다."
+                ],
+                "Step": [
+                    "어제 우리반의 에어컨 작동 상태 데이터를 쿼리해 qr_aircon_oper에 저장",
+                    "qr_aircon_oper를 timestamp 기준으로 정렬",
+                    "on/off 전환 시점을 분석하여 첫 번째 작동 구간(켜짐 시각과 꺼짐 시각) 및 전체 작동 시간을 계산",
+                    "계산된 첫 번째 구간 작동 시간과 전체 작동 시간을 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "timestamp",
+                                "oper"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-09-29 00:00:00' AND '2022-09-29 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_aircon_oper"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "aircon_switch_times = qr_aircon_oper['oper'].diff().ne(0); aircon_on_time = qr_aircon_oper['timestamp'][aircon_switch_times & qr_aircon_oper['oper']].reset_index(drop=True); aircon_off_time = qr_aircon_oper['timestamp'][aircon_switch_times & ~qr_aircon_oper['oper']].reset_index(drop=True); n = min(len(aircon_on_time), len(aircon_off_time)); aircon_on_time = aircon_on_time[:n]; aircon_off_time = aircon_off_time[:n]; aircon_on_duration = (aircon_off_time - aircon_on_time).sum(); total_minutes = int(aircon_on_duration.total_seconds() // 60); hours = total_minutes // 60; minutes = total_minutes % 60; total_on_duration_str = f'{hours}시간 {minutes}분'; output = { 'aircon_on_time': aircon_on_time, 'aircon_off_time': aircon_off_time, 'aircon_on_duration': total_on_duration_str, 'total_on_duration': total_on_duration_str, }; return output;",
+                    "return": [
+                        "aircon_on_time",
+                        "aircon_off_time",
+                        "aircon_on_duration",
+                        "total_on_duration"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "어제 우리반은 {aircon_on_time[0].strftime('%p %I시 %M분')}부터 {aircon_off_time[0].strftime('%p %I시 %M분')}까지 총 {aircon_on_duration} 동안 에어컨을 작동했습니다.",
+                        "어제 우리반은 {aircon_on_time[0].strftime('%p %I시 %M분')}부터 총 {total_on_duration} 동안 에어컨을 작동했습니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "농담 좀 해줘",
+        "Response": {
+            "Formalized Input": "농담을 해주세요.",
+            "Input Semantic Parsing": {},
+            "Strategy": {
+                "Objective": "HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
+                "Expected Outputs": [
+                    "HVAC 시스템과 관련 없는 질문입니다."
+                ],
+                "Step": [
+                    "답변 불가 메시지 출력"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "r",
+                    "templates": [
+                        "HVAC 시스템과 관련 없는 질문입니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "에어켠 제일 세게 킨 방 3개 알려줘",
+        "Response": {
+            "Formalized Input": "현재 에어컨 전원이 켜져있으며 설정 온도가 제일 낮은 방 3개 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "현재": "2022-09-30 12:00:00"
+                },
+                "Modality": {
+                    "에어컨 전원": "oper",
+                    "설정온도": "settemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "현재 에어컨 전원이 켜져있는 방의 설정온도 데이터 쿼리 후 설정온도가 가장 낮은 방 3개의 이름 및 설정온도 반환",
+                "Expected Outputs": [
+                    "에어컨을 제일 세게 킨 방은 순서대로 01_IB5(27℃), 01_IB7(26℃), 01_IB6(25℃)입니다.",
+                    "에어컨을 제일 세게 킨 방은 순서대로 우리반(27℃), 옆반(26℃), 뒷반(25℃)입니다."
+                ],
+                "Step": [
+                    "현재 모든 방의 에어컨 전원 및 설정온도 데이터를 쿼리해 qr 에 저장",
+                    "모든 방 중 에어컨을 킨 방만 필터링",
+                    "설정온도가 가장 낮은 방 3개의 이름 및 설정온도 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "oper",
+                                "settemp",
+                                "raw:(SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name"
+                            ],
+                            "conditions": [
+                                "timestamp = '2022-09-30 12:00:00'"
+                            ]
+                        }
+                    },
+                    "result": {
+                        "name": "qr"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "top3 = qr[qr['oper'] == True].sort_values('settemp', ascending=True).head(3); top3_idu_names = top3['idu_name'].values; top3_settemp = top3['settemp'].values",
+                    "return": [
+                        "top3_idu_names",
+                        "top3_settemp"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "에어컨을 제일 세게 킨 방은 순서대로 {top3_idu_names[0]}({top3_settemp[0]}℃), {top3_idu_names[1]}({top3_settemp[1]}℃), {top3_idu_names[2]}({top3_settemp[2]}℃)입니다.",
+                        "에어컨을 제일 세게 킨 방은 순서대로 우리반({top3_settemp[0]}℃), 옆반({top3_settemp[1]}℃), 뒷반({top3_settemp[2]}℃)입니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "지난 4개월동안 옆반에서 가장 더웠던 날 알려줘.",
+        "Response": {
+            "Formalized Input": "지난 4개월 동안 옆반에서 가장 높은 온도를 기록한 날 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "지난 4개월": "2022-05-29 00:00:00 ~ 2022-09-29 23:59:59"
+                },
+                "Spatial": {
+                    "옆반": "01_IB7"
+                },
+                "Modality": {
+                    "온도": "roomtemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "지난 4개월간 옆반 실내 온도 데이터를 쿼리한 후 가장 높은 온도를 기록한 날짜 및 온도를 반환함.",
+                "Expected Outputs": [
+                    "2022년 8월 15일에 33.5℃로 가장 더웠습니다."
+                ],
+                "Step": [
+                    "지난 4개월(2022-05-29 ~ 2022-09-29)간 옆반의 실내 온도 데이터를 쿼리해 qr_roomtemp_beside에 저장",
+                    "가장 높은 온도를 기록한 날짜 및 온도 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "timestamp",
+                                "roomtemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-05-29 00:00:00' AND '2022-09-29 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_temp"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "max_row=qr_temp.loc[qr_temp['roomtemp'].idxmax()];max_temp_date=max_row['timestamp'].strftime('%Y년 %m월 %d일');max_temp=max_row['roomtemp']",
+                    "return": [
+                        "max_temp_date",
+                        "max_temp"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "{max_temp_date}에 {max_temp}℃로 가장 더웠습니다."
+                    ]
+                }
+            ]
+        }
+    },
+    
+    {
+        "Input": "지난달에 설정온도랑 현재온도 차이가 제일 많이 났던 날은 언제야?",
+        "Response": {
+            "Formalized Input": "지난달 우리반 하루 평균 설정온도와 하루 평균 현재온도 평균 차이가 가장 많이 나는 날짜를 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "지난달": "2022-08-01 00:00:00 ~ 2022-08-31 23:59:59"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                },
+                "Modality": {
+                    "설정온도": "settemp",
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "지난달 우리반 설정온도와 실내온도 데이터 쿼리 후, 각 날짜별로 평균의 차이를 계산하여 가장 많이 차이나는 날짜와 그 날의 평균 실내온도, 설정온도, 차이값을 반환함.",
+                "Expected Outputs": [
+                    "지난달 14일이 설정온도(20℃)와 실내온도(36.7℃)의 차이가 16.7℃로 가장 많이 나는 날이었습니다."
+                ],
+                "Step": [
+                    "지난달 설정온도 및 실내온도 데이터 쿼리해 qr_last_month에 저장",
+                    "각 날짜별로 평균의 차이 값 계산",
+                    "가장 많이 차이나는 날짜와 그 날의 평균 실내온도, 설정온도, 차이값 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "timestamp",
+                                "settemp",
+                                "roomtemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-08-01 00:00:00' AND '2022-08-31 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_last_month"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "qr_last_month['date'] = qr_last_month['timestamp'].dt.date; settemp_mean = qr_last_month.groupby('date')['settemp'].mean(); roomtemp_mean = qr_last_month.groupby('date')['roomtemp'].mean(); temp_diff = abs(settemp_mean - roomtemp_mean); max_diff_date = str(temp_diff.idxmax()); settemp_at_max_diff = settemp_mean.loc[max_diff_date]; roomtemp_at_max_diff = roomtemp_mean.loc[max_diff_date]; max_diff = temp_diff[max_diff_date]",
+                    "return": [
+                        "max_diff_date",
+                        "settemp_at_max_diff",
+                        "roomtemp_at_max_diff",
+                        "max_diff"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "{max_diff_date}에 설정온도({settemp_at_max_diff}℃)와 실내온도({roomtemp_at_max_diff}℃)의 차이가 {max_diff}℃로 가장 많이 나는 날이었습니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "지난 한달간 설정온도 평균을 알려줘.",
+        "Response": {
+            "Formalized Input": "지난 한달간 우리반 설정온도 평균 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "지난달": "2022-08-01 00:00:00 ~ 2022-08-31 23:59:59"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                },
+                "Modality": {
+                    "설정온도": "settemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "지난 한달 동안 우리반 설정온도 데이터를 쿼리한 후 평균값을 계산하여 반환.",
+                "Expected Outputs": [
+                    "지난 한달간 설정온도 평균은 22.5℃였습니다."
+                ],
+                "Step": [
+                    "지난 한달 동안의 설정온도 데이터 쿼리해 qr_settemp_month에 저장",
+                    "설정온도의 평균 계산 후 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "settemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-08-01 00:00:00' AND '2022-08-31 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_settemp_avg"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "avg_settemp = qr_settemp_avg['settemp'].mean()",
+                    "return": [
+                        "avg_settemp"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "지난 한달간 설정온도의 평균 값은 {avg_settemp}℃였습니다."
+                    ]
+                }
+            ]
+        }
+    },
+    
+    {
+        "Input": "What is the temperature difference between our class and the adjacent class right now?",
+        "Response": {
+            "Formalized Input": "현재 우리반과 옆반의 실내온도 차이를 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "현재": "2022-09-30 12:00:00"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5",
+                    "옆반": "01_IB7"
+                },
+                "Modality": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "현재 우리반과 옆반의 실내온도를 쿼리하여 그 값과 차이를 계산하여 반환함.",
+                "Expected Outputs": [
+                    "The current temperature in our class is 25℃, and the temperature in the adjacent class is 26℃, with a difference of 1℃."
+                ],
+                "Step": [
+                    "우리반의 현재 실내온도 데이터를 쿼리해 qr_roomtemp_ours에 저장",
+                    "옆반의 현재 실내온도 데이터를 쿼리해 qr_roomtemp_others에 저장",
+                    "각 반의 실내온도와 차이 계산하여 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "roomtemp"
+                            ],
+                            "conditions": [
+                                "timestamp = '2022-09-30 12:00:00'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_roomtemp_ours"
+                    }
+                },
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "roomtemp"
+                            ],
+                            "conditions": [
+                                "timestamp = '2022-09-30 12:00:00'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_roomtemp_others"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "ours_temp = qr_roomtemp_ours['roomtemp'].values[0]; others_temp = qr_roomtemp_others['roomtemp'].values[0]; temp_diff = abs(ours_temp - others_temp)",
+                    "return": [
+                        "ours_temp",
+                        "others_temp",
+                        "temp_diff"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "Current temperature in our class is {ours_temp}℃, and the temperature in the adjacent class is {others_temp}℃, with a difference of {temp_diff}℃."
+                    ]
+                }
+            ]
+        }
+    },
+    
+    {
+        "Input": "오늘 우리반 에어컨 전원이 처음 켜진 시각 알려줘.",
+        "Response": {
+            "Formalized Input": "오늘 우리반 에어컨 전원이 처음 켜진 시각 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "오늘": "2022-09-30 00:00:00 ~ 2022-09-30 23:59:59"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                },
+                "Modality": {
+                    "에어컨 전원": "oper"
+                }
+            },
+            "Strategy": {
+                "Objective": "오늘 동안 우리반의 에어컨 전원 상태 데이터를 쿼리한 후 처음 켜진 시각을 반환함.",
+                "Expected Outputs": [
+                    "오늘 우리반의 에어컨 전원이 처음 켜진 시각은 08:15입니다.",
+                    "어제 에어컨은 쭉 꺼져있었습니다."
+                ],
+                "Step": [
+                    "우리반의 오늘 하루 시간별 에어컨 전원 상태 데이터를 쿼리해 qr_aircon_oper에 저장",
+                    "qr_aircon_oper에서 전원이 켜진 첫 번째 시각 찾기",
+                    "첫 번째 켜진 시각 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "timestamp",
+                                "oper"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-09-30 00:00:00' AND '2022-09-30 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_aircon_oper"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "oper_on_time = qr_aircon_oper[qr_aircon_oper['oper'] == True]['timestamp'].min().strftime('%H:%M')",
+                    "return": [
+                        "oper_on_time"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "오늘 우리반의 에어컨 전원이 처음 켜진 시각은 {oper_on_time}입니다.",
+                        "어제 에어컨은 쭉 꺼져있었습니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "이번주 경제 소식 알려줘.",
+        "Response": {
+            "Formalized Input": "이번주 경제 소식을 알려줘.",
+            "Input Semantic Parsing": {},
+            "Strategy": {
+                "Objective": "HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
+                "Expected Outputs": [
+                    "HVAC 시스템과 관련 없는 질문입니다."
+                ],
+                "Step": [
+                    "답변 불가 메시지 출력"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "r",
+                    "templates": [
+                        "HVAC 시스템과 관련 없는 질문입니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "지난주 우리반은 대체로 몇 도로 설정되어 있었나요?",
+        "Response": {
+            "Formalized Input": "지난주 우리반의 설정온도 중 가장 빈도가 많았던 것을 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "지난주": "2022-09-23 00:00:00 ~ 2022-09-29 23:59:59"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                },
+                "Modality": {
+                    "설정온도": "settemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "지난주 동안 우리반의 설정온도 데이터를 쿼리한 후 가장 빈도가 많은 설정온도를 반환함.",
+                "Expected Outputs": [
+                    "지난주 우리반의 대체로 25℃로 설정되어 있었습니다."
+                ],
+                "Step": [
+                    "지난주 동안의 우리반 설정온도 데이터를 쿼리해 qr_settemp_ours에 저장",
+                    "qr_settemp_ours에서 가장 빈도가 많은 설정온도 값을 찾아 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "settemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-09-23 00:00:00' AND '2022-09-29 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_settemp_ours"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "most_frequent_settemp = qr_settemp_ours['settemp'].mode().values[0]",
+                    "return": [
+                        "most_frequent_settemp"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "지난주 우리반의 설정온도 중 가장 빈도가 많았던 온도는 {most_frequent_settemp}℃입니다."
+                    ]
+                }
+            ]
+        }
+    },
+    
+    
+    {
+        "Input": "지금 옆반 에어컨 상태 알려줘",
+        "Response": {
+            "Formalized Input": "지금 옆반의 에어컨 전원 상태 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "지금": "2022-09-30 12:00:00"
+                },
+                "Spatial": {
+                    "옆반": "01_IB7"
+                },
+                "Modality": {
+                    "에어컨 전원": "oper"
+                }
+            },
+            "Strategy": {
+                "Objective": "현재 옆반의 에어컨 전원 상태를 조회함.",
+                "Expected Outputs": [
+                    "옆반의 에어컨은 현재 켜져있습니다."
+                ],
+                "Step": [
+                    "옆반의 현재 에어컨 전원 상태 데이터를 쿼리해 qr_aircon_oper에 저장",
+                    "qr_aircon_oper에서 에어컨 전원 상태 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "oper"
+                            ],
+                            "conditions": [
+                                "timestamp = '2022-09-30 12:00:00'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_aircon_oper"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "oper_status = qr_aircon_oper['oper'].values[0]",
+                    "return": [
+                        "oper_status"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "옆반의 에어컨은 현재 {oper_status}입니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "이번주 우리반 평균 온도 알려줘",
+        "Response": {
+            "Formalized Input": "이번주 우리반의 평균 실내온도 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "이번주": "2022-09-26 00:00:00 ~ 2022-10-02 23:59:59"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                },
+                "Modality": {
+                    "실내온도": "roomtemp"
+                },
+                "Operation": [
+                    "평균"
+                ]
+            },
+            "Strategy": {
+                "Objective": "이번주 우리반의 실내온도 데이터를 쿼리 후 평균값 계산.",
+                "Expected Outputs": [
+                    "이번주 우리반의 평균 실내온도는 24℃ 입니다."
+                ],
+                "Step": [
+                    "우리반의 이번주 실내온도 데이터를 쿼리결과 qr_roomtemp_week에 저장",
+                    "qr_roomtemp_week에서 roomtemp의 평균값 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "roomtemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-09-26 00:00:00' AND '2022-10-02 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_roomtemp_week"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "avg_roomtemp = qr_roomtemp_week['roomtemp'].mean()",
+                    "return": [
+                        "avg_roomtemp"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "이번주 우리반의 평균 실내온도는 {avg_roomtemp}℃ 입니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "이번달 우리반 설정온도 최대값과 최소값 알려줘",
+        "Response": {
+            "Formalized Input": "이번달 우리반의 설정온도 최대값과 최소값 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "이번달": "2022-09-01 00:00:00 ~ 2022-09-30 23:59:59"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                },
+                "Modality": {
+                    "설정온도": "settemp"
+                },
+                "Operation": [
+                    "최대값",
+                    "최소값"
+                ]
+            },
+            "Strategy": {
+                "Objective": "이번달 우리반의 설정온도 데이터를 쿼리 후 최대값과 최소값 계산.",
+                "Expected Outputs": [
+                    "이번달 우리반의 설정온도는 최대 28℃, 최소 22℃입니다."
+                ],
+                "Step": [
+                    "우리반의 이번달 설정온도 데이터를 쿼리결과 qr_settemp_month에 저장",
+                    "qr_settemp_month에서 설정온도의 최대값과 최소값 계산",
+                    "최대값과 최소값 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "settemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-09-01 00:00:00' AND '2022-09-30 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_settemp_month"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "max_settemp = qr_settemp_month['settemp'].max(); min_settemp = qr_settemp_month['settemp'].min()",
+                    "return": [
+                        "max_settemp",
+                        "min_settemp"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "이번달 우리반의 설정온도는 최대 {max_settemp}℃, 최소 {min_settemp}℃입니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "우리반과 옆반중 더 추운곳은 어디야?",
+        "Response": {
+            "Formalized Input": "지금 우리반과 옆반 중 실내온도가 더 낮은 곳을 찾아줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "지금": "2022-09-30 12:00:00"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5",
+                    "옆반": "01_IB7"
+                },
+                "Modality": {
+                    "실내온도": "roomtemp"
+                },
+                "Operation": [
+                    "최저"
+                ]
+            },
+            "Strategy": {
+                "Objective": "현재 우리반과 옆반의 현재 실내온도 쿼리 후 둘 중 낮은 온도를 가진 반을 찾고, 두 온도의 차이를 계산해 반환함.",
+                "Expected Outputs": [
+                    "옆반(17.0℃)이 우리반(19.3℃)보다 2.3℃ 더 낮아요."
+                ],
+                "Step": [
+                    "우리반의 현재 실내온도 데이터를 쿼리해 qr_roomtemp_ours에 저장",
+                    "옆반의 현재 실내온도 데이터를 쿼리해 qr_roomtemp_beside에 저장",
+                    "두 반의 실내온도를 비교하여 더 낮은 온도를 가진 반을 찾음",
+                    "각 반의 실내온도 및 차이 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "roomtemp"
+                            ],
+                            "conditions": [
+                                "timestamp = '2022-09-30 12:00:00'"
+                            ],
+                            "subquery": "idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5'))"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_roomtemp_ours"
+                    }
+                },
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "roomtemp"
+                            ],
+                            "conditions": [
+                                "timestamp = '2022-09-30 12:00:00'"
+                            ],
+                            "subquery": "idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB7'))"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_roomtemp_beside"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "roomtemp_ours = qr_roomtemp_ours['roomtemp'].values[0]; roomtemp_beside = qr_roomtemp_beside['roomtemp'].values[0]; temp_diff = roomtemp_ours - roomtemp_beside",
+                    "return": [
+                        "roomtemp_ours",
+                        "roomtemp_beside",
+                        "temp_diff"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "{room_with_lower_temp}({roomtemp_lower}℃)이 {room_with_higher_temp}({roomtemp_higher}℃)보다 {temp_diff}℃ 더 낮아요."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "에어컨 켜져있어?",
+        "Response": {
+            "Formalized Input": "지금 우리반 에어컨 전원 상태 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "지금": "2022-09-30 12:00:00"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                },
+                "Modality": {
+                    "에어컨 전원": "oper"
+                }
+            },
+            "Strategy": {
+                "Objective": "현재 우리반의 에어컨 전원 상태를 쿼리해 반환함.",
+                "Expected Outputs": [
+                    "우리반의 에어컨은 현재 켜져있습니다."
+                ],
+                "Step": [
+                    "우리반의 현재 에어컨 전원 상태 데이터를 쿼리해 qr_aircon_oper에 저장",
+                    "qr_aircon_oper에서 에어컨 전원 상태 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "oper"
+                            ],
+                            "conditions": [
+                                "timestamp = '2022-09-30 12:00:00'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_aircon_oper"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "oper_status = qr_aircon_oper['oper'].values[0]",
+                    "return": [
+                        "oper_status"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "우리반의 에어컨은 현재 {oper_status}입니다."
+                    ]
+                }
+            ]
+        }
+    },
+    
+    
+    
+    
+    {
+        "Input": "내일 우리반과 옆반 온도 차이 알려줘",
+        "Response": {
+            "Formalized Input": "내일 우리반과 옆반의 실내온도 차이를 예측해줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "내일": "2022-10-01 00:00:00"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5",
+                    "옆반": "01_IB7"
+                },
+                "Modality": {
+                    "실내온도": "roomtemp"
+                },
+                "Operation": [
+                    "예측"
+                ]
+            },
+            "Strategy": {
+                "Objective": "예측하기는 아직 지원되지 않는 기능임을 사용자에게 알림.",
+                "Expected Outputs": [
+                    "예측하기는 아직 지원되지 않는 기능입니다."
+                ],
+                "Step": [
+                    "예측하지 않음"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "r",
+                    "templates": [
+                        "예측하기는 아직 지원되지 않는 기능입니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "1년 전 옆반 온도는?",
+        "Response": {
+            "Formalized Input": "1년 전 오늘의 옆반의 평균 실내온도를 조회해줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "1년 전 오늘": "2021-09-30 00:00:00 ~ 2021-09-30 23:59:59"
+                },
+                "Spatial": {
+                    "옆반": "01_IB7"
+                },
+                "Modality": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Strategy": {
+                "Objective": "1년 전 오늘의 옆반의 평균 실내온도를 쿼리해 반환함.",
+                "Expected Outputs": [
+                    "1년 전 오늘의 옆반의 평균 실내온도는 24.2℃입니다."
+                ],
+                "Step": [
+                    "옆반의 1년 전 오늘(2021-09-30)의 실내온도 데이터를 쿼리해 qr_roomtemp_beside에 저장",
+                    "평균 실내온도 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "roomtemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2021-09-30 00:00:00' AND '2021-09-30 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_roomtemp_beside"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "avg_temp = qr_roomtemp_beside['roomtemp'].mean()",
+                    "return": [
+                        "avg_temp"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "1년 전 오늘 동안 옆반의 평균 실내온도는 {avg_temp}℃입니다."
+                    ]
+                }
+            ]
+        }
+    },
+    
+    
+    {
+        "Input": "3층 평균 실내온도는?",
+        "Response": {
+            "Formalized Input": "3층의 평균 실내온도를 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "현재": "2022-09-30 12:00:00"
+                },
+                "Spatial": {
+                    "3층": "Unknown"
+                },
+                "Modality": {
+                    "실내온도": "roomtemp"
+                },
+                "Operation": [
+                    "평균"
+                ]
+            },
+            "Strategy": {
+                "Objective": "Unknown spatial entity의 정의를 사용자에게 물어보고, 해당 정보를 변수에 저장함.",
+                "Expected Outputs": [
+                    "3층이 어떤 곳인지 알려주세요."
+                ],
+                "Step": [
+                    "Unknown spatial entity의 정의를 사용자에게 물어봄.",
+                    "사용자의 답변을 변수에 저장"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "r",
+                    "templates": [
+                        "3층이 어떤 곳인지 알려주세요."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "How hot was our class over the last month?",
+        "Response": {
+            "Formalized Input": "지난 한달간 우리반은 얼마나 더웠어?",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "지난 한달": "2022-09-01 00:00:00 ~ 2022-09-30 23:59:59"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                }
+            },
+            "Strategy": {
+                "Objective": "지난 한달 동안 우리반의 실내온도를 쿼리해 평균값을 계산후 반환",
+                "Expected Outputs": [
+                    "The average temperature of our class over the last month was 25.5℃."
+                ],
+                "Step": [
+                    "지난 한달(2022-09-01~2022-09-30) 동안의 실내 온도 데이터를 쿼리해 qr_roomtemp_ours에 저장",
+                    "qr_roomtemp_ours에서 평균 온도를 계산"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "roomtemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-09-01 00:00:00' AND '2022-09-30 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_roomtemp_avg"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "avg_roomtemp = qr_roomtemp_avg['roomtemp'].mean()",
+                    "return": [
+                        "avg_roomtemp"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "The average temperature of our class over the last month was {avg_roomtemp}℃."
+                    ]
+                }
+            ]
+        }
+    }, {
+        "Input": "우리 반 에어컨이 가장 오래 작동했던 날은 언제야?",
+        "Response": {
+            "Formalized Input": "우리 반 에어컨 작동 시간이 가장 길었던 날짜를 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "최근(일)": "2022-01-01 00:00:00 ~ 2022-09-30 23:59:59"
+                },
+                "Spatial": {
+                    "우리 반": "01_IB5"
+                },
+                "Modality": {
+                    "에어컨 작동": "oper"
+                }
+            },
+            "Strategy": {
+                "Objective": "최근 우리 반의 에어컨 작동 시간을 쿼리해 가장 오래 작동한 날짜를 반환함.",
+                "Expected Outputs": [
+                    "최근 우리 반 에어컨이 가장 오래 작동했던 날은 2022-09-30입니다."
+                ],
+                "Step": [
+                    "우리 반의 오늘 에어컨 작동 시간 데이터를 쿼리해 qr_oper_ours에 저장",
+                    "가장 오래 작동한 날짜 반환"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "timestamp",
+                                "oper"
+                            ],
+                            "conditions": [
+                                "oper = True",
+                                "timestamp BETWEEN '2022-01-01 00:00:00' AND '2022-09-30 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_oper_ours"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "longest_oper_day = qr_oper_ours['timestamp'].dt.date.value_counts().idxmax()",
+                    "return": [
+                        "longest_oper_day"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "최근 우리 반 에어컨이 가장 오래 작동했던 날은 {longest_oper_day}입니다."
+                    ]
+                }
+            ]
+        }
+    }
+]
