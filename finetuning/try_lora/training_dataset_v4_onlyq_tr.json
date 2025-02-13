@@ -55,21 +55,6 @@
                         "subquery": "idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB7'))"
                     },
                     "result_name": "qr_roomtemp_beside"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "avg_roomtemp_ours = qr_roomtemp_ours['roomtemp'].mean(); avg_roomtemp_beside = qr_roomtemp_beside['roomtemp'].mean(); temp_diff = avg_roomtemp_ours - avg_roomtemp_beside",
-                    "return": [
-                        "avg_roomtemp_ours",
-                        "avg_roomtemp_beside",
-                        "temp_diff"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "{room_with_higher_temp}({avg_roomtemp_higher}℃)이 {room_with_lower_temp}({avg_roomtemp_lower}℃) 보다 {temp_diff}℃ 만큼 높습니다."
-                    ]
                 }
             ]
         }
@@ -113,19 +98,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
                     "result_name": "qr_roomtemp_summer"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "avg_roomtemp = qr_roomtemp_summer['roomtemp'].mean()",
-                    "return": [
-                        "avg_roomtemp"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "올해 여름 우리반의 평균 온도는 {avg_roomtemp}℃ 입니다."
-                    ]
                 }
             ]
         }
@@ -171,20 +143,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
                     "result_name": "qr_roomtemp_thismonth"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "max_temp = qr_roomtemp_thismonth['roomtemp'].max(); max_temp_date = qr_roomtemp_thismonth.loc[qr_roomtemp_thismonth['roomtemp'].idxmax(), 'timestamp']",
-                    "return": [
-                        "max_temp",
-                        "max_temp_date"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "이번달 우리반은 {max_temp_date}일에 {max_temp}℃로 가장 더웠습니다."
-                    ]
                 }
             ]
         }
@@ -232,25 +190,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
                     "result_name": "qr_settemp_lastweek"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "settemp_rawdata = qr_settemp_lastweek['settemp']; settemp_mean = settemp_rawdata.mean(); settemp_min = settemp_rawdata.min(); settemp_max = settemp_rawdata.max(); settemp_diff = settemp_max - settemp_min",
-                    "return": [
-                        "settemp_rawdata",
-                        "settemp_mean",
-                        "settemp_min",
-                        "settemp_max",
-                        "settemp_diff"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "(그래프) X축: 날짜, Y축: 설정온도, 변화 추이 그래프, 데이터: {settemp_rawdata}",
-                        "지난주 우리반의 설정온도는 {settemp_mean}℃에서 {settemp_max}℃로 {settemp_diff}℃ 증가했습니다.",
-                        "지난주 우리반의 설정온도는 평균 {settemp_mean}℃, 최저 {settemp_min}℃, 최고 {settemp_max}℃였습니다."
-                    ]
                 }
             ]
         }
@@ -290,20 +229,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
                     "result_name": "qr_settemp"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "qr_settemp = qr_settemp.sort_values(by='timestamp'); latest_settemp = qr_settemp['settemp'].values[-1]; latest_settemp_time = qr_settemp['timestamp'].values[-1]",
-                    "return": [
-                        "latest_settemp",
-                        "latest_settemp_time"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "우리반의 가장 최근 설정온도는 {latest_settemp_time}에 설정한 {latest_settemp}℃입니다."
-                    ]
                 }
             ]
         }
@@ -351,24 +276,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
                     "result_name": "qr_ours_recent"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "sd = qr_ours_recent.sort_values(by='timestamp'); current_roomtemp = sd['roomtemp'].iloc[-1]; current_settemp = sd['settemp'].iloc[-1]; current_oper = sd['oper'].iloc[-1]; latest_oper_on_time = (str(int((sd['timestamp'].iloc[-1] - sd.loc[sd['oper'] == True, 'timestamp'].iloc[-1]) / np.timedelta64(1, 'm'))) + \"분\") if current_oper else \"0분\"",
-                    "return": [
-                        "current_roomtemp",
-                        "current_settemp",
-                        "current_oper",
-                        "latest_oper_on_time"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "지금 우리반은 {current_roomtemp}℃인데 에어컨 설정온도는 {current_settemp}℃로 실내온도보다 높네요. 설정온도를 낮추면 시원해질 거에요.",
-                        "지금 우리반은 {current_roomtemp}℃로 더운데 에어컨이 꺼져있네요. 에어컨을 켜면 시원해질 거에요.",
-                        "지금 우리반은 {current_roomtemp}℃인데요, 에어컨이 켜진지 {latest_oper_on_time}밖에 안되었기 때문입니다."
-                    ]
                 }
             ]
         }
@@ -396,13 +303,7 @@
                 ]
             },
             "Instruction Set": [
-                {
-                    "type": "r",
-                    "templates": [
-                        "현재 시간은 2022-09-30 12:00:00입니다.",
-                        "지금은 오후 12시 입니다."
-                    ]
-                }
+                
             ]
         }
     },
@@ -445,19 +346,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
                     "result_name": "qr_roomtemp"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "roomtemp = qr_roomtemp['roomtemp'].values[0]",
-                    "return": [
-                        "roomtemp"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "The current temperature in our class is {roomtemp}℃."
-                    ]
                 }
             ]
         }
@@ -487,12 +375,7 @@
                 ]
             },
             "Instruction Set": [
-                {
-                    "type": "r",
-                    "templates": [
-                        "예측하기는 아직 지원되지 않는 기능입니다."
-                    ]
-                }
+                
             ]
         }
     },
@@ -535,19 +418,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
                     "result_name": "qr_roomtemp"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "roomtemp = qr_roomtemp['roomtemp'].values[0]",
-                    "return": [
-                        "roomtemp"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "10년 전 오늘 우리반의 실내온도는 {roomtemp}℃였습니다."
-                    ]
                 }
             ]
         }
@@ -578,12 +448,7 @@
                 ]
             },
             "Instruction Set": [
-                {
-                    "type": "r",
-                    "templates": [
-                        "롯데캐슬이 어떤 곳인지 알려주세요."
-                    ]
-                }
+                
             ]
         }
     },
@@ -602,12 +467,7 @@
                 ]
             },
             "Instruction Set": [
-                {
-                    "type": "r",
-                    "templates": [
-                        "HVAC 시스템과 관련 없는 질문입니다."
-                    ]
-                }
+                
             ]
         }
     },
@@ -637,12 +497,7 @@
                 ]
             },
             "Instruction Set": [
-                {
-                    "type": "r",
-                    "templates": [
-                        "1층이 어떤 곳인지 알려주세요."
-                    ]
-                }
+                
             ]
         }
     },
@@ -683,19 +538,6 @@
                         "subquery": "oper=false"
                     },
                     "result_name": "qr_aircon_oper_off"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "rooms_with_aircon_off = [row['idu_name'] for row in qr_aircon_oper_off.to_dict('records')];",
-                    "return": [
-                        "rooms_with_aircon_off"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "현재 에어컨이 꺼져있는 방은 {rooms_with_aircon_off}입니다."
-                    ]
                 }
             ]
         }
@@ -741,20 +583,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
                     "result_name": "qr_roomtemp_month"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "qr_roomtemp_month['date'] = qr_roomtemp_month['timestamp'].dt.date; avg_roomtemp_month = qr_roomtemp_month.groupby('date')['roomtemp'].mean(); min_temp_date = avg_roomtemp_month.idxmin(); min_temp = avg_roomtemp_month.min()",
-                    "return": [
-                        "min_temp",
-                        "min_temp_date"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "이번달 우리반은 {min_temp_date}일에 {min_temp}℃로 가장 추웠습니다."
-                    ]
                 }
             ]
         }
@@ -816,22 +644,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
                     },
                     "result_name": "qr_settemp_beside"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "settemp_ours = qr_settemp_ours['settemp']; settemp_beside = qr_settemp_beside['settemp']; settemp_diff = settemp_ours - settemp_beside",
-                    "return": [
-                        "settemp_ours",
-                        "settemp_beside",
-                        "settemp_diff"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "(그래프) X축: 날짜, Y축: 설정온도 차이, 차이 추이 그래프, 데이터: {settemp_diff}",
-                        "이번주 우리반의 평균 설정온도는 {settemp_ours.mean()}℃이고, 옆반은 {settemp_beside.mean()}℃로 {settemp_diff.mean()}℃ 차이가 있습니다."
-                    ]
                 }
             ]
         }
@@ -879,23 +691,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
                     "result_name": "qr_aircon_oper"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "aircon_switch_times = qr_aircon_oper['oper'].diff().ne(0); aircon_on_time = qr_aircon_oper['timestamp'][aircon_switch_times & qr_aircon_oper['oper']].reset_index(drop=True); aircon_off_time = qr_aircon_oper['timestamp'][aircon_switch_times & ~qr_aircon_oper['oper']].reset_index(drop=True); n = min(len(aircon_on_time), len(aircon_off_time)); aircon_on_time = aircon_on_time[:n]; aircon_off_time = aircon_off_time[:n]; aircon_on_duration = (aircon_off_time - aircon_on_time).sum(); total_minutes = int(aircon_on_duration.total_seconds() // 60); hours = total_minutes // 60; minutes = total_minutes % 60; total_on_duration_str = f'{hours}시간 {minutes}분'; output = { 'aircon_on_time': aircon_on_time, 'aircon_off_time': aircon_off_time, 'aircon_on_duration': total_on_duration_str, 'total_on_duration': total_on_duration_str, }; return output;",
-                    "return": [
-                        "aircon_on_time",
-                        "aircon_off_time",
-                        "aircon_on_duration",
-                        "total_on_duration"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "어제 우리반은 {aircon_on_time[0].strftime('%p %I시 %M분')}부터 {aircon_off_time[0].strftime('%p %I시 %M분')}까지 총 {aircon_on_duration} 동안 에어컨을 작동했습니다.",
-                        "어제 우리반은 {aircon_on_time[0].strftime('%p %I시 %M분')}부터 총 {total_on_duration} 동안 에어컨을 작동했습니다."
-                    ]
                 }
             ]
         }
@@ -915,12 +710,7 @@
                 ]
             },
             "Instruction Set": [
-                {
-                    "type": "r",
-                    "templates": [
-                        "HVAC 시스템과 관련 없는 질문입니다."
-                    ]
-                }
+                
             ]
         }
     },
@@ -964,21 +754,6 @@
                         ]
                     },
                     "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "top3 = qr[qr['oper'] == True].sort_values('settemp', ascending=True).head(3); top3_idu_names = top3['idu_name'].values; top3_settemp = top3['settemp'].values",
-                    "return": [
-                        "top3_idu_names",
-                        "top3_settemp"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "에어컨을 제일 세게 킨 방은 순서대로 {top3_idu_names[0]}({top3_settemp[0]}℃), {top3_idu_names[1]}({top3_settemp[1]}℃), {top3_idu_names[2]}({top3_settemp[2]}℃)입니다.",
-                        "에어컨을 제일 세게 킨 방은 순서대로 우리반({top3_settemp[0]}℃), 옆반({top3_settemp[1]}℃), 뒷반({top3_settemp[2]}℃)입니다."
-                    ]
                 }
             ]
         }
@@ -1023,20 +798,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
                     },
                     "result_name": "qr_temp"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "max_row=qr_temp.loc[qr_temp['roomtemp'].idxmax()];max_temp_date=max_row['timestamp'].strftime('%Y년 %m월 %d일');max_temp=max_row['roomtemp']",
-                    "return": [
-                        "max_temp_date",
-                        "max_temp"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "{max_temp_date}에 {max_temp}℃로 가장 더웠습니다."
-                    ]
                 }
             ]
         }
@@ -1084,22 +845,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
                     "result_name": "qr_last_month"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "qr_last_month['date'] = qr_last_month['timestamp'].dt.date; settemp_mean = qr_last_month.groupby('date')['settemp'].mean(); roomtemp_mean = qr_last_month.groupby('date')['roomtemp'].mean(); temp_diff = abs(settemp_mean - roomtemp_mean); max_diff_date = str(temp_diff.idxmax()); settemp_at_max_diff = settemp_mean.loc[max_diff_date]; roomtemp_at_max_diff = roomtemp_mean.loc[max_diff_date]; max_diff = temp_diff[max_diff_date]",
-                    "return": [
-                        "max_diff_date",
-                        "settemp_at_max_diff",
-                        "roomtemp_at_max_diff",
-                        "max_diff"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "{max_diff_date}에 설정온도({settemp_at_max_diff}℃)와 실내온도({roomtemp_at_max_diff}℃)의 차이가 {max_diff}℃로 가장 많이 나는 날이었습니다."
-                    ]
                 }
             ]
         }
@@ -1143,19 +888,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
                     "result_name": "qr_settemp_avg"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "avg_settemp = qr_settemp_avg['settemp'].mean()",
-                    "return": [
-                        "avg_settemp"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "지난 한달간 설정온도의 평균 값은 {avg_settemp}℃였습니다."
-                    ]
                 }
             ]
         }
@@ -1215,21 +947,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
                     },
                     "result_name": "qr_roomtemp_others"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "ours_temp = qr_roomtemp_ours['roomtemp'].values[0]; others_temp = qr_roomtemp_others['roomtemp'].values[0]; temp_diff = abs(ours_temp - others_temp)",
-                    "return": [
-                        "ours_temp",
-                        "others_temp",
-                        "temp_diff"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "Current temperature in our class is {ours_temp}℃, and the temperature in the adjacent class is {others_temp}℃, with a difference of {temp_diff}℃."
-                    ]
                 }
             ]
         }
@@ -1276,20 +993,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
                     "result_name": "qr_aircon_oper"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "oper_on_time = qr_aircon_oper[qr_aircon_oper['oper'] == True]['timestamp'].min().strftime('%H:%M')",
-                    "return": [
-                        "oper_on_time"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "오늘 우리반의 에어컨 전원이 처음 켜진 시각은 {oper_on_time}입니다.",
-                        "어제 에어컨은 쭉 꺼져있었습니다."
-                    ]
                 }
             ]
         }
@@ -1309,12 +1012,7 @@
                 ]
             },
             "Instruction Set": [
-                {
-                    "type": "r",
-                    "templates": [
-                        "HVAC 시스템과 관련 없는 질문입니다."
-                    ]
-                }
+                
             ]
         }
     },
@@ -1357,19 +1055,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
                     "result_name": "qr_settemp_ours"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "most_frequent_settemp = qr_settemp_ours['settemp'].mode().values[0]",
-                    "return": [
-                        "most_frequent_settemp"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "지난주 우리반의 설정온도 중 가장 빈도가 많았던 온도는 {most_frequent_settemp}℃입니다."
-                    ]
                 }
             ]
         }
@@ -1413,19 +1098,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
                     },
                     "result_name": "qr_aircon_oper"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "oper_status = qr_aircon_oper['oper'].values[0]",
-                    "return": [
-                        "oper_status"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "옆반의 에어컨은 현재 {oper_status}입니다."
-                    ]
                 }
             ]
         }
@@ -1472,19 +1144,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
                     "result_name": "qr_roomtemp_week"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "avg_roomtemp = qr_roomtemp_week['roomtemp'].mean()",
-                    "return": [
-                        "avg_roomtemp"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "이번주 우리반의 평균 실내온도는 {avg_roomtemp}℃ 입니다."
-                    ]
                 }
             ]
         }
@@ -1533,20 +1192,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
                     "result_name": "qr_settemp_month"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "max_settemp = qr_settemp_month['settemp'].max(); min_settemp = qr_settemp_month['settemp'].min()",
-                    "return": [
-                        "max_settemp",
-                        "min_settemp"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "이번달 우리반의 설정온도는 최대 {max_settemp}℃, 최소 {min_settemp}℃입니다."
-                    ]
                 }
             ]
         }
@@ -1610,21 +1255,6 @@
                         "subquery": "idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB7'))"
                     },
                     "result_name": "qr_roomtemp_beside"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "roomtemp_ours = qr_roomtemp_ours['roomtemp'].values[0]; roomtemp_beside = qr_roomtemp_beside['roomtemp'].values[0]; temp_diff = roomtemp_ours - roomtemp_beside",
-                    "return": [
-                        "roomtemp_ours",
-                        "roomtemp_beside",
-                        "temp_diff"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "{room_with_lower_temp}({roomtemp_lower}℃)이 {room_with_higher_temp}({roomtemp_higher}℃)보다 {temp_diff}℃ 더 낮아요."
-                    ]
                 }
             ]
         }
@@ -1668,19 +1298,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
                     "result_name": "qr_aircon_oper"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "oper_status = qr_aircon_oper['oper'].values[0]",
-                    "return": [
-                        "oper_status"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "우리반의 에어컨은 현재 {oper_status}입니다."
-                    ]
                 }
             ]
         }
@@ -1714,12 +1331,7 @@
                 ]
             },
             "Instruction Set": [
-                {
-                    "type": "r",
-                    "templates": [
-                        "예측하기는 아직 지원되지 않는 기능입니다."
-                    ]
-                }
+                
             ]
         }
     },
@@ -1762,19 +1374,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
                     },
                     "result_name": "qr_roomtemp_beside"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "avg_temp = qr_roomtemp_beside['roomtemp'].mean()",
-                    "return": [
-                        "avg_temp"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "1년 전 오늘 동안 옆반의 평균 실내온도는 {avg_temp}℃입니다."
-                    ]
                 }
             ]
         }
@@ -1808,12 +1407,7 @@
                 ]
             },
             "Instruction Set": [
-                {
-                    "type": "r",
-                    "templates": [
-                        "3층이 어떤 곳인지 알려주세요."
-                    ]
-                }
+                
             ]
         }
     },
@@ -1853,19 +1447,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
                     "result_name": "qr_roomtemp_avg"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "avg_roomtemp = qr_roomtemp_avg['roomtemp'].mean()",
-                    "return": [
-                        "avg_roomtemp"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "The average temperature of our class over the last month was {avg_roomtemp}℃."
-                    ]
                 }
             ]
         }
@@ -1911,19 +1492,6 @@
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
                     "result_name": "qr_oper_ours"
-                },
-                {
-                    "type": "o",
-                    "python_script_to_process": "longest_oper_day = qr_oper_ours['timestamp'].dt.date.value_counts().idxmax()",
-                    "return": [
-                        "longest_oper_day"
-                    ]
-                },
-                {
-                    "type": "r",
-                    "templates": [
-                        "최근 우리 반 에어컨이 가장 오래 작동했던 날은 {longest_oper_day}입니다."
-                    ]
                 }
             ]
         }
