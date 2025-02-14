@@ -19,7 +19,7 @@
                     "The reason our classroom is cold is that the air conditioner has been on for only 30 minutes."
                 ],
                 "Step": [
-                    "우리반의 최근(1시간) 실내온도, 설정온도, 에어컨 전원 데이터를 쿼리해 qr_ours_recent에 저장",
+                    "우리반의 최근(1시간) 실내온도, 설정온도, 에어컨 전원 데이터를 쿼리해 qr에 저장",
                     "최근 데이터중 가장 최신 데이터를 선택해 현재 실내온도, 설정온도, 에어컨 전원 상태를 추출",
                     "에어컨이 켜져있거나 설정온도가 너무 낮은 경우, 꺼져있는 시간을 계산하여 반환",
                     "데이터를 바탕으로 추운 이유를 분석하여 반환"
@@ -41,7 +41,7 @@
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
-                    "result_name": "qr_ours_recent"
+                    "result_name": "qr"
                 }
             ]
         }
@@ -68,9 +68,9 @@
                     "오늘 아침(06:00 ~ 09:00, 24.5℃)과 저녁(18:00 ~ 21:00, 27.3℃)의 온도 차이는 2.8℃ 입니다."
                 ],
                 "Step": [
-                    "2022-09-30 06:00 ~ 09:00 시간대의 roomtemp 데이터 조회해 qr_morning_temp에 저장",
-                    "2022-09-30 18:00 ~ 21:00 시간대의 roomtemp 데이터 조회해 qr_evening_temp에 저장",
-                    "qr_morning_temp과 qr_evening_temp의 평균값 및 차이 반환"
+                    "2022-09-30 06:00 ~ 09:00 시간대의 roomtemp 데이터 조회해 qr_morning에 저장",
+                    "2022-09-30 18:00 ~ 21:00 시간대의 roomtemp 데이터 조회해 qr_evening에 저장",
+                    "qr_morning과 qr_evening의 평균값 및 차이 반환"
                 ]
             },
             "Instruction Set": [
@@ -129,8 +129,8 @@
                     "옆반의 실내온도는 25℃, 우리반의 실내온도는 27℃입니다."
                 ],
                 "Step": [
-                    "옆반의 현재 실내온도 데이터를 쿼리해 qr_roomtemp_beside에 저장",
-                    "우리반의 현재 실내온도 데이터를 쿼리해 qr_roomtemp_ours에 저장",
+                    "옆반의 현재 실내온도 데이터를 쿼리해 qr_beside에 저장",
+                    "우리반의 현재 실내온도 데이터를 쿼리해 qr_ours에 저장",
                     "두 반의 실내온도 반환"
                 ]
             },
@@ -147,7 +147,7 @@
                         ],
                         "subquery": "idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB7'))"
                     },
-                    "result_name": "qr_roomtemp_beside"
+                    "result_name": "qr_beside"
                 },
                 {
                     "type": "q",
@@ -161,7 +161,7 @@
                         ],
                         "subquery": "idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5'))"
                     },
-                    "result_name": "qr_roomtemp_ours"
+                    "result_name": "qr_ours"
                 }
             ]
         }
@@ -180,11 +180,7 @@
                 },
                 "Modality": {
                     "실내온도": "roomtemp"
-                },
-                "Operation": [
-                    "변화 추이",
-                    "비교"
-                ]
+                }
             },
             "Strategy": {
                 "Objective": "이번주 우리반과 옆반의 실내온도 데이터를 쿼리 후, 각 반의 변화 추이를 시각화하고 주요 통계 정보를 비교함.",
@@ -194,7 +190,7 @@
                     "이번주 옆반의 평균 실내온도는 25℃, 최저 23℃, 최고 28℃입니다."
                 ],
                 "Step": [
-                    "우리반과 옆반의 이번주 실내온도 데이터를 각각 쿼리해 qr_roomtemp_ours와 qr_roomtemp_beside에 저장",
+                    "우리반과 옆반의 이번주 실내온도 데이터를 각각 쿼리해 qr_ours와 qr_beside에 저장",
                     "두 반의 데이터를 시각화하여 변화 추이 비교 그래프 생성",
                     "각 반의 평균, 최저, 최고값 계산",
                     "그래프와 통계적 비교 정보 반환"
@@ -214,7 +210,7 @@
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
-                    "result_name": "qr_roomtemp_ours"
+                    "result_name": "qr_ours"
                 },
                 {
                     "type": "q",
@@ -229,7 +225,7 @@
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
                     },
-                    "result_name": "qr_roomtemp_beside"
+                    "result_name": "qr_beside"
                 }
             ]
         }
@@ -256,7 +252,7 @@
                     "현재 설정온도와 현재 실내온도의 차이는 1.2℃입니다."
                 ],
                 "Step": [
-                    "현재 설정온도와 현재 실내온도의 데이터를 조회",
+                    "현재 설정온도와 현재 실내온도의 데이터를 쿼리해 qr에 저장",
                     "두 온도의 차이 계산"
                 ]
             },
@@ -274,53 +270,7 @@
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
-                    "result_name": "qr_current_temp"
-                }
-            ]
-        }
-    },
-    {
-        "Input": "지난주 설정온도가 실내온도보다 더 높았던 날은?",
-        "Response": {
-            "Formalized Input": "지난주 우리반의 설정온도가 실내온도보다 더 높았던 날을 알려줘.",
-            "Input Semantic Parsing": {
-                "Temporal": {
-                    "지난주": "2022-09-23 00:00:00 ~ 2022-09-29 23:59:59"
-                },
-                "Spatial": {
-                    "우리반": "01_IB5"
-                },
-                "Modality": {
-                    "설정온도": "settemp",
-                    "실내온도": "roomtemp"
-                }
-            },
-            "Strategy": {
-                "Objective": "지난주 동안 우리반 설정온도와 실내온도 데이터를 쿼리한 후 설정온도가 실내온도보다 높은 날짜를 반환함.",
-                "Expected Outputs": [
-                    "지난주 우리반의 설정온도가 실내온도보다 더 높았던 날은 2022-09-25입니다."
-                ],
-                "Step": [
-                    "지난주 동안의 우리반 설정온도와 실내온도 데이터를 qr_temp에 저장",
-                    "설정온도가 실내온도보다 높은 날짜를 찾음"
-                ]
-            },
-            "Instruction Set": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "roomtemp",
-                            "settemp"
-                        ],
-                        "conditions": [
-                            "timestamp BETWEEN '2022-09-23 00:00:00' AND '2022-09-29 23:59:59'"
-                        ],
-                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
-                    },
-                    "result_name": "qr_temp"
+                    "result_name": "qr"
                 }
             ]
         }
@@ -348,7 +298,7 @@
                     "지난주에 설정온도와 실내온도 차이가 가장 많이 났던 날은 2022-09-25입니다."
                 ],
                 "Step": [
-                    "지난주 동안의 우리반 데이터에서 설정온도와 실내온도를 쿼리하여 qr_data에 저장",
+                    "지난주 동안의 우리반 데이터에서 설정온도와 실내온도를 쿼리하여 qr에 저장",
                     "각 날짜별 설정온도와 실내온도의 차이를 계산하여 최대 차이가 났던 날짜 찾기",
                     "그 날짜 반환"
                 ]
@@ -368,7 +318,7 @@
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
-                    "result_name": "qr_data"
+                    "result_name": "qr"
                 }
             ]
         }
@@ -395,8 +345,8 @@
                     "어제 옆반 에어컨은 쭉 켜져있었습니다."
                 ],
                 "Step": [
-                    "옆반의 어제 하루 oper 데이터 쿼리해 qr_aircon_oper에 저장",
-                    "qr_aircon_oper에서 전원이 꺼진 첫 번째 시각 찾기",
+                    "옆반의 어제 하루 oper 데이터 쿼리해 qr에 저장",
+                    "qr에서 전원이 꺼진 첫 번째 시각 찾기",
                     "첫 번째 꺼진 시각 반환"
                 ]
             },
@@ -414,7 +364,7 @@
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
                     },
-                    "result_name": "qr_aircon_oper"
+                    "result_name": "qr"
                 }
             ]
         }
@@ -428,7 +378,7 @@
                     "지금": "2022-09-30 12:00:00"
                 },
                 "Spatial": {
-                    "앞반": "02_IB1"
+                    "앞반": "02_I81"
                 },
                 "Modality": {
                     "에어컨 전원": "oper"
@@ -440,8 +390,8 @@
                     "앞반의 에어컨은 현재 꺼져있습니다."
                 ],
                 "Step": [
-                    "앞반의 현재 에어컨 전원 상태 데이터를 쿼리해 qr_aircon_oper에 저장",
-                    "qr_aircon_oper에서 에어컨 전원 상태 반환"
+                    "앞반의 현재 에어컨 전원 상태 데이터를 쿼리해 qr에 저장",
+                    "qr에서 에어컨 전원 상태 반환"
                 ]
             },
             "Instruction Set": [
@@ -455,9 +405,9 @@
                         "conditions": [
                             "timestamp = '2022-09-30 12:00:00'"
                         ],
-                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_IB1')"
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_I81')"
                     },
-                    "result_name": "qr_aircon_oper"
+                    "result_name": "qr"
                 }
             ]
         }
@@ -484,8 +434,8 @@
                     "어제 우리반의 에어컨은 17시부터 19시까지 켜져있었습니다."
                 ],
                 "Step": [
-                    "우리반의 어제 하루 시간별 에어컨 전원 상태 데이터를 쿼리해 qr_aircon_oper에 저장",
-                    "qr_aircon_oper에서 에어컨 전원이 특정 구간(켜짐/꺼짐)인 시간대 찾기",
+                    "우리반의 어제 하루 시간별 에어컨 전원 상태 데이터를 쿼리해 qr에 저장",
+                    "qr에서 에어컨 전원이 특정 구간(켜짐/꺼짐)인 시간대 찾기",
                     "구간별 시간대 반환"
                 ]
             },
@@ -503,7 +453,7 @@
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
-                    "result_name": "qr_aircon_oper"
+                    "result_name": "qr"
                 }
             ]
         }
@@ -528,7 +478,7 @@
                     "옆반이 추운 이유는 에어컨이 꺼진지 30분밖에 안 되었기 때문입니다."
                 ],
                 "Step": [
-                    "옆반의 최근(1시간) 실내온도, 설정온도, 에어컨 전원 데이터를 쿼리해 qr_besides_recent에 저장",
+                    "옆반의 최근(1시간) 실내온도, 설정온도, 에어컨 전원 데이터를 쿼리해 qr에 저장",
                     "최근 데이터중 가장 최신 데이터를 선택해 현재 실내온도, 설정온도, 에어컨 전원 상태를 추출",
                     "에어컨이 켜져있거나 설정온도가 너무 낮은 경우, 꺼져있는 시간을 계산하여 반환",
                     "데이터를 바탕으로 추운 이유를 분석하여 반환"
@@ -550,7 +500,7 @@
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
                     },
-                    "result_name": "qr_besides_recent"
+                    "result_name": "qr"
                 }
             ]
         }
@@ -566,10 +516,7 @@
                 },
                 "Modality": {
                     "설정온도": "settemp"
-                },
-                "Operation": [
-                    "하루 평균의 최고"
-                ]
+                }
             },
             "Strategy": {
                 "Objective": "우리반의 설정온도 데이터 쿼리 후 하루 평균 설정온도가 가장 높은 날짜와 그 값을 반환함.",
@@ -577,8 +524,8 @@
                     "우리반은 2022-09-30에 평균 26.5℃로 설정온도가 가장 높았습니다."
                 ],
                 "Step": [
-                    "우리반의 설정온도 데이터를 쿼리결과 qr_settemp_all에 저장",
-                    "qr_settemp_all에서 하루 평균 설정온도 계산",
+                    "우리반의 설정온도 데이터를 쿼리결과 qr에 저장",
+                    "qr에서 하루 평균 설정온도 계산",
                     "가장 높은 평균 설정온도 값 및 해당 날짜 반환"
                 ]
             },
@@ -594,7 +541,7 @@
                         "conditions": [],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
-                    "result_name": "qr_settemp_all"
+                    "result_name": "qr"
                 }
             ]
         }
@@ -665,10 +612,7 @@
                 },
                 "Modality": {
                     "실내온도": "roomtemp"
-                },
-                "Operation": [
-                    "평균"
-                ]
+                }
             },
             "Strategy": {
                 "Objective": "지난 3일 동안 우리반 실내 온도를 쿼리한 후 평균 값을 계산함.",
@@ -676,8 +620,8 @@
                     "지난 3일 동안 우리반 실내 온도의 평균 값은 22.3℃였습니다."
                 ],
                 "Step": [
-                    "지난 3일 동안의 실내 온도 데이터를 쿼리결과 qr_roomtemp_ours에 저장",
-                    "qr_roomtemp_ours에서 평균 온도 계산"
+                    "지난 3일 동안의 실내 온도 데이터를 쿼리결과 qr에 저장",
+                    "qr에서 평균 온도 계산"
                 ]
             },
             "Instruction Set": [
@@ -693,7 +637,7 @@
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
-                    "result_name": "qr_roomtemp_ours"
+                    "result_name": "qr"
                 }
             ]
         }
