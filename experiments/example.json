@@ -1,0 +1,57 @@
+{
+  "Formalized Input": "오늘 우리반과 옆반의 평균 실내온도 차이 알려줘.",
+  "Input Semantic Parsing": {
+    "Temporal": {
+      "오늘": "2022-09-30 00:00:00 ~ 2022-09-30 23:59:59"
+    },
+    "Spatial": {
+      "우리반": "01_IB5",
+      "옆반": "01_IB7"
+    },
+    "Modality": {
+      "실내온도": "roomtemp"
+    }
+  },
+  "Strategy": {
+    "Objective": "오늘 우리반과 옆반 각각의 평균 실내온도 쿼리 후, 두 값의 차이를 계산함.",
+    "Expected Outputs": [
+      "우리반(19.3℃)이 옆반(17.0℃)보다 2.3℃ 높습니다."
+    ],
+    "Step": [
+      "우리반의 오늘 실내온도 쿼리결과 qr_roomtemp_ours 에 저장",
+      "옆반의 오늘 실내온도 쿼리결과 qr_roomtemp_beside 에 저장",
+      "각 반의 실내온도 평균 계산",
+      "각 반의 평균 실내온도와 차이 반환"
+    ]
+  },
+  "Instruction Set": [
+    {
+      "type": "q",
+      "args": {
+        "table_name": "data_t",
+        "columns": [
+          "roomtemp"
+        ],
+        "conditions": [
+          "timestamp BETWEEN '2022-09-30 00:00:00' AND '2022-09-30 23:59:59'"
+        ],
+        "subquery": "idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5'))"
+      },
+      "result_name": "qr_roomtemp_ours"
+    },
+    {
+      "type": "q",
+      "args": {
+        "table_name": "data_t",
+        "columns": [
+          "roomtemp"
+        ],
+        "conditions": [
+          "timestamp BETWEEN '2022-09-30 00:00:00' AND '2022-09-30 23:59:59'"
+        ],
+        "subquery": "idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB7'))"
+      },
+      "result_name": "qr_roomtemp_beside"
+    }
+  ]
+}

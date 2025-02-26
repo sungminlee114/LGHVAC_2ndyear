@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.1.0-cudnn8-devel-ubuntu22.04
+FROM nvidia/cuda:12.8.0-cudnn-devel-ubuntu22.04
 # FROM nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04
 LABEL maintainer="Sungmin Lee <i.am.sungmin.lee@yonsei.ac.kr>"
 

@@ -255,6 +255,7 @@ def execute_instruction_set(semantic:Semantic,instruction_set:list[Instruction],
             query_mapping.append([instruction.save_variable,instruction.value])
             
         elif instruction.operation_flag == "r":
+            pass
             # Execute response generation
             response = execute_response_generation(instruction, query_mapping, user_input, current_metadata)
             response_function(response)

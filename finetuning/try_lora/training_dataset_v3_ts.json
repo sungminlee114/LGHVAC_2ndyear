@@ -548,7 +548,7 @@
                     "지금": "2022-09-30 12:00:00"
                 },
                 "Spatial": {
-                    "앞반": "02_IB1"
+                    "앞반": "02_I81"
                 },
                 "Modality": {
                     "에어컨 전원": "oper"
@@ -575,7 +575,7 @@
                         "conditions": [
                             "timestamp = '2022-09-30 12:00:00'"
                         ],
-                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_IB1')"
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_I81')"
                     },
                     "result_name": "qr_aircon_oper"
                 },

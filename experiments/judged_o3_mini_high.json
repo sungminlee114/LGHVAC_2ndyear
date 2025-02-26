@@ -1,0 +1,587 @@
+[
+    {
+        "Input": "지금 옆반 에어컨 상태 알려줘",
+        "Structural Coherence": [
+            "Reference와 Candidate 모두 동일한 키 구조(Formalized Input, Input Semantic Parsing, Strategy, Instruction Set)를 사용하므로 구조적으로 일치합니다.",
+            1
+        ],
+        "Structural Correctness": [
+            "Candidate의 JSON 구조는 올바르게 구성되어 있어 실행에 문제없습니다.",
+            1
+        ],
+        "Input Semantic Parsing Coherence": [
+            "'Temporal'과 'Modality' 정보는 일치하지만, 'Spatial'에서 Reference는 '옆반'에 대해 '01_IB7'을 사용해야 하는데 Candidate에서는 '01_IB5'가 사용되어 의미적으로 불일치합니다.",
+            0
+        ],
+        "Strategy Coherence": [
+            "Objective와 Step은 Reference와 동일하게 표현되었으나, Expected Outputs에 불필요하게 '옆반의 에어컨은 현재 꺼져있습니다.'가 추가되어 전략의 의미적 일치도가 다소 떨어집니다.",
+            0.8
+        ],
+        "Instruction Set type q Correctness": [
+            "쿼리의 구성(테이블명, 컬럼, 조건 등)은 문법적으로 오류 없이 실행 가능합니다.",
+            1
+        ],
+        "Instruction Set type q Coherence": [
+            "하위 쿼리에서 'idu_t'의 name 조건이 Reference의 '01_IB7' 대신 Candidate에서는 '01_IB5'로 되어 있어 의미적으로 일치하지 않습니다.",
+            0
+        ],
+        "Instruction Set type o Correctness": [
+            "파이썬 스크립트는 Reference와 동일하며, 오류 없이 실행 가능합니다.",
+            1
+        ],
+        "Instruction Set type o Coherence": [
+            "파이썬 스크립트는 올바른 데이터를 추출하는데 의미적으로 Reference와 완벽하게 일치합니다.",
+            1
+        ],
+        "Instruction Set type r Coherence": [
+            "응답 템플릿은 Reference와 동일한 형식을 갖고 있으며, 중복된 템플릿이 있으나 의미에는 영향을 주지 않습니다.",
+            1
+        ]
+    },
+    {
+        "Input": "이번주 우리반 평균 온도 알려줘",
+        "Structural Coherence": [
+            "Candidate와 Reference 모두 동일한 키(Formalized Input, Input Semantic Parsing, Strategy, Instruction Set)를 사용하여 구조적으로 일치합니다.",
+            1
+        ],
+        "Structural Correctness": [
+            "Candidate의 JSON 구조에서 'conditions' 항목의 문자열 표현이 문법 오류로 인해 올바른 JSON 형식이 아닙니다.",
+            0
+        ],
+        "Input Semantic Parsing Coherence": [
+            "Temporal, Spatial, Modality, Operation 모두 Reference와 완벽하게 일치합니다.",
+            1
+        ],
+        "Strategy Coherence": [
+            "Objective와 Step은 Reference와 유사하게 표현되었으나, Expected Outputs에서 Reference는 하나의 값(24℃)을 기대하는 반면, Candidate는 두 개(25℃, 26℃)를 제시하여 의미적 일치도가 떨어집니다.",
+            0.7
+        ],
+        "Instruction Set type q Correctness": [
+            "쿼리 부분에서 'conditions' 표현이 문법적으로 오류가 있어 실행이 불가능합니다.",
+            0
+        ],
+        "Instruction Set type q Coherence": [
+            "쿼리의 의도는 Reference와 유사하나, 잘못된 조건 표현으로 인해 의미적 일치도가 확보되지 못했습니다.",
+            0
+        ],
+        "Instruction Set type o Correctness": [
+            "파이썬 스크립트는 올바르게 구성되어 실행 가능합니다.",
+            1
+        ],
+        "Instruction Set type o Coherence": [
+            "평균값 계산을 위한 파이썬 스크립트는 Reference와 의미적으로 일치합니다.",
+            1
+        ],
+        "Instruction Set type r Coherence": [
+            "응답 템플릿은 '실내온도' 대신 '온도'라고 표현하는 등 약간의 문구 차이가 있으나, 의미적으로 동일한 답변을 제공하므로 일치합니다.",
+            1
+        ]
+    },
+    {
+        "Input": "이번달 우리반 설정온도 최대값과 최소값 알려줘",
+        "Structural Coherence": [
+            "Reference와 Candidate 모두 Formalized Input, Input Semantic Parsing, Strategy, Instruction Set의 키를 동일하게 사용하여 구조적으로 일치합니다.",
+            1
+        ],
+        "Structural Correctness": [
+            "Candidate의 JSON 구조는 올바르게 구성되어 있으며, 문법적으로도 문제가 없습니다.",
+            1
+        ],
+        "Input Semantic Parsing Coherence": [
+            "Temporal, Spatial, Modality, Operation 모두 Reference와 의미적으로 일치합니다. '최대값/최소값'과 '최고값/최저값'은 동의어로 볼 수 있습니다.",
+            1
+        ],
+        "Strategy Coherence": [
+            "Candidate의 Strategy는 Reference와 비교할 때 전체 설정온도의 최대/최소값 계산 대신 '날짜별' 최고/최저값 조회를 언급하며, Expected Outputs도 Reference와 다른 값을 제시하고 있습니다. 이로 인해 전략의 의미적 일치도가 크게 떨어집니다.",
+            0.4
+        ],
+        "Instruction Set type q Correctness": [
+            "Candidate의 쿼리는 문법적으로는 오류 없이 실행됩니다. (테이블 'data_t'에 'roomtemp' 컬럼이 존재하므로)",
+            1
+        ],
+        "Instruction Set type q Coherence": [
+            "Reference에서는 'settemp' 컬럼을 사용해야 하지만, Candidate에서는 잘못되어 'roomtemp' 컬럼을 조회하고 있어 의미적으로 일치하지 않습니다.",
+            0
+        ],
+        "Instruction Set type o Correctness": [
+            "Candidate의 파이썬 스크립트는 쿼리 결과에서 'roomtemp_max'와 'roomtemp_min'이라는 키를 참조하는데, 실제로 해당 컬럼들이 존재하지 않아 실행 오류가 발생할 것으로 보입니다.",
+            0
+        ],
+        "Instruction Set type o Coherence": [
+            "파이썬 스크립트는 최대/최소값 계산을 수행해야 하나, 올바른 집계 함수(.max(), .min())를 사용하지 않고 잘못된 키를 참조하므로 Reference와 의미적 일치도가 없습니다.",
+            0
+        ],
+        "Instruction Set type r Coherence": [
+            "응답 템플릿은 '설정온도'라고 언급하고 있으나, 변수 이름은 'roomtemp_max/roomtemp_min'으로 되어 있어 전체 흐름과 일관성이 떨어집니다.",
+            0
+        ]
+    },
+    {
+        "Input": "우리반과 옆반중 더 추운곳은 어디야?",
+        "Structural Coherence": [
+            "Candidate와 Reference 모두 'Formalized Input', 'Input Semantic Parsing', 'Strategy', 'Instruction Set' 등의 키를 동일하게 사용하여 구조적으로 일치합니다.",
+            1
+        ],
+        "Structural Correctness": [
+            "Candidate의 전체 JSON 구조는 올바르게 구성되어 있습니다. (단, 내부 쿼리 문자열의 구문 오류는 아래 q Correctness 항목에서 평가합니다.)",
+            1
+        ],
+        "Input Semantic Parsing Coherence": [
+            "Temporal, Spatial, Modality, Operation 모두 Reference와 일치하여 의미적으로 완벽하게 일치합니다.",
+            1
+        ],
+        "Strategy Coherence": [
+            "Objective, Expected Outputs, 그리고 Step 모두 Reference와 유사하게 기술되어 있으며, 의미적으로 일치합니다.",
+            1
+        ],
+        "Instruction Set type q Correctness": [
+            "두 개의 쿼리 모두 'subquery' 문자열에서 닫는 괄호가 누락되어 있어 SQL 구문 오류가 발생할 가능성이 있습니다.",
+            0
+        ],
+        "Instruction Set type q Coherence": [
+            "의도는 Reference와 동일하게 우리반과 옆반의 'roomtemp' 데이터를 조회하려 한 것으로 보이나, 구문 오류로 인해 실행 가능한 쿼리가 아닙니다.",
+            0
+        ],
+        "Instruction Set type o Correctness": [
+            "파이썬 스크립트는 Reference와 동일하게 작성되어 있으며, 오류 없이 실행될 수 있습니다.",
+            1
+        ],
+        "Instruction Set type o Coherence": [
+            "파이썬 스크립트는 Reference의 의도대로 각 반의 온도를 추출하고 차이를 계산하므로 의미적으로 일치합니다.",
+            1
+        ],
+        "Instruction Set type r Coherence": [
+            "응답 템플릿은 Reference와 의미적으로 동일하며, 약간의 형식(공백, 중복) 차이는 있으나 문제 없습니다.",
+            1
+        ]
+    },
+    {
+        "Input": "에어컨 켜져있어?",
+        "Structural Coherence": [
+            "Candidate와 Reference 모두 Formalized Input, Input Semantic Parsing, Strategy, Instruction Set 등의 키를 동일하게 사용하여 구조적으로 일치합니다.",
+            1
+        ],
+        "Structural Correctness": [
+            "Candidate의 JSON 구조는 전반적으로 올바르게 구성되어 있습니다.",
+            1
+        ],
+        "Input Semantic Parsing Coherence": [
+            "Temporal, Spatial, Modality 정보가 Reference와 동일하여 의미적으로 완벽하게 일치합니다.",
+            1
+        ],
+        "Strategy Coherence": [
+            "Objective와 Step은 Reference와 유사하게 표현되었으나, Expected Outputs에서 Candidate는 '꺼져있습니다.'와 '25℃로 켜져있습니다.'와 같이 상반되고 불필요한 추가 결과를 포함하여 의미적 일치도가 떨어집니다.",
+            0.5
+        ],
+        "Instruction Set type q Correctness": [
+            "쿼리 부분은 Reference와 동일한 SQL 조건과 서브쿼리를 사용하여 문법적으로 오류 없이 실행될 수 있습니다.",
+            1
+        ],
+        "Instruction Set type q Coherence": [
+            "쿼리의 의도와 구성은 Reference와 일치하여, 올바른 데이터를 조회할 수 있습니다.",
+            1
+        ],
+        "Instruction Set type o Correctness": [
+            "파이썬 스크립트는 Reference와 동일하게 작성되어 오류 없이 실행될 수 있습니다.",
+            1
+        ],
+        "Instruction Set type o Coherence": [
+            "파이썬 스크립트는 의도한 데이터를 올바르게 추출하는 등 Reference와 의미적으로 완벽히 일치합니다.",
+            1
+        ],
+        "Instruction Set type r Coherence": [
+            "첫 번째 응답 템플릿은 Reference와 동일하지만, 두 번째 템플릿은 {roomtemp}와 {oper}와 같이 정의되지 않은 변수를 사용하여 의미적 일치도가 떨어집니다.",
+            0.5
+        ]
+    },
+    {
+        "Input": "앞반 지금 전원 켜져있어?",
+        "Structural Coherence": [
+            "Candidate와 Reference 모두 Formalized Input, Input Semantic Parsing, Strategy, Instruction Set 등의 키를 동일하게 사용하여 구조적으로 일치합니다.",
+            1
+        ],
+        "Structural Correctness": [
+            "Candidate의 JSON 구조는 올바르게 구성되어 있으며, 문법적으로도 문제가 없습니다.",
+            1
+        ],
+        "Input Semantic Parsing Coherence": [
+            "Temporal과 Modality 정보는 Reference와 일치하지만, Spatial에서 Reference는 '앞반'을 '02_IB1'로 매핑해야 하는데, Candidate는 '01_IB5'로 매핑하여 의미적 불일치가 발생합니다.",
+            0
+        ],
+        "Strategy Coherence": [
+            "Objective와 Step은 Reference와 유사하게 표현되었으나, Expected Outputs에서 Candidate는 '앞반의 에어컨은 현재 켜져있습니다.'와 '앞반의 에어컨은 현재 꺼져있습니다.'라는 상반된 결과를 제시하여 전략의 일관성이 떨어집니다.",
+            0.5
+        ],
+        "Instruction Set type q Correctness": [
+            "Candidate의 SQL 쿼리는 문법적으로 오류 없이 실행될 수 있습니다.",
+            1
+        ],
+        "Instruction Set type q Coherence": [
+            "쿼리의 의도는 Reference와 유사하지만, 'subquery'에서 'idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')'를 사용하여 잘못된 Spatial 매핑을 반영하고 있습니다.",
+            0
+        ],
+        "Instruction Set type o Correctness": [
+            "Python 스크립트는 Reference와 동일하게 작성되어 있으며, 오류 없이 실행될 수 있습니다.",
+            1
+        ],
+        "Instruction Set type o Coherence": [
+            "Python 스크립트는 쿼리 결과에서 'oper_status'를 올바르게 추출하는 등 의도한 로직과 의미적으로 일치합니다.",
+            1
+        ],
+        "Instruction Set type r Coherence": [
+            "응답 템플릿은 Reference와 유사한 형식을 사용하지만, 중복된 템플릿 제공으로 불필요한 요소가 포함되어 있습니다.",
+            1
+        ]
+    },
+    {
+        "Input": "어제 전원 껐어?",
+        "Structural Coherence": [
+            "Reference와 Candidate 모두 'Formalized Input', 'Input Semantic Parsing', 'Strategy', 'Instruction Set'의 키를 동일하게 사용하여 전체적인 JSON 구조는 일치합니다. 다만, Instruction Set 내의 templates 배열 구성 방식에 약간의 차이가 있습니다.",
+            1
+        ],
+        "Structural Correctness": [
+            "Candidate의 JSON은 구문상으로 유효하며, 전체 구조도 올바르게 구성되어 있습니다.",
+            1
+        ],
+        "Input Semantic Parsing Coherence": [
+            "Temporal, Spatial, Modality 모두 Reference와 동일하게 매핑되어 있어 의미적으로 완벽하게 일치합니다.",
+            1
+        ],
+        "Strategy Coherence": [
+            "Objective와 Expected Outputs는 Reference와 유사하나, Step에서 Reference는 시간 정보(timestamp)도 함께 쿼리하여 on/off 시간대를 산출하는 반면, Candidate는 'oper'만 조회하여 이 정보를 누락하고 있습니다.",
+            0.5
+        ],
+        "Instruction Set type q Correctness": [
+            "Reference는 'timestamp'와 'oper' 두 컬럼을 조회해야 하는데, Candidate는 'oper'만 조회하여 의도한 데이터를 충분히 확보하지 못합니다.",
+            0
+        ],
+        "Instruction Set type q Coherence": [
+            "쿼리의 의도는 우리반의 에어컨 전원 상태와 시간대를 조회하는 것이지만, Candidate의 쿼리는 'timestamp'를 누락하여 Reference와 의미적으로 일치하지 않습니다.",
+            0
+        ],
+        "Instruction Set type o Correctness": [
+            "Candidate의 파이썬 스크립트는 문법적으로 실행 가능하며, 쿼리 결과에서 'oper' 값을 추출하는 데 문제는 없으나, 필요한 시간 정보는 처리하지 않습니다.",
+            1
+        ],
+        "Instruction Set type o Coherence": [
+            "Reference에서는 on/off 시간대를 추출하기 위한 스크립트를 사용해야 하는데, Candidate는 단순히 'oper' 값만 반환하여 의도와 의미적으로 일치하지 않습니다.",
+            0
+        ],
+        "Instruction Set type r Coherence": [
+            "Reference의 응답 템플릿은 두 개의 별도 항목으로 구성되어 동적 시간 정보를 포함하지만, Candidate의 templates는 하나의 문자열로 결합되어 있으며 동적 변수 사용이 없어 의미적 일치도가 떨어집니다.",
+            0
+        ]
+    },
+    {
+        "Input": "지금 옆반 온도랑 우리반 온도 알려줘",
+        "Structural Coherence": [
+            "Reference와 Candidate 모두 Formalized Input, Input Semantic Parsing, Strategy, Instruction Set의 키를 동일하게 사용하여 구조적으로 일치합니다.",
+            1
+        ],
+        "Structural Correctness": [
+            "Candidate의 JSON 구조는 올바르게 구성되어 있으며 문법적으로도 문제가 없습니다.",
+            1
+        ],
+        "Input Semantic Parsing Coherence": [
+            "Temporal, Spatial 정보는 Reference와 완벽하게 일치합니다. 모달리티의 경우 Reference는 '실내온도'를 사용했으나, Candidate는 '온도'를 사용했으나 둘 다 'roomtemp'로 매핑되어 의미적으로 큰 차이가 없습니다.",
+            1
+        ],
+        "Strategy Coherence": [
+            "Objective, Expected Outputs, 그리고 Step 모두 Reference와 유사하게 표현되어 있으며, 두 반의 온도를 각각 쿼리하여 반환하는 의도는 동일합니다.",
+            1
+        ],
+        "Instruction Set type q Correctness": [
+            "두 개의 쿼리 모두 SQL 구문과 조건, 서브쿼리 부분이 Reference와 동일하게 구성되어 있어 실행에 문제가 없습니다.",
+            1
+        ],
+        "Instruction Set type q Coherence": [
+            "쿼리의 의도와 구성은 Reference와 완벽하게 일치하여, 옆반과 우리반의 'roomtemp' 데이터를 올바르게 조회할 수 있습니다.",
+            1
+        ],
+        "Instruction Set type o Correctness": [
+            "파이썬 스크립트는 Reference와 동일하게 작성되어 오류 없이 실행될 수 있습니다.",
+            1
+        ],
+        "Instruction Set type o Coherence": [
+            "파이썬 스크립트는 쿼리 결과에서 각 반의 온도를 올바르게 추출하여 의미적으로 Reference와 일치합니다.",
+            1
+        ],
+        "Instruction Set type r Coherence": [
+            "응답 템플릿은 두 가지 표현을 제공하지만, 둘 다 옆반과 우리반의 온도를 올바르게 포함하고 있어 의미적으로 Reference와 일치합니다.",
+            1
+        ]
+    },
+    {
+        "Input": "이번주 우리반과 옆반 온도 변화 추이 비교해줘",
+        "Structural Coherence": [
+            "Reference와 Candidate 모두 Formalized Input, Input Semantic Parsing, Strategy, Instruction Set의 키를 사용하여 구조적으로 일치합니다.",
+            1
+        ],
+        "Structural Correctness": [
+            "Candidate의 JSON 구조는 올바르게 구성되어 있으며 문법적으로도 문제가 없습니다.",
+            1
+        ],
+        "Input Semantic Parsing Coherence": [
+            "Temporal, Spatial, Modality 정보는 일치하지만, Operation 부분에서 Reference는 ['변화 추이', '비교']를 사용한 반면 Candidate는 ['변화 추이의 차이']를 사용하여, 의도의 미세한 차이가 발생합니다.",
+            0.7
+        ],
+        "Strategy Coherence": [
+            "Reference의 전략은 두 반의 실내온도 데이터를 바탕으로 변화 추이 시각화와 평균, 최저, 최고값 계산을 목표로 하지만, Candidate는 단순히 두 값의 차이와 평균만 계산하려 하여 전체적인 전략에서 큰 차이가 있습니다.",
+            0.4
+        ],
+        "Instruction Set type q Correctness": [
+            "Candidate의 쿼리들은 SQL 구문상으로 오류 없이 실행되며, 의도한 데이터(실내온도)를 조회할 수 있습니다.",
+            1
+        ],
+        "Instruction Set type q Coherence": [
+            "Reference에서는 변화 추이 시각화를 위해 'timestamp'와 'roomtemp' 모두를 조회해야 하나, Candidate는 'roomtemp'만 조회하여 의도와 맞지 않습니다.",
+            0
+        ],
+        "Instruction Set type o Correctness": [
+            "Candidate의 파이썬 스크립트는 문법적으로 실행 가능하며, 지정된 연산(평균 및 차이 계산)을 수행합니다.",
+            1
+        ],
+        "Instruction Set type o Coherence": [
+            "Reference의 스크립트는 평균, 최저, 최고값 계산과 시각화를 포함하지만, Candidate는 평균과 두 값의 차이만 계산하여 의도한 결과와 의미적으로 크게 벗어납니다.",
+            0
+        ],
+        "Instruction Set type r Coherence": [
+            "응답 템플릿은 Reference에서 그래프와 통계적 정보를 포함해야 하나, Candidate는 단지 두 값의 차이 평균만을 보고하여 의미적 일치도가 떨어집니다.",
+            0
+        ]
+    },
+    {
+        "Input": "Why is our classroom so cold",
+        "Structural Coherence": [
+            "The Reference includes a complete Instruction Set with type 'q', 'o', and 'r' steps, whereas the Candidate only provides a response (type 'r') without the query and operation steps. This difference in the Instruction Set structure means the overall JSON structure does not match.",
+            0
+        ],
+        "Structural Correctness": [
+            "Despite the structural differences, the Candidate's JSON is syntactically valid and correctly formatted.",
+            1
+        ],
+        "Input Semantic Parsing Coherence": [
+            "The Reference parses the input to analyze why the room is cold (using keys like '현재', '우리반', '실내온도', and '이유 분석'), while the Candidate reinterprets it to compare the classroom temperature with the set temperature (using keys such as 'current_datetime', 'classroom_temp', and 'settemp'). This leads to a significant semantic mismatch.",
+            0
+        ],
+        "Strategy Coherence": [
+            "The Reference's strategy is to collect and analyze data (room temperature, set temperature, AC operation) to explain why the room is cold. In contrast, the Candidate's strategy focuses on determining why the temperature is higher than the set temperature. The objectives, expected outputs, and steps are fundamentally different.",
+            0
+        ],
+        "Instruction Set type q Correctness": [
+            "The Candidate completely omits the query (type 'q') instruction, which is essential for retrieving the necessary data in the Reference.",
+            0
+        ],
+        "Instruction Set type q Coherence": [
+            "Without any type 'q' instructions, the Candidate fails to mirror the Reference's approach of querying the database for relevant data.",
+            0
+        ],
+        "Instruction Set type o Correctness": [
+            "The Candidate does not provide any operational (type 'o') instructions (e.g., Python script processing) to handle the queried data.",
+            0
+        ],
+        "Instruction Set type o Coherence": [
+            "Since there is no type 'o' step in the Candidate, it does not follow the intended processing of the data as outlined in the Reference.",
+            0
+        ],
+        "Instruction Set type r Coherence": [
+            "The Candidate's response templates focus on reasons for the temperature being higher than the set temperature, which is the opposite of the Reference's intent to explain why the room is cold. This results in a complete lack of coherence in the response templates.",
+            0
+        ]
+    },
+    {
+        "Input": "이전에 설정온도가 가장 높았던 날 알려줘",
+        "Structural Coherence": [
+            "Both Reference and Candidate use the same keys (Formalized Input, Input Semantic Parsing, Strategy, Instruction Set with type q, o, and r) and follow a similar overall structure.",
+            1
+        ],
+        "Structural Correctness": [
+            "The Candidate's JSON is syntactically valid and properly structured.",
+            1
+        ],
+        "Input Semantic Parsing Coherence": [
+            "Reference does not specify a temporal range and expects an operation for '하루 평균의 최고' (daily average highest), while Candidate adds a temporal range ('이전에': 2022-09-25 ~ 2022-09-29) and uses '가장 높은', implying an instantaneous maximum. This leads to a semantic mismatch.",
+            0
+        ],
+        "Strategy Coherence": [
+            "Reference's strategy involves computing the daily average of set temperatures and then identifying the day with the highest average, whereas Candidate restricts the query to a specific past period and seeks the highest instantaneous set temperature. The overall approach differs significantly.",
+            0
+        ],
+        "Instruction Set type q Correctness": [
+            "The SQL query in the Candidate is syntactically correct and would execute properly.",
+            1
+        ],
+        "Instruction Set type q Coherence": [
+            "The Candidate's query adds an unnecessary temporal condition and does not align with the Reference's intent to calculate daily averages over all data, resulting in a semantic mismatch.",
+            0
+        ],
+        "Instruction Set type o Correctness": [
+            "The Python script in the Candidate is syntactically correct and would run without errors.",
+            1
+        ],
+        "Instruction Set type o Coherence": [
+            "While the script correctly retrieves the maximum set temperature and its timestamp from the queried data, it does not perform a grouping to calculate daily averages as required by the Reference.",
+            0
+        ],
+        "Instruction Set type r Coherence": [
+            "The response template in the Candidate returns the instantaneous maximum set temperature and its timestamp, which does not match the Reference's expected output of the day with the highest daily average set temperature. Additionally, the formatting ('옆') is off.",
+            0
+        ]
+    },
+    {
+        "Input": "내일 우리반과 옆반 온도 차이 알려줘",
+        "Structural Coherence": [
+            "Both Reference and Candidate include the keys Formalized Input, Input Semantic Parsing, Strategy, and Instruction Set, so structurally they are aligned.",
+            1
+        ],
+        "Structural Correctness": [
+            "The Candidate's JSON is syntactically correct and properly structured.",
+            1
+        ],
+        "Input Semantic Parsing Coherence": [
+            "While the Temporal, Spatial, and Modality fields match, the Operation field in the Reference is ['예측'] (predict), but the Candidate uses ['차이'] (difference), resulting in a semantic mismatch.",
+            0
+        ],
+        "Strategy Coherence": [
+            "The Reference’s strategy is to analyze and state that prediction is not supported, whereas the Candidate’s strategy is to actually query data and compute the temperature difference. This is a fundamental divergence.",
+            0
+        ],
+        "Instruction Set type q Correctness": [
+            "The Candidate’s SQL queries are syntactically correct and would execute without error.",
+            1
+        ],
+        "Instruction Set type q Coherence": [
+            "The Candidate’s queries aim to retrieve temperature values for a difference calculation, which is not aligned with the Reference’s approach (which does not perform any query for prediction).",
+            0
+        ],
+        "Instruction Set type o Correctness": [
+            "The Python script in the Candidate is syntactically correct and would execute properly.",
+            1
+        ],
+        "Instruction Set type o Coherence": [
+            "The Candidate’s operation to compute the difference is not coherent with the Reference’s intention of not supporting prediction.",
+            0
+        ],
+        "Instruction Set type r Coherence": [
+            "The Candidate’s response templates output a computed difference, which is completely different from the Reference’s expected output stating that prediction is not supported.",
+            0
+        ]
+    },
+    {
+        "Input": "화성의 설정온도 확인해줘",
+        "Structural Coherence": [
+            "Both Reference and Candidate include the keys 'Formalized Input', 'Input Semantic Parsing', 'Strategy', and 'Instruction Set', following a similar overall structure.",
+            1
+        ],
+        "Structural Correctness": [
+            "The Candidate's JSON is syntactically valid and correctly formatted.",
+            1
+        ],
+        "Input Semantic Parsing Coherence": [
+            "Temporal and Spatial fields match, but there is a discrepancy in the Modality mapping: Reference maps '설정온도' to 'settemp' while Candidate maps it to 'unknown', resulting in a semantic mismatch.",
+            0
+        ],
+        "Strategy Coherence": [
+            "Both Reference and Candidate have nearly identical strategies: they intend to ask the user for clarification regarding the unknown spatial entity ('화성'). The objectives, expected outputs, and steps are consistent aside from minor typographical differences.",
+            1
+        ],
+        "Instruction Set type q Correctness": [
+            "Neither the Reference nor the Candidate includes a type 'q' instruction; therefore, there is no discrepancy.",
+            1
+        ],
+        "Instruction Set type q Coherence": [
+            "Since no type 'q' instruction is expected in this context, coherence is maintained.",
+            1
+        ],
+        "Instruction Set type o Correctness": [
+            "Neither the Reference nor the Candidate includes a type 'o' instruction, so there is no issue with execution.",
+            1
+        ],
+        "Instruction Set type o Coherence": [
+            "The absence of type 'o' instructions in both Reference and Candidate maintains consistency.",
+            1
+        ],
+        "Instruction Set type r Coherence": [
+            "Both the Reference and the Candidate provide a type 'r' instruction with the identical template: '화성이 어떤 곳인지 알려주세요.'",
+            1
+        ]
+    },
+    {
+        "Input": "올해 경상수지는?",
+        "Structural Coherence": [
+            "Both Reference and Candidate use the keys 'Formalized Input', 'Input Semantic Parsing', 'Strategy', and 'Instruction Set', so their overall JSON structure is aligned.",
+            1
+        ],
+        "Structural Correctness": [
+            "The Candidate's JSON is syntactically valid and correctly formatted.",
+            1
+        ],
+        "Input Semantic Parsing Coherence": [
+            "The Reference parses the input to refer to '경상수지' with a yearly temporal range, whereas the Candidate completely reinterprets the input as a query for the classroom's average power state trend. This is a significant semantic mismatch.",
+            0
+        ],
+        "Strategy Coherence": [
+            "The Reference's strategy is to indicate that the question is not related to the HVAC system and to return a message stating so, while the Candidate's strategy is to visualize HVAC data. Their objectives, expected outputs, and steps are entirely different.",
+            0
+        ],
+        "Instruction Set type q Correctness": [
+            "The SQL query in the Candidate is syntactically correct and would execute without errors.",
+            1
+        ],
+        "Instruction Set type q Coherence": [
+            "The Candidate's query retrieves HVAC data (average power state) which is irrelevant to the question about '경상수지'.",
+            0
+        ],
+        "Instruction Set type o Correctness": [
+            "The Python script provided by the Candidate is syntactically correct and would run as expected.",
+            1
+        ],
+        "Instruction Set type o Coherence": [
+            "The operation computes HVAC-related statistics and visualizations, which does not align with the intended handling of a non-HVAC question in the Reference.",
+            0
+        ],
+        "Instruction Set type r Coherence": [
+            "The Candidate's response templates output a graph and detailed HVAC data, completely diverging from the Reference's expected output of 'HVAC 시스템과 관련 없는 질문입니다.'",
+            0
+        ]
+    },
+    {
+        "Input": "3층 평균 실내온도는?",
+        "Structural Coherence": [
+            "Both Reference and Candidate use the same top-level keys; however, the Candidate’s 'Instruction Set' array contains an extra element ('user_input') that is not structured as an object, causing a deviation from the expected JSON structure.",
+            0
+        ],
+        "Structural Correctness": [
+            "The Candidate’s JSON is not structurally correct because the extra element in the 'Instruction Set' array violates proper JSON array syntax.",
+            0
+        ],
+        "Input Semantic Parsing Coherence": [
+            "The Candidate’s 'Input Semantic Parsing' matches the Reference (with '3층' mapped to 'unknown' and the same temporal, modality, and operation values), so they are semantically aligned.",
+            1
+        ],
+        "Strategy Coherence": [
+            "The Candidate’s strategy is identical to the Reference’s strategy (to ask the user for a definition of the unknown spatial entity) with matching objectives, expected outputs, and steps.",
+            1
+        ],
+        "Instruction Set type q Correctness": [
+            "There is no type 'q' instruction in either the Reference or the Candidate, so they are consistent in this regard.",
+            1
+        ],
+        "Instruction Set type q Coherence": [
+            "Since no type 'q' instructions are provided in both, they are coherent.",
+            1
+        ],
+        "Instruction Set type o Correctness": [
+            "There is no type 'o' instruction in either the Reference or the Candidate, so there is no issue with operational correctness.",
+            1
+        ],
+        "Instruction Set type o Coherence": [
+            "Since neither includes a type 'o' instruction, they are coherent in this aspect.",
+            1
+        ],
+        "Instruction Set type r Coherence": [
+            "The Candidate’s type 'r' instruction includes the correct response template ('3층이 어떤 곳인지 알려주세요.'), which matches the Reference; however, the extra element in the Instruction Set array reduces coherence.",
+            0.5
+        ]
+    }
+]

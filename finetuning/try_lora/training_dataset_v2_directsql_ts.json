@@ -208,7 +208,7 @@
                 ]
             },
             "Strategy": {
-                "Objective": "현재 우리반과 옆반의 실내온도 중 가장 낮은 온도를 가진 반을 찾고, 두 온도의 차이를 계산.",
+                "Objective": "현재 우리반과 옆반의 현재 실내온도 쿼리 후 둘 중 낮은 온도를 가진 반을 찾고, 두 온도의 차이를 계산해 반환함.",
                 "Expected Outputs": [
                     "옆반(17.0℃)이 우리반(19.3℃)보다 2.3℃ 더 낮아요."
                 ],
@@ -290,7 +290,7 @@
                 }
             },
             "Strategy": {
-                "Objective": "현재 우리반의 에어컨 전원 상태를 조회함.",
+                "Objective": "현재 우리반의 에어컨 전원 상태를 쿼리해 반환함.",
                 "Expected Outputs": [
                     "우리반의 에어컨은 현재 켜져있습니다."
                 ],
@@ -350,7 +350,7 @@
                 }
             },
             "Strategy": {
-                "Objective": "현재 앞반의 에어컨 전원 상태를 조회함.",
+                "Objective": "현재 앞반의 에어컨 전원 상태를 쿼리해 반환함.",
                 "Expected Outputs": [
                     "앞반의 에어컨은 현재 꺼져있습니다."
                 ],
@@ -410,15 +410,15 @@
                 }
             },
             "Strategy": {
-                "Objective": "어제동안 우리반의 에어컨 전원 상태를 조회함.",
+                "Objective": "어제동안 우리반의 에어컨 전원 상태를 쿼리해 특정 구간(켜짐/꺼짐)인 시간대를 찾아 반환함.",
                 "Expected Outputs": [
                     "어제 우리반의 에어컨은 꺼져있습니다.",
                     "어제 우리반의 에어컨은 17시부터 19시까지 켜져있었습니다."
                 ],
                 "Step": [
                     "우리반의 어제 하루 시간별 에어컨 전원 상태 데이터를 쿼리해 qr_aircon_oper에 저장",
-                    "qr_aircon_oper에서 에어컨 전원이 특정 상태(켜짐/꺼짐)인 시간대 찾기",
-                    "상태별 시간대 반환"
+                    "qr_aircon_oper에서 에어컨 전원이 특정 구간(켜짐/꺼짐)인 시간대 찾기",
+                    "구간별 시간대 반환"
                 ]
             },
             "Instruction Set": [
@@ -443,7 +443,7 @@
                 },
                 {
                     "type": "o",
-                    "python_script_to_process": "oper_on_time = qr_aircon_oper[qr_aircon_oper['oper'] == true]['timestamp'].dt.strftime('%H:%M').values; oper_off_time = qr_aircon_oper[qr_aircon_oper['oper'] == false]['timestamp'].dt.strftime('%H:%M').values",
+                    "python_script_to_process": "oper_on_time = qr_aircon_oper[qr_aircon_oper['oper'] == True]['timestamp'].dt.strftime('%H:%M').values; oper_off_time = qr_aircon_oper[qr_aircon_oper['oper'] == False]['timestamp'].dt.strftime('%H:%M').values",
                     "return": [
                         "oper_on_time",
                         "oper_off_time"
@@ -476,7 +476,7 @@
                 }
             },
             "Strategy": {
-                "Objective": "현재 옆반과 우리반의 실내온도를 조회함.",
+                "Objective": "현재 옆반과 우리반의 실내온도를 쿼리해 반환함.",
                 "Expected Outputs": [
                     "옆반의 실내온도는 25℃, 우리반의 실내온도는 27℃입니다."
                 ],
@@ -637,34 +637,29 @@
         }
     },
     {
-        "Input": "Why is our classroom so cold",
+        "Input": "지금 옆반 너무 추워",
         "Response": {
-            "Formalized Input": "우리반의 실내온도가 낮은 이유를 분석해줘.",
+            "Formalized Input": "지금 옆반 너무 추워.",
             "Input Semantic Parsing": {
                 "Temporal": {
                     "현재": "2022-09-30 12:00:00"
                 },
                 "Spatial": {
-                    "우리반": "01_IB5"
-                },
-                "Modality": {
-                    "실내온도": "roomtemp"
-                },
-                "Operation": [
-                    "이유 분석"
-                ]
+                    "옆반": "01_IB7"
+                }
             },
             "Strategy": {
-                "Objective": "우리반의 실내온도가 낮은 이유를 분석하기 위해 설정온도, 실내온도, 에어컨 작동 상태 데이터를 수집하고 종합적으로 비교 분석함.",
+                "Objective": "옆반이 추운 이유를 분석하기 위해 설정온도, 실내온도, 에어컨 작동 상태 데이터 쿼리 후 종합적으로 비교 분석함.",
                 "Expected Outputs": [
-                    "우리반의 실내온도가 낮은 이유는 설정온도가 18℃로 너무 낮기 때문입니다.",
-                    "지금 우리반이 추운 이유는 에어컨이 계속 켜져 있기 때문입니다.",
-                    "우리반이 추운 이유는 에어컨이 켜진지 5분밖에 안 되었기 때문입니다."
+                    "지금 에어컨 설정온도가 10℃로 너무 낮아서 옆반이 15℃로 추운 것 같아요. 에어컨을 끄거나 설정온도를 높여보세요.",
+                    "지금 옆반이 추운 이유는 에어컨이 계속 켜져 있기 때문입니다.",
+                    "옆반이 추운 이유는 에어컨이 꺼진지 30분밖에 안 되었기 때문입니다."
                 ],
                 "Step": [
-                    "우리반의 최근 데이터를 쿼리해 qr_ours_recent에 저장",
-                    "데이터를 분석하여 실내온도가 낮은 원인 식별",
-                    "원인을 텍스트로 반환"
+                    "옆반의 최근(1시간) 실내온도, 설정온도, 에어컨 전원 데이터를 쿼리해 qr_besides_recent에 저장",
+                    "최근 데이터중 가장 최신 데이터를 선택해 현재 실내온도, 설정온도, 에어컨 전원 상태를 추출",
+                    "에어컨이 켜져있거나 설정온도가 너무 낮은 경우, 꺼져있는 시간을 계산하여 반환",
+                    "데이터를 바탕으로 추운 이유를 분석하여 반환"
                 ]
             },
             "Instruction Set": [
@@ -674,35 +669,37 @@
                         "args": {
                             "table_name": "data_t",
                             "columns": [
+                                "timestamp",
                                 "roomtemp",
                                 "settemp",
                                 "oper"
                             ],
                             "conditions": [
-                                "timestamp BETWEEN '2022-09-30 00:00:00' AND '2022-09-30 12:00:00'"
+                                "timestamp BETWEEN '2022-09-30 11:00:00' AND '2022-09-30 12:00:00'"
                             ],
-                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
                         }
                     },
                     "result": {
-                        "name": "qr_ours_recent"
+                        "name": "qr_besides_recent"
                     }
                 },
                 {
                     "type": "o",
-                    "python_script_to_process": "recent_settemps = qr_ours_recent['settemp']; recent_roomtemps = qr_ours_recent['roomtemp']; recent_opers = qr_ours_recent['oper']",
+                    "python_script_to_process": "sd = qr_besides_recent.sort_values(by='timestamp'); current_roomtemp = sd['roomtemp'].iloc[-1]; current_settemp = sd['settemp'].iloc[-1]; current_oper = sd['oper'].iloc[-1]; latest_oper_off_time = (str(int((sd['timestamp'].iloc[-1] - sd.loc[sd['oper'] == False, 'timestamp'].iloc[-1]) / np.timedelta64(1, 'm'))) + \"분\") if current_oper else \"0분\"",
                     "return": [
-                        "recent_settemps",
-                        "recent_roomtemps",
-                        "recent_opers"
+                        "current_roomtemp",
+                        "current_settemp",
+                        "current_oper",
+                        "latest_oper_off_time"
                     ]
                 },
                 {
                     "type": "r",
                     "templates": [
-                        "우리반의 실내온도가 낮은 이유는 설정온도가 {recent_settemps.values[-1]}℃로 너무 낮기 때문입니다.",
-                        "지금 우리반이 추운 이유는 에어컨이 {recent_opers.values[-1]} 상태이기 때문입니다.",
-                        "우리반이 추운 이유는 에어컨이 켜진지 {latest_oper_on_time}밖에 안 되었기 때문입니다."
+                        "지금 에어컨 설정온도가 {current_settemp}℃로 너무 낮아서 옆반이 {current_roomtemp}℃로 추운 것 같아요. 에어컨을 끄거나 설정온도를 높여보세요.",
+                        "지금 옆반이 추운 이유는 에어컨이 {current_oper} 상태이기 때문입니다.",
+                        "옆반이 추운 이유는 에어컨이 켜진지 {latest_oper_off_time}밖에 안 되었기 때문입니다."
                     ]
                 }
             ]
@@ -725,7 +722,7 @@
                 ]
             },
             "Strategy": {
-                "Objective": "우리반의 설정온도 데이터 중 하루 평균 설정온도가 가장 높은 날짜를 찾음.",
+                "Objective": "우리반의 설정온도 데이터 쿼리 후 하루 평균 설정온도가 가장 높은 날짜와 그 값을 반환함.",
                 "Expected Outputs": [
                     "우리반은 2022-09-30에 평균 26.5℃로 설정온도가 가장 높았습니다."
                 ],
@@ -755,16 +752,16 @@
                 },
                 {
                     "type": "o",
-                    "python_script_to_process": "qr_settemp_all['date'] = qr_settemp_all['timestamp'].dt.date; avg_settemp_all = qr_settemp_all.groupby('date')['settemp'].mean(); max_temp_date = avg_settemp_all.idxmax(); max_temp = avg_settemp_all.max()",
+                    "python_script_to_process": "qr_settemp_all['date'] = qr_settemp_all['timestamp'].dt.date; avg_settemp_all = qr_settemp_all.groupby('date')['settemp'].mean(); max_temp_date = avg_settemp_all.idxmax(); settemp_at_maxtemp_date = avg_settemp_all.iloc[avg_settemp_all.idxmax()]",
                     "return": [
-                        "max_temp",
-                        "max_temp_date"
+                        "max_temp_date",
+                        "settemp_at_maxtemp_date"
                     ]
                 },
                 {
                     "type": "r",
                     "templates": [
-                        "우리반은 {max_temp_date}에 {max_temp}℃로 설정온도가 가장 높았습니다."
+                        "우리반은 {max_temp_date}에 {settemp_at_maxtemp_date}℃로 설정온도가 가장 높았습니다."
                     ]
                 }
             ]
@@ -790,7 +787,7 @@
                 ]
             },
             "Strategy": {
-                "Objective": "내일 우리반과 옆반의 온도 차이를 예측하기 위해 기존 데이터를 분석함.",
+                "Objective": "예측하기는 아직 지원되지 않는 기능임을 사용자에게 알림.",
                 "Expected Outputs": [
                     "예측하기는 아직 지원되지 않는 기능입니다."
                 ],
@@ -811,10 +808,10 @@
     {
         "Input": "1년 전 옆반 온도는?",
         "Response": {
-            "Formalized Input": "1년 전 오늘 동안 옆반의 평균 실내온도를 조회해줘.",
+            "Formalized Input": "1년 전 오늘의 옆반의 평균 실내온도를 조회해줘.",
             "Input Semantic Parsing": {
                 "Temporal": {
-                    "10년 전 오늘": "2021-09-30 00:00:00 ~ 2021-09-30 23:59:59"
+                    "1년 전 오늘": "2021-09-30 00:00:00 ~ 2021-09-30 23:59:59"
                 },
                 "Spatial": {
                     "옆반": "01_IB7"
@@ -824,12 +821,12 @@
                 }
             },
             "Strategy": {
-                "Objective": "1년 전 오늘 동안 옆반의 평균 실내온도를 조회함.",
+                "Objective": "1년 전 오늘의 옆반의 평균 실내온도를 쿼리해 반환함.",
                 "Expected Outputs": [
-                    "1년 전 오늘 동안 옆반의 평균 실내온도는 24.2℃입니다."
+                    "1년 전 오늘의 옆반의 평균 실내온도는 24.2℃입니다."
                 ],
                 "Step": [
-                    "옆반의 1년 전 오늘 동안의 실내온도 데이터를 쿼리해 qr_roomtemp_beside에 저장",
+                    "옆반의 1년 전 오늘(2021-09-30)의 실내온도 데이터를 쿼리해 qr_roomtemp_beside에 저장",
                     "평균 실내온도 반환"
                 ]
             },
@@ -913,7 +910,7 @@
                 }
             },
             "Strategy": {
-                "Objective": "HVAC 시스템과 관련 없는 질문에 대한 답변을 제공할 수 없음.",
+                "Objective": "HVAC 시스템과 관련 없는 질문에 대한 답변을 제공할 수 없음을 사용자에게 알림.",
                 "Expected Outputs": [
                     "HVAC 시스템과 관련 없는 질문입니다."
                 ],
@@ -964,6 +961,126 @@
                     "type": "r",
                     "templates": [
                         "3층이 어떤 곳인지 알려주세요."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "지난 3일 동안 우리반 실내 온도 평균 값 알려줘.",
+        "Response": {
+            "Formalized Input": "지난 3일 동안 우리반 실내 온도 평균 값을 알려줘.",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "지난 3일": "2022-09-27 00:00:00 ~ 2022-09-29 11:59:59"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                },
+                "Modality": {
+                    "실내온도": "roomtemp"
+                },
+                "Operation": [
+                    "평균"
+                ]
+            },
+            "Strategy": {
+                "Objective": "지난 3일 동안 우리반 실내 온도를 쿼리한 후 평균 값을 계산함.",
+                "Expected Outputs": [
+                    "지난 3일 동안 우리반 실내 온도의 평균 값은 22.3℃였습니다."
+                ],
+                "Step": [
+                    "지난 3일 동안의 실내 온도 데이터를 쿼리결과 qr_roomtemp_ours에 저장",
+                    "qr_roomtemp_ours에서 평균 온도 계산"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "roomtemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-09-27 00:00:00' AND '2022-09-29 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_roomtemp_ours"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "avg_temp = qr_roomtemp_ours['roomtemp'].mean()",
+                    "return": [
+                        "avg_temp"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "지난 3일 동안 우리반 실내 온도의 평균 값은 {avg_temp}℃였습니다."
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "How hot was our class over the last month?",
+        "Response": {
+            "Formalized Input": "지난 한달간 우리반은 얼마나 더웠어?",
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "지난 한달": "2022-09-01 00:00:00 ~ 2022-09-30 23:59:59"
+                },
+                "Spatial": {
+                    "우리반": "01_IB5"
+                }
+            },
+            "Strategy": {
+                "Objective": "지난 한달 동안 우리반의 실내온도를 쿼리해 평균값을 계산후 반환",
+                "Expected Outputs": [
+                    "The average temperature of our class over the last month was 25.5℃."
+                ],
+                "Step": [
+                    "지난 한달(2022-09-01~2022-09-30) 동안의 실내 온도 데이터를 쿼리해 qr_roomtemp_ours에 저장",
+                    "qr_roomtemp_ours에서 평균 온도를 계산"
+                ]
+            },
+            "Instruction Set": [
+                {
+                    "type": "q",
+                    "run": {
+                        "args": {
+                            "table_name": "data_t",
+                            "columns": [
+                                "roomtemp"
+                            ],
+                            "conditions": [
+                                "timestamp BETWEEN '2022-09-01 00:00:00' AND '2022-09-30 23:59:59'"
+                            ],
+                            "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        }
+                    },
+                    "result": {
+                        "name": "qr_roomtemp_avg"
+                    }
+                },
+                {
+                    "type": "o",
+                    "python_script_to_process": "avg_roomtemp = qr_roomtemp_avg['roomtemp'].mean()",
+                    "return": [
+                        "avg_roomtemp"
+                    ]
+                },
+                {
+                    "type": "r",
+                    "templates": [
+                        "The average temperature of our class over the last month was {avg_roomtemp}℃."
                     ]
                 }
             ]
