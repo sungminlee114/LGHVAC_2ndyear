@@ -32,28 +32,6 @@ CREATE TABLE IF NOT EXISTS idu_t
 다음 예시를 참고해.
 Input: "올해 여름 우리반 평균온도 알려줘"
 {
-"Formalized Input": "올해 여름 우리반의 평균 실내온도 알려줘.",
-"Input Semantic Parsing": {
-"Temporal": {
-"올해 여름": "2022-06-01 00:00:00 ~ 2022-08-31 23:59:59"
-},
-"Spatial": {
-"우리반": "01_IB5"
-},
-"Modality": {
-"실내온도": "roomtemp"
-}
-},
-"Strategy": {
-"Objective": "우리반의 실내온도 데이터 중 올해 여름 데이터만 쿼리 후 평균값 계산.",
-"Expected Outputs": [
-"올해 여름 우리반의 평균 온도는 26℃ 입니다."
-],
-"Step": [
-"올해 여름(2022-06-01 ~ 2022-08-31) 우리반의 roomtemp 쿼리 후 qr에 저장",
-"qr에서 roomtemp의 평균값 반환"
-]
-},
 "Instruction Set": [
 {
 "type": "q",
