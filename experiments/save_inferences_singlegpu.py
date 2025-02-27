@@ -212,7 +212,7 @@ def main():
         
     model_name, tr_config = \
         "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-        "r128_a256_v2/checkpoint-24"
+        "r128_a256_v2/checkpoint-30"
     
     # model_name, tr_config = \
     #     "Saxo-Linkbricks-Horizon-AI-Korean-Gemma-2-sft-dpo-27B", \
