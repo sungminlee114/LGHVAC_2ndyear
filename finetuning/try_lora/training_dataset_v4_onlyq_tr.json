@@ -1937,7 +1937,7 @@
     {
         "Input": "내일 우리반과 앞반 온도 차이 알려줘",
         "Response": {
-            "Formalized Input": "내일 우리반과 옆반의 실내온도 차이를 예측해줘.",
+            "Formalized Input": "내일 우리반과 앞반의 실내온도 차이를 예측해줘.",
             "Input Semantic Parsing": {
                 "Temporal": {
                     "내일": "2022-10-01 00:00:00"
