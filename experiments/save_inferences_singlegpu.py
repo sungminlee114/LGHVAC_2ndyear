@@ -80,7 +80,7 @@ class DistributedInference:
                 attn_implementation=self.attn_implementation,
                 cache_dir=self.cache_dir.as_posix(),
                 local_files_only=True,
-                device_map="cuda",
+                device_map="cuda:1",
             )
             FastLanguageModel.for_inference(model)
             # tokenizer.pad_token = tokenizer.eos_token
@@ -181,7 +181,7 @@ class DistributedInference:
                     
                     result = {
                         "Input": sample["Input"],
-                        "Reference": sample["Response"],
+                        # "Reference": sample["Response"],
                         "Candidate": response,
                     }
                     
@@ -206,17 +206,17 @@ def main():
     #     "r256_a512/checkpoint-8"    
     
     
-    model_name, tr_config = \
-        "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-        "r128_a256/checkpoint-18"
+    # model_name, tr_config = \
+    #     "Bllossom-llama-3.2-Korean-Bllossom-3B", \
+    #     "r512_a1024_ours/checkpoint-40"
         
     model_name, tr_config = \
         "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-        "r128_a256_v2/checkpoint-30"
-    
+        "r512_a1024_ours/checkpoint-30"
+
     # model_name, tr_config = \
-    #     "Saxo-Linkbricks-Horizon-AI-Korean-Gemma-2-sft-dpo-27B", \
-    #     "r128_a256/checkpoint-22"
+    #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+    #     "r128_a256_woall/checkpoint-60"
     
 
     checkpoint_dir = Path(f"/model/{model_name}/chkpts/{tr_config}")
@@ -241,6 +241,7 @@ def main():
     metadata = json.load(open(metadata_path, "r"))
     
     common_prompt = open(BASE_DIR / "prompt.txt", "r").read()
+    # common_prompt = open(BASE_DIR / "prompt_woall.txt", "r").read()
     
     # Initialize distributed inference
     inference = DistributedInference(

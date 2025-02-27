@@ -87,7 +87,7 @@
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
-                    "result_name": "qr_morning_temp"
+                    "result_name": "qr_morning"
                 },
                 {
                     "type": "q",
@@ -102,7 +102,7 @@
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
-                    "result_name": "qr_evening_temp"
+                    "result_name": "qr_evening"
                 }
             ]
         }
