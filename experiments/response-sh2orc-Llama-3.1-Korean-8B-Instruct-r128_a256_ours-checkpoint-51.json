@@ -1,0 +1,28 @@
+[
+{"Input": "Why is our classroom so cold", "Candidate": {"Formalized Input": "우리반 왜이리 추워?", "Instruction Set": [{"type": "q", "args": {"table_name": "data_t", "columns": ["roomtemp", "oper"], "conditions": ["timestamp BETWEEN '2022-09-30 00:00:00' AND '2022-09-30 23:59:59'"], "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"}, "result_name": "qr"}]}}
+,
+{"Input": "오늘 아침과 저녁의 온도차이는 얼마나 돼?", "Candidate": {"Formalized Input": "오늘 아침과 저녁의 실내온도 차이를 알려줘.", "Instruction Set": [{"type": "q", "args": {"table_name": "data_t", "columns": ["roomtemp"], "conditions": ["timestamp BETWEEN '2022-09-30 06:00:00 AND 2022-09-30 09:99:59'"], "result_name": "qrmorning"}, "result_name": "qrmorning"}, {"type": "q", "args": {"table_name": "data_t", "columns": ["roomtemp"], "conditions": ["timestamp BETWEEN '2022-09-30 18:00:00 AND 2022-09-30 21:99:59'"], "result_name": "qrevening"}, "result_name": "qrevening"}]}}
+,
+{"Input": "지금 옆반 온도랑 우리반 온도 알려줘", "Candidate": "{\"Formalized Input\": \"현재 옆반의 실내온도와 우리반의 실내온도를 알려줘.\", \"Instruction Set\": [{\"type\": \"q\", \"args\": {\"table_name\": \"data_t\", \"columns\": [\"roomtemp\"], \"conditions\": [\"timestamp = '2022-09-30 12:00:00'\"], \"subquery\": \"idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')\"}, \"result_name\": \"qrb\"}; {\"type\": \"q\", \"args\": {\"table_name\": \"data_t\", \"columns\": [\"roomtemp\"], \"conditions\": [\"timestamp = '2022-09-30 12:00:00'\"], \"subquery\": \"idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')\"}, \"result_name\": \"qwr\"}]}"}
+,
+{"Input": "이번주 우리반과 옆반 온도 변화 추이 비교해줘", "Candidate": "{\"Formalized Input\": \"이번주 우리반과 옆반의 실내온도 변화 추이를 비교해줘.\", \"Instruction Set\": [{\"type\": \"q\", \"args\": {\"table_name\": \"data_t\", \"columns\": [\"roomtemp\"], \"conditions\": [\"timestamp BETWEEN '2022-09-29 00:00:00' AND '2022-10-05 23:59:59'\"], \"subquery\": \"idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5'))\"}, \"result_name\": \"qr_ours\"};"}
+,
+{"Input": "현재 설정온도랑 실내온도 차이 알려줘.", "Candidate": {"Formalized Input": "현재 우리반의 설정온도와 실내온도 차이를 알려줘.", "Instruction Set": [{"type": "q", "args": {"table_name": "data_t", "columns": ["settemp", "roomtemp"], "conditions": ["timestamp = (SELECT CURRENT_TIMESTAMP)"], "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"}, "result_name": "qr"}]}}
+,
+{"Input": "지난주에 설정온도와 실내온도 차이가 가장 많이 났던 날은?", "Candidate": {"Formalized Input": "지난주 우리반 일평균 설정온도와 일평균 실내온도 차이가 최고인 날짜를 알려줘.", "Instruction Set": [{"type": "q", "args": {"table_name": "data_t", "columns": ["timestamp", "settemp", "roomtemp"], "conditions": ["timestamp BETWEEN '2022-09-22 00:00:00' AND '2022-09-28 23:59:59'"], "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"}, "result_name": "qr"}]}}
+,
+{"Input": "어제 옆반 에어컨 전원 언제 꺼졌는지 알려줘.", "Candidate": {"Formalized Input": "어제 옆반의 에어컨 전원 언제 처음 켜져이자 마지막 꺼졌어?", "Instruction Set": [{"type": "q", "args": {"table_name": "data_t", "columns": ["timestamp", "oper"], "conditions": ["timestamp BETWEEN '2021-09-29 00:00:00' AND '2021-09-30 23:59:59'"], "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"}, "result_name": "qr"}]}}
+,
+{"Input": "앞반 전원 켜져있어?", "Candidate": {"Formalized Input": "현재 앞반의 에어컨 전원 상태 알려줘.", "Instruction Set": [{"type": "q", "args": {"table_name": "data_t", "columns": ["oper"], "conditions": ["timestamp = '2022-09-30 12:00:00'"], "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_I81')"}, "result_name": "qr"}]}}
+,
+{"Input": "어제 전원 껐어?", "Candidate": {"Formalized Input": "어제 우리반 마지막 에어컨 전원 알려줘.", "Instruction Set": [{"type": "q", "args": {"table_name": "data_t", "columns": ["timestamp", "oper"], "conditions": ["timestamp BETWEEN '2022-09-29 00:00:00' AND '2022-09-29 23:59:59'"], "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"}, "result_name": "qr"}]}}
+,
+{"Input": "최근에 설정온도가 가장 높았던 날 알려줘", "Candidate": {"Formalized Input": "최근 한주동안 우리반 설정온도가 최고였던 날짜 알려줘.", "Instruction Set": [{"type": "q", "args": {"table_name": "data_t", "columns": ["timestamp", "settemp"], "conditions": ["timestamp BETWEEN '2022-09-22 00:00:00' AND '2022-09-30 23:59:59'"], "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"}, "result_name": "qr"}]}}
+,
+{"Input": "화성의 설정온도 확인해줘", "Candidate": {"Formalized Input": "화성의 현재 설정온도를 알려줘.", "Instruction Set": [{"type": "q", "args": {"table_name": "data_t", "columns": ["settemp"], "conditions": ["timestamp = (CURRENT_TIMESTAMP)"], "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_I81')"}, "result_name": "qs"}]}}
+,
+{"Input": "올해 경상수지는?", "Candidate": {"Formalized Input": "올해 여름 우리반의 평균 실내온도 알려줘.", "Instruction Set": [{"type": "q", "args": {"table_name": "data_t", "columns": ["roomtemp"], "conditions": ["timestamp BETWEEN '2022-06-01 00:00:00' AND '2022-08-31 23:59:59'"], "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"}, "result_name": "qr"}]}}
+,
+{"Input": "지난 3일 동안 우리반 실내 온도 평균 값 알려줘.", "Candidate": {"Formalized Input": "지난 3일 동안 우리반의 실내온도 평균값 알려줘.", "Instruction Set": [{"type": "q", "args": {"table_name": "data_t", "columns": ["roomtemp"], "conditions": ["timestamp BETWEEN '2022-09-27 00:00:00' AND '2022-10-30 23:59:59'"], "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"}, "result_name": "qr"}]}}
+
+]
