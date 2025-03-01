@@ -124,12 +124,38 @@ def add_data_from_unzipped(db_instance: DBInstance, data_dir: Path):
         
         # Insert data into the database
         db_instance.insert_data('data_t', data_to_insert)
-                    
+
+def add_dummy_data(db_instance: DBInstance, time_range: pd.date_range):
+    """
+    This function is used to add dummy data to the database.
+    """
+    db_instance.switch_database('PerSite_DB')
     
+    # get all idu_ids
+    idu_ids = db_instance.select_data('idu_t', ['id'])
+
+    dummy_data = {
+        'roomtemp': -1.0,
+        'settemp': -1.0,
+        'oper': True
+    }
+    
+    data_to_insert = [{
+        'idu_id': idu_id['id'],
+        'roomtemp': dummy_data['roomtemp'],
+        'settemp': dummy_data['settemp'],
+        'oper': dummy_data['oper'],
+        'timestamp': timestamp
+    } for idu_id in idu_ids for timestamp in time_range]
+    
+    db_instance.insert_data('data_t', data_to_insert)
+
 
 if __name__ == "__main__":
     # When creating the database for the first time
     db_instance = DBInstance(dbname='postgres')
     # initialize_db(db_instance)
-    add_data_from_unzipped(db_instance, Path('/dataset/LG/3_processed/0418_YongDongIllHigh_school/sr60/raw'))
+    # add_data_from_unzipped(db_instance, Path('/dataset/LG/3_processed/0418_YongDongIllHigh_school/sr60/raw'))
+    # add_dummy_data(db_instance, pd.date_range(start='2021-01-01', end='2021-12-31', freq='1min'))
+    add_dummy_data(db_instance, pd.date_range(start='2022-01-01', end='2022-05-31', freq='1min'))
     db_instance.close()

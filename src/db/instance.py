@@ -1,5 +1,5 @@
 import logging
-logging.basicConfig(level=logging.INFO)
+
 logger = logging.getLogger(__name__)
 
 import pandas as pd
@@ -144,6 +144,13 @@ class DBInstance:
             return None
 
     def insert_data(self, table_name, data, ignore_if_exists=False):
+        """_summary_
+
+        Args:
+            table_name (str): 
+            data (list[dict]):
+            ignore_if_exists (bool, optional): _description_. Defaults to False.
+        """
         try:
             if not isinstance(data, list):
                 data = [data]  # Ensure data is a list of dictionaries
@@ -188,7 +195,7 @@ class DBInstance:
             logger.error(f"An error occurred while selecting data from {table_name}: {e}")
             return None
 
-    def select_data_v2(self, table_name, columns=None, conditions=None, subquery=None):
+    def structured_query(self, table_name, columns=None, conditions=None, subquery=None, get_rowids=False) -> pd.DataFrame:
         """
         Select data from the database table with the option for subqueries and conditions.
         
@@ -202,7 +209,7 @@ class DBInstance:
             df (pd.DataFrame): A DataFrame containing the selected data.
             
         Example:
-            result = select_data_v2(
+            result = structured_query(
                 table_name='data_t',
                 columns=['idu_id', 'roomtemp'],
                 conditions=[
@@ -214,10 +221,16 @@ class DBInstance:
             )
             print(result) # DataFrame containing the selected data
         """
-
         try:
             # columns 리스트에서 각 항목이 문자열이면, 만약 "raw:" 접두어가 있다면 raw SQL로 처리하고,
             # 그렇지 않으면 sql.Identifier로 처리하도록 함.
+            
+            if get_rowids:
+                if columns:
+                    columns.append("id")
+                else:
+                    columns = ["id"]
+            
             if columns:
                 formatted_columns = []
                 for col in columns:
@@ -226,6 +239,7 @@ class DBInstance:
                         formatted_columns.append(sql.SQL(col[4:]))
                     else:
                         formatted_columns.append(sql.Identifier(col))
+                
                 select_columns = sql.SQL(', ').join(formatted_columns)
             else:
                 select_columns = sql.SQL('*')
@@ -251,19 +265,25 @@ class DBInstance:
                 # 만약 col이 "raw:" 접두어가 붙은 문자열이라면, 여기서는 해당 컬럼에 대한 NULL 체크는 생략할 수 있음.
                 if isinstance(col, str) and col.startswith("raw:"):
                     continue
+                if col == "timestamp":
+                    continue
+                
                 where_clauses.append(sql.SQL("{} IS NOT NULL").format(sql.Identifier(col)))
-                where_clauses.append(sql.SQL("{} IS DISTINCT FROM 'NaN'").format(sql.Identifier(col)))
+                
+                if col in ["roomtemp", "settemp"]:
+                    where_clauses.append(sql.SQL("{} IS DISTINCT FROM 'NaN'").format(sql.Identifier(col)))
             
             # Add WHERE clause if there are any conditions or subqueries
             if where_clauses:
                 where_part = " AND ".join([str(clause) if not isinstance(clause, sql.Composed) else clause.as_string(self.connection) for clause in where_clauses])
                 select_query += sql.SQL(" WHERE {}").format(sql.SQL(where_part))
             
-            logger.info(f"Select query as string: {select_query.as_string(self.connection)}")
+            
+            logger.debug(f"Select query as string: {select_query.as_string(self.connection)}")
             # Execute the query
             self.cursor.execute(select_query)
             rows = self.cursor.fetchall()
-            logger.info("Data selected from {} successfully".format(table_name))
+            logger.debug("Data selected from {} successfully".format(table_name))
             
             # Convert the results to a list of dictionaries
             colnames = [desc[0] for desc in self.cursor.description]
@@ -276,7 +296,8 @@ class DBInstance:
             return df
             # return result_dict
         except Exception as e:
-            logger.error("An error occurred while selecting data from {}: {}".format(table_name, e))
+            logger.error("An error occurred while selecting data with\n{}".format(select_query.as_string(self.connection)))
+            logger.error("Error message: {}".format(e))
             return None
 
         
@@ -329,6 +350,8 @@ class DBInstance:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    
     # Exampe usage of the DBInstance class
     db_instance = DBInstance(dbname='PerSite_DB')
     
@@ -348,7 +371,7 @@ if __name__ == "__main__":
         import json
         
         print(
-            db_instance.select_data_v2(
+            db_instance.structured_query(
                 'idu_t',
                 columns=['id', 'name'],
                 conditions=["name in ('01_IB5', '01_IB7')"]
@@ -356,7 +379,7 @@ if __name__ == "__main__":
         )
         
         
-        print(db_instance.select_data_v2(
+        print(db_instance.structured_query(
             table_name='data_t',
             columns=['idu_id', 'roomtemp'],
             conditions=[
@@ -379,11 +402,11 @@ if __name__ == "__main__":
             }"""
         )
         
-        result = db_instance.select_data_v2(**args)
+        result = db_instance.structured_query(**args)
         # print(result[0]["timestamp"])
         print(result)
         
-        # print(db_instance.select_data_v2(
+        # print(db_instance.structured_query(
         #     table_name='data_t',
         #     columns=['idu_id', 'roomtemp'],
         #     conditions=[
@@ -393,6 +416,9 @@ if __name__ == "__main__":
         #     ],
         #     subquery="idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
         # ))
+
+        # get all idu_ids
+        
     
     
     db_instance.close()

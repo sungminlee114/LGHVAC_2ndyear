@@ -1,5 +1,4 @@
 import logging
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 from .instance import DBInstance
@@ -33,3 +32,10 @@ class DBManager:
         - Error: If an exception occurs during query execution.
         """
         return cls.db_instance.execute_sql(sql)
+
+    @classmethod
+    def structured_query(cls, args, get_rowids=False):
+        return cls.db_instance.structured_query(**args, get_rowids=get_rowids)
+    
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
