@@ -2,7 +2,6 @@ import os
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 import json
-from unsloth import FastLanguageModel
 from tqdm import tqdm
 from pathlib import Path
 import re
@@ -45,46 +44,47 @@ class DistributedInference:
     def setup_model(self):
         """Initialize model and tokenizer for the given rank."""
         try:
-            # Ensure we're using the correct device
-            
-            # # Load model with explicit local file handling
-            # model = AutoModelForCausalLM.from_pretrained(
-            #     self.checkpoint_dir,
-            #     torch_dtype=self.torch_dtype,
-            #     cache_dir=self.cache_dir,
-            #     attn_implementation=self.attn_implementation,
-            #     load_in_4bit=self.load_in_4bit,
-            #     load_in_8bit=True,
-            #     local_files_only=True,
-            #     device_map="cuda"
-            # )
-            
-            # tokenizer = AutoTokenizer.from_pretrained(
-            #     self.checkpoint_dir,
-            #     cache_dir=self.cache_dir,
-            #     local_files_only=True
-            # )
-            
-            model, tokenizer = FastLanguageModel.from_pretrained(
-                self.checkpoint_dir.as_posix(),
-                dtype = self.torch_dtype,
-                # load_in_4bit = self.load_in_4bit,
-                # quantization_config=BitsAndBytesConfig(
-                #     # load_in_4bit=True,
-                #     # bnb_4bit_use_double_quant=True,
-                #     # bnb_4bit_quant_type="nf4",
-                #     # bnb_4bit_compute_dtype=torch_dtype
-                #     load_in_8bit=True,
-                #     llm_int8_enable_fp32_cpu_offload=True
-                # ),
-                attn_implementation=self.attn_implementation,
-                cache_dir=self.cache_dir.as_posix(),
-                local_files_only=True,
-                device_map="cuda",
-            )
-            FastLanguageModel.for_inference(model)
-            # tokenizer.pad_token = tokenizer.eos_token
-            # tokenizer.padding_side = "left"
+            if False:
+                # Ensure we're using the correct device
+                
+                # Load model with explicit local file handling
+                model = AutoModelForCausalLM.from_pretrained(
+                    self.checkpoint_dir,
+                    torch_dtype=self.torch_dtype,
+                    cache_dir=self.cache_dir.as_posix(),
+                    attn_implementation=self.attn_implementation,
+                    # load_in_4bit=self.load_in_4bit,
+                    # load_in_8bit=True,
+                    local_files_only=True,
+                    device_map="cuda:0"
+                )
+                
+                tokenizer = AutoTokenizer.from_pretrained(
+                    self.checkpoint_dir,
+                    cache_dir=self.cache_dir,
+                    local_files_only=True
+                )
+            else:
+                from unsloth import FastLanguageModel
+                
+                model, tokenizer = FastLanguageModel.from_pretrained(
+                    self.checkpoint_dir.as_posix(),
+                    dtype = self.torch_dtype,
+                    # load_in_4bit = self.load_in_4bit,
+                    # quantization_config=BitsAndBytesConfig(
+                    #     # load_in_4bit=True,
+                    #     # bnb_4bit_use_double_quant=True,
+                    #     # bnb_4bit_quant_type="nf4",
+                    #     # bnb_4bit_compute_dtype=torch_dtype
+                    #     load_in_8bit=True,
+                    #     llm_int8_enable_fp32_cpu_offload=True
+                    # ),
+                    attn_implementation=self.attn_implementation,
+                    cache_dir=self.cache_dir.as_posix(),
+                    local_files_only=True,
+                    device_map="cuda",
+                )
+                FastLanguageModel.for_inference(model)
             return model, tokenizer
             
         except Exception as e:
@@ -152,7 +152,6 @@ class DistributedInference:
         self,
         dataset: List[Dict],
         common_prompt: str, 
-        metadata: Dict,
         output_file: str
     ):
         """Run inference on a specific rank."""
@@ -168,7 +167,7 @@ class DistributedInference:
                 sample = dataset[idx]
                 response = self.process_sample(
                     model, tokenizer, sample["Input"],
-                    common_prompt, metadata
+                    common_prompt, sample["Metadata"]
                 )
                 
                 if response is not None:
@@ -182,6 +181,8 @@ class DistributedInference:
                     result = {
                         "Input": sample["Input"],
                         # "Reference": sample["Response"],
+                        # "Metadata": sample["Metadata"],
+                        "Scenario": sample["Scenario"],
                         "Candidate": response,
                     }
                     
@@ -190,13 +191,46 @@ class DistributedInference:
                 else:
                     print(f"Error in response")
                 pbar.update(1)
-            
+
+def read_dataset(train_type, dir, path):
+    # the file is originally json-list format
+    # we want every first-level elements to be a string itself
+    # for example, [{"Hi": "a'b'"}, {"Hi": "c'd'"}] -> ["""{"Hi": "a'b'"}""", """{"Hi": "c'd'"}"""]
+    
+    metadata = json.load(open(dir / "metadata.json", "r"))
+
+    path = dir / path
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.loads(f.read())
+    
+    result = []
+    for d in data:
+        if train_type in ["woall", "FI", "ISP"]:
+            del d["Response"]["Strategy"]
+        
+        if train_type in ["woall", "FI"]:
+            del d["Response"]["Input Semantic Parsing"]
+        
+        if train_type in ["woall"]:
+            del d["Response"]["Formalized Input"]
+        
+        result.append({"Metadata": metadata, "Input": d["Input"], "Response": json.dumps(d["Response"], ensure_ascii=False)})
+    # result = [{"Input": d["Input"], "Response": json.dumps(d["Response"], ensure_ascii=False)} for d in data]
+    # print(f"Read {len(result)} examples from {path}")
+    # print(f"Type of result: {type(result)}")
+    # print(f"Type of result[0]: {type(result[0])}")
+    # print(f"Type of result[0]['Input']: {type(result[0]['Input'])}")
+    # print(f"Type of result[0]['Response']: {type(result[0]['Response'])}")
+    return result
+
+
 def main():
     
     # Configuration
-    BASE_DIR = Path("../finetuning/try_lora")
+    BASE_DIR = Path("../finetuning/dataset/v5-250228-multimetadata")
     # checkpoint_dir = Path("/model/Bllossom-llama-3.2-Korean-Bllossom-3B/chkpts/r1700_a1500/checkpoint-12")
     
+
     train_type = [
         "woall", # 0
         "FI", # 1
@@ -216,23 +250,27 @@ def main():
         # model_name, tr_config = \
         #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
         #     f"r256_a512_FI/checkpoint-57"
+        pass
     
     elif train_type == "ISP":
         # model_name, tr_config = \
         #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
         #     f"r256_a512_ISP/checkpoint-104"
+        pass
     
     elif train_type == "ours":
-        model_name, tr_config = \
-            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "r128_a256_ours/checkpoint-51"
+        # model_name, tr_config = \
+        #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+        #     "r128_a256_ours/checkpoint-51"
 
         # model_name, tr_config = \
         #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
         #     "r256_a512_ours/checkpoint-138"
 
-
-    
+        model_name, tr_config = \
+            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+            "v5_r256_a512_ours/checkpoint-24"
+    print(f"Model: {model_name}, Config: {tr_config}")
 
     checkpoint_dir = Path(f"/model/{model_name}/chkpts/{tr_config}")
     cache_dir = Path(f"/model/{model_name}/cache")
@@ -243,20 +281,28 @@ def main():
     if not BASE_DIR.exists():
         raise ValueError(f"Base directory {BASE_DIR} does not exist")
     
-    # Load dataset and metadata
-    dataset_path = BASE_DIR / "training_dataset_v4_onlyq_ts.json"
-    metadata_path = BASE_DIR / "metadata.json"
+    dataset = []
+    for scenario_dir in [d for d in BASE_DIR.iterdir() if d.is_dir() and "scenario" in d.name and "metadata.json" in [f.name for f in d.iterdir()]]:
+        data = read_dataset(train_type, scenario_dir, "onlyq_ts.json")
+        for i, d in enumerate(data):
+            data[i]["Scenario"] = scenario_dir.name
+        dataset.extend(data)
+        
     
-    if not dataset_path.exists():
-        raise ValueError(f"Dataset file {dataset_path} does not exist")
-    if not metadata_path.exists():
-        raise ValueError(f"Metadata file {metadata_path} does not exist")
-    
-    dataset = json.load(open(dataset_path, "r"))
-    metadata = json.load(open(metadata_path, "r"))
-    
-    common_prompt = open(BASE_DIR / F"prompt_{train_type}.txt", "r").read()
-    # common_prompt = open(BASE_DIR / "prompt_woall.txt", "r").read()
+    common_prompt = open(BASE_DIR / F"prompt.txt", "r").read()
+
+    if train_type in ["woall", "FI", "ISP"]:
+        # search <|ST|>~~<|ST|> and remove between them
+        common_prompt = re.sub(r"\n?<\|ST\|>(.|\n)*?<\|ST\|>", "", common_prompt)
+    if train_type in ["woall", "FI"]:
+        # search <|ISP|>~~<|ISP|> and remove between them
+        common_prompt = re.sub(r"\n?<\|ISP\|>(.|\n)*?<\|ISP\|>", "", common_prompt)
+    if train_type in ["woall"]:
+        # search <|FI|>~~<|FI|> and remove between them
+        common_prompt = re.sub(r"\n?<\|FI\|>(.|\n)*?<\|FI\|>", "", common_prompt)
+
+    # remove all <||>
+    common_prompt = re.sub(r"<\|.*?\|>", "", common_prompt)
     
     # Initialize distributed inference
     inference = DistributedInference(
@@ -271,7 +317,6 @@ def main():
     inference.run(
         dataset=dataset,
         common_prompt=common_prompt,
-        metadata=metadata,
         output_file=output_file
     )
     
