@@ -1,0 +1,23 @@
+Vanila
+JsonStructureCorrectness: 1.00
+ExactMatch: 0.82
+F1: 0.97
+Recall: 0.95
+
+FI
+JsonStructureCorrectness: 1.00
+ExactMatch: 0.82
+F1: 0.85
+Recall: 0.95
+
+FI+ISP
+JsonStructureCorrectness: 1.00
+ExactMatch: 0.82
+F1: 0.94
+Recall: 0.90
+
+FI+ISP+ST
+JsonStructureCorrectness: 1.00
+ExactMatch: 0.82
+F1: 0.99
+Recall: 1.00

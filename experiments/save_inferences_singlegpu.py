@@ -80,7 +80,7 @@ class DistributedInference:
                 attn_implementation=self.attn_implementation,
                 cache_dir=self.cache_dir.as_posix(),
                 local_files_only=True,
-                device_map="cuda:1",
+                device_map="cuda",
             )
             FastLanguageModel.for_inference(model)
             # tokenizer.pad_token = tokenizer.eos_token
@@ -197,26 +197,41 @@ def main():
     BASE_DIR = Path("../finetuning/try_lora")
     # checkpoint_dir = Path("/model/Bllossom-llama-3.2-Korean-Bllossom-3B/chkpts/r1700_a1500/checkpoint-12")
     
-    # model_name, tr_config = \
-        # "Bllossom-llama-3.2-Korean-Bllossom-3B", \
-    #     "r256_a256/checkpoint-15"
-    
-    # model_name, tr_config = \
-    #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-    #     "r256_a512/checkpoint-8"    
-    
-    
-    # model_name, tr_config = \
-    #     "Bllossom-llama-3.2-Korean-Bllossom-3B", \
-    #     "r512_a1024_ours/checkpoint-40"
-        
-    model_name, tr_config = \
-        "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-        "r512_a1024_ours/checkpoint-30"
+    train_type = [
+        "woall", # 0
+        "FI", # 1
+        "ISP", # 2
+        "ours" # 3
+    ][3]
 
-    # model_name, tr_config = \
-    #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-    #     "r128_a256_woall/checkpoint-60"
+    if train_type == "woall":
+        model_name, tr_config = \
+            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+            "r128_a256_woall/checkpoint-60"
+
+        # model_name, tr_config = \
+        #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+        #     "r256_a512_woall/checkpoint-72"
+    elif train_type == "FI":
+        # model_name, tr_config = \
+        #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+        #     f"r256_a512_FI/checkpoint-57"
+    
+    elif train_type == "ISP":
+        # model_name, tr_config = \
+        #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+        #     f"r256_a512_ISP/checkpoint-104"
+    
+    elif train_type == "ours":
+        model_name, tr_config = \
+            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+            "r128_a256_ours/checkpoint-51"
+
+        # model_name, tr_config = \
+        #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+        #     "r256_a512_ours/checkpoint-138"
+
+
     
 
     checkpoint_dir = Path(f"/model/{model_name}/chkpts/{tr_config}")
@@ -240,7 +255,7 @@ def main():
     dataset = json.load(open(dataset_path, "r"))
     metadata = json.load(open(metadata_path, "r"))
     
-    common_prompt = open(BASE_DIR / "prompt.txt", "r").read()
+    common_prompt = open(BASE_DIR / F"prompt_{train_type}.txt", "r").read()
     # common_prompt = open(BASE_DIR / "prompt_woall.txt", "r").read()
     
     # Initialize distributed inference

@@ -123,7 +123,7 @@
             "Formalized Input": "작년 겨울 우리반의 평균 실내온도 알려줘.",
             "Input Semantic Parsing": {
                 "Temporal": {
-                    "작년 작년": "2021-12-01 00:00:00 ~ 2022-02-28 23:59:59"
+                    "작년": "2021-12-01 00:00:00 ~ 2022-02-28 23:59:59"
                 },
                 "Spatial": {
                     "우리반": "01_IB5"
@@ -176,12 +176,12 @@
                 }
             },
             "Strategy": {
-                "Objective": "우리반의 올해 여름 실내온도 쿼리 후 평균값 계산 후 반환.",
+                "Objective": "앞반의 올해 여름 실내온도 쿼리 후 평균값 계산 후 반환.",
                 "Expected Outputs": [
-                    "올해 여름 우리반의 평균 온도는 26℃ 입니다."
+                    "올해 여름 앞반의 평균 온도는 26℃ 입니다."
                 ],
                 "Step": [
-                    "우리반의 올해 여름(2022-06-01 ~ 2022-08-31) roomtemp 쿼리 결과 qr에 저장",
+                    "앞반의 올해 여름(2022-06-01 ~ 2022-08-31) roomtemp 쿼리 결과 qr에 저장",
                     "qr에서 roomtemp의 평균값 반환"
                 ]
             },
@@ -249,25 +249,25 @@
     {
         "Input": "올해 봄 옆반 제일 추웠던 날 알려줘",
         "Response": {
-            "Formalized Input": "올해 봄 우리반 실내온도 최저인 날 알려줘.",
+            "Formalized Input": "올해 봄 옆반 실내온도 최저인 날 알려줘.",
             "Input Semantic Parsing": {
                 "Temporal": {
                     "올해 봄": "2022-03-01 00:00:00 ~ 2022-05-31 23:59:59"
                 },
                 "Spatial": {
-                    "우리반": "01_IB5"
+                    "옆반": "01_IB7"
                 },
                 "Modality": {
                     "실내온도": "roomtemp"
                 }
             },
             "Strategy": {
-                "Objective": "우리반의 올해 봄 실내온도 쿼리 후 최저값 및 해당 날짜 반환.",
+                "Objective": "옆반의 올해 봄 실내온도 쿼리 후 최저값 및 해당 날짜 반환.",
                 "Expected Outputs": [
-                    "올해 봄 우리반은 3월 1일에 8℃로 제일 추웠습니다."
+                    "올해 봄 옆반은 3월 1일에 8℃로 제일 추웠습니다."
                 ],
                 "Step": [
-                    "우리반의 올해 봄(2022-03-01 ~ 2022-05-31) roomtemp 쿼리 결과 qr에 저장",
+                    "옆반의 올해 봄(2022-03-01 ~ 2022-05-31) roomtemp 쿼리 결과 qr에 저장",
                     "qr에서 roomtemp 최저값 및 해당 날짜 반환"
                 ]
             },
@@ -282,7 +282,7 @@
                         "conditions": [
                             "timestamp BETWEEN '2022-03-01 00:00:00' AND '2022-05-31 23:59:59'"
                         ],
-                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
                     },
                     "result_name": "qr"
                 }
@@ -379,10 +379,10 @@
     {
         "Input": "2주전 우리반과 옆반 합쳐서 설정온도가 가장 낮은날이 언제야?",
         "Response": {
-            "Formalized Input": "2주전 한주동안 우리반과 옆반 합쳐서 설정온도가 최저였던 날짜 알려줘.",
+            "Formalized Input": "2주전 한주 동안 우리반과 옆반 합쳐서 설정온도가 최저였던 날짜 알려줘.",
             "Input Semantic Parsing": {
                 "Temporal": {
-                    "2주전 한주": "2022-09-15 00:00:00 ~ 2022-09-21 23:59:59"
+                    "2주전 한주": "2022-09-12 00:00:00 ~ 2022-09-18 23:59:59"
                 },
                 "Spatial": {
                     "우리반": "01_IB5",
@@ -393,13 +393,13 @@
                 }
             },
             "Strategy": {
-                "Objective": "우리반과 옆반의 2주전 한주동안 설정온도 쿼리 후 설정온도 최저값, 해당 반 및 날짜 반환.",
+                "Objective": "우리반과 옆반의 2주전 한주 동안 설정온도 쿼리 후 설정온도 최저값, 해당 반 및 날짜 반환.",
                 "Expected Outputs": [
-                    "2주전 한주 동안 옆반의 설정온도가 9월 17일에 25℃로 가장 낮았습니다."
+                    "2주전 옆반의 설정온도는 9월 17일에 25℃로 가장 낮았습니다."
                 ],
                 "Step": [
-                    "우리반의 2주전 한주동안(2022-09-15 ~ 2022-09-21) settemp 쿼리 결과 qr_ours에 저장",
-                    "옆반의 2주전 한주동안(2022-09-15 ~ 2022-09-21) settemp 쿼리 결과 qr_beside에 저장",
+                    "우리반의 2주전 한주 동안(2022-09-12 ~ 2022-09-18) settemp 쿼리 결과 qr_ours에 저장",
+                    "옆반의 2주전 한주 동안(2022-09-12 ~ 2022-09-18) settemp 쿼리 결과 qr_beside에 저장",
                     "qr_ours와 qr_beside를 합쳐서 settemp 최저값, 해당 반 및 날짜 반환"
                 ]
             },
@@ -413,7 +413,7 @@
                             "roomtemp"
                         ],
                         "conditions": [
-                            "timestamp BETWEEN '2022-09-15 00:00:00' AND '2022-09-21 23:59:59'"
+                            "timestamp BETWEEN '2022-09-12 00:00:00' AND '2022-09-18 23:59:59'"
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
@@ -428,7 +428,7 @@
                             "roomtemp"
                         ],
                         "conditions": [
-                            "timestamp BETWEEN '2022-09-15 00:00:00' AND '2022-09-21 23:59:59'"
+                            "timestamp BETWEEN '2022-09-12 00:00:00' AND '2022-09-18 23:59:59'"
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
                     },
@@ -471,7 +471,7 @@
             "Formalized Input": "지난주 우리반의 설정온도 변화 추이 시각화 해줘.",
             "Input Semantic Parsing": {
                 "Temporal": {
-                    "지난주": "2022-09-23 00:00:00 ~ 2022-09-29 23:59:59"
+                    "지난주": "2022-09-19 00:00:00 ~ 2022-09-25 23:59:59"
                 },
                 "Spatial": {
                     "우리반": "01_IB5"
@@ -488,7 +488,7 @@
                     "지난주 우리반의 설정온도는 평균 26℃, 최저 25℃, 최고 27℃였습니다."
                 ],
                 "Step": [
-                    "우리반의 지난주 settemp 쿼리 결과 qr에 저장",
+                    "우리반의 지난주(2022-09-19 ~ 2022-09-25) settemp 쿼리 결과 qr에 저장",
                     "qr를 시각화해 변화 추이 그래프 생성",
                     "qr에서 settemp의 평균, 최저, 최고값 계산",
                     "그래프 및 통계적 정보 반환"
@@ -503,7 +503,7 @@
                             "settemp"
                         ],
                         "conditions": [
-                            "timestamp BETWEEN '2022-09-23 00:00:00' AND '2022-09-29 23:59:59'"
+                            "timestamp BETWEEN '2022-09-19 00:00:00' AND '2022-09-25 23:59:59'"
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
@@ -515,23 +515,26 @@
     {
         "Input": "우리반의 가장 최근 설정 온도 알려줘",
         "Response": {
-            "Formalized Input": "우리반의 가장 최신 설정온도를 알려줘.",
+            "Formalized Input": "우리반의 가장 최근 설정온도를 알려줘.",
             "Input Semantic Parsing": {
                 "Spatial": {
                     "우리반": "01_IB5"
+                },
+                "Temporal": {
+                    "가장 최근(1주일)": "2022-09-23 00:00:00 ~ 2022-09-30 23:59:59"
                 },
                 "Modality": {
                     "설정온도": "settemp"
                 }
             },
             "Strategy": {
-                "Objective": "우리반의 1주일 이내 설정온도 쿼리 후 가장 최신 값 반환함.",
+                "Objective": "우리반의 1주일 이내 설정온도 쿼리 후 가장 최근 값 반환함.",
                 "Expected Outputs": [
                     "우리반의 1주일 이내 가장 최근 설정온도는 2시간 전 설정한 26℃입니다."
                 ],
                 "Step": [
                     "우리반의 1주일 이내(2022-09-23 ~ 2022-09-30) settemp 쿼리 결과 qr에 저장",
-                    "qr에서 가장 최신 settemp 값 및 해당 시간 반환"
+                    "qr에서 가장 최근 settemp 값 및 해당 시간 반환"
                 ]
             },
             "Instruction Set": [
@@ -556,10 +559,13 @@
     {
         "Input": "옆반의 가장 최근 온도랑 설정온도 알려줘",
         "Response": {
-            "Formalized Input": "옆반의 가장 최신 실내온도와 설정온도를 알려줘.",
+            "Formalized Input": "옆반의 가장 최근 실내온도와 설정온도를 알려줘.",
             "Input Semantic Parsing": {
                 "Spatial": {
                     "옆반": "01_IB7"
+                },
+                "Temporal": {
+                    "가장 최근(1주일)": "2022-09-23 00:00:00 ~ 2022-09-30 23:59:59"
                 },
                 "Modality": {
                     "실내온도": "roomtemp",
@@ -567,13 +573,13 @@
                 }
             },
             "Strategy": {
-                "Objective": "옆반의 최근(1주일 이내) 실내온도 쿼리 후 가장 최신값 반환함.",
+                "Objective": "옆반의 최근(1주일 이내) 실내온도 쿼리 후 가장 최근값 반환함.",
                 "Expected Outputs": [
                     "옆반의 1주일 이내 가장 최근 실내온도는 2시간 전 25℃입니다."
                 ],
                 "Step": [
                     "옆반의 1주일 이내(2022-09-23 ~ 2022-09-30) roomtemp, settemp 쿼리 후 qr에 저장",
-                    "qr에서 가장 최신 시간 및 해당 시간의 roomtemp, settemp 반환"
+                    "qr에서 가장 최근 시간 및 해당 시간의 roomtemp, settemp 반환"
                 ]
             },
             "Instruction Set": [
@@ -586,7 +592,9 @@
                             "roomtemp",
                             "settemp"
                         ],
-                        "conditions": [],
+                        "conditions": [
+                            "timestamp BETWEEN '2022-09-23 00:00:00' AND '2022-09-30 23:59:59'"
+                        ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
                     },
                     "result_name": "qr"
@@ -615,7 +623,7 @@
                 ],
                 "Step": [
                     "옆반의 오늘(2022-09-30) roomtemp, settemp, oper 쿼리 후 qr에 저장",
-                    "qr에서 가장 최신 데이터를 선택해 현재 roomtemp, settemp, oper 상태를 추출",
+                    "qr에서 가장 최근 데이터를 선택해 현재 roomtemp, settemp, oper 상태를 추출",
                     "oper가 켜져있거나 settemp가 너무 낮은 경우, 꺼져있는 시간을 계산해 반환",
                     "데이터를 바탕으로 추운 이유를 분석해 반환"
                 ]
@@ -662,7 +670,7 @@
                 ],
                 "Step": [
                     "우리반의 오늘(2022-09-30) roomtemp, settemp, oper 쿼리 결과 qr에 저장",
-                    "qr에서 가장 최신 데이터를 선택해 현재 roomtemp, settemp, oper 상태를 추출",
+                    "qr에서 가장 최근 데이터를 선택해 현재 roomtemp, settemp, oper 상태를 추출",
                     "oper가 꺼져있거나 settemp가 roomtemp보다 높은 경우, 켜져있던 시간을 계산해 반환",
                     "데이터를 바탕으로 더운 이유를 분석해 반환"
                 ]
@@ -701,7 +709,7 @@
                 }
             },
             "Strategy": {
-                "Objective": "현재 시간을 메타데이터에서 읽어서 반환",
+                "Objective": "현재 시간을 Metadata에서 읽어서 반환",
                 "Expected Outputs": [
                     "현재 시간은 14:35입니다.",
                     "지금은 오후 2시 35분입니다."
@@ -762,7 +770,7 @@
             "Formalized Input": "내일 우리반의 실내온도 예측해줘.",
             "Input Semantic Parsing": {
                 "Temporal": {
-                    "내일": "2022-10-01 00:00:00"
+                    "내일": "2022-10-01 00:00:00 ~ 2022-10-01 23:59:59"
                 },
                 "Spatial": {
                     "우리반": "01_IB5"
@@ -777,7 +785,7 @@
                     "예측하기는 아직 지원되지 않는 기능입니다."
                 ],
                 "Step": [
-                    "예측하지 않음"
+                    "예측하기가 지원되지 않는다는 메시지 반환"
                 ]
             },
             "Instruction Set": []
@@ -989,7 +997,7 @@
             "Formalized Input": "지난주 우리반의 설정온도가 실내온도보다 더 높았던 날을 알려줘.",
             "Input Semantic Parsing": {
                 "Temporal": {
-                    "지난주": "2022-09-23 00:00:00 ~ 2022-09-29 23:59:59"
+                    "지난주": "2022-09-19 00:00:00 ~ 2022-09-25 23:59:59"
                 },
                 "Spatial": {
                     "우리반": "01_IB5"
@@ -1005,7 +1013,7 @@
                     "지난주 우리반의 설정온도가 실내온도보다 더 높았던 날은 2022-09-25입니다."
                 ],
                 "Step": [
-                    "지난주(2022-09-23 ~ 2022-09-29) 의 우리반 settemp와 roomtemp 데이터를 qr에 저장",
+                    "지난주(2022-09-19 ~ 2022-09-25) 우리반 settemp와 roomtemp 데이터를 qr에 저장",
                     "settemp가 roomtemp보다 높은 날짜를 찾음"
                 ]
             },
@@ -1020,7 +1028,7 @@
                             "settemp"
                         ],
                         "conditions": [
-                            "timestamp BETWEEN '2022-09-23 00:00:00' AND '2022-09-29 23:59:59'"
+                            "timestamp BETWEEN '2022-09-19 00:00:00' AND '2022-09-25 23:59:59'"
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
@@ -1079,7 +1087,7 @@
             "Formalized Input": "이번주 우리반과 옆반의 설정온도 차이 시각화 해줘.",
             "Input Semantic Parsing": {
                 "Temporal": {
-                    "이번주": "2022-09-29 00:00:00 ~ 2022-10-04 23:59:59"
+                    "이번주": "2022-09-26 00:00:00 ~ 2022-10-02 23:59:59"
                 },
                 "Spatial": {
                     "우리반": "01_IB5",
@@ -1096,7 +1104,7 @@
                     "이번주 우리반의 평균 설정온도는 25℃이고, 옆반은 26℃로 1℃ 차이가 있습니다."
                 ],
                 "Step": [
-                    "우리반과 옆반의 이번주(2022-09-29 ~ 2022-10-04) settemp 각각 쿼리 결과 qr_ours와 qr_beside에 저장",
+                    "우리반과 옆반의 이번주(2022-09-26 ~ 2022-10-02) settemp 각각 쿼리 결과 qr_ours와 qr_beside에 저장",
                     "qr_ours와 qr_beside를 시각화해 settemp 차이 추이 그래프 생성",
                     "qr_ours와 qr_beside에서 settemp의 평균값 계산",
                     "그래프, settemp의 평균값들 및 차이 반환"
@@ -1111,7 +1119,7 @@
                             "settemp"
                         ],
                         "conditions": [
-                            "timestamp BETWEEN '2022-09-29 00:00:00' AND '2022-10-04 23:59:59'"
+                            "timestamp BETWEEN '2022-09-26 00:00:00' AND '2022-10-02 23:59:59'"
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
@@ -1125,7 +1133,7 @@
                             "settemp"
                         ],
                         "conditions": [
-                            "timestamp BETWEEN '2022-09-29 00:00:00' AND '2022-10-04 23:59:59'"
+                            "timestamp BETWEEN '2022-09-26 00:00:00' AND '2022-10-02 23:59:59'"
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
                     },
@@ -1441,7 +1449,7 @@
                             "settemp"
                         ],
                         "conditions": [
-                            "timestamp BETWEEN '2022-08-30 00:00:00' AND '2022-08-29 23:59:59'"
+                            "timestamp BETWEEN '2022-08-30 00:00:00' AND '2022-09-29 23:59:59'"
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
@@ -1586,7 +1594,11 @@
         "Input": "이번주 경제 소식 알려줘.",
         "Response": {
             "Formalized Input": "이번주 경제 소식을 알려줘.",
-            "Input Semantic Parsing": {},
+            "Input Semantic Parsing": {
+                "Temporal": {
+                    "이번주": "2022-09-26 00:00:00 ~ 2022-10-02 23:59:59"
+                }
+            },
             "Strategy": {
                 "Objective": "HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
                 "Expected Outputs": [
@@ -1605,7 +1617,7 @@
             "Formalized Input": "지난주 우리반의 설정온도 중 최빈값을 알려줘.",
             "Input Semantic Parsing": {
                 "Temporal": {
-                    "지난주": "2022-09-22 00:00:00 ~ 2022-09-28 23:59:59"
+                    "지난주": "2022-09-19 00:00:00 ~ 2022-09-25 23:59:59"
                 },
                 "Spatial": {
                     "우리반": "01_IB5"
@@ -1620,7 +1632,7 @@
                     "지난주 우리반은 대체로 25℃로 설정되어 있었습니다."
                 ],
                 "Step": [
-                    "우리반의 지난주(2022-09-22 ~ 2022-09-28) settemp 쿼리 후 qr에 저장",
+                    "우리반의 지난주(2022-09-19 ~ 2022-09-25) settemp 쿼리 후 qr에 저장",
                     "qr에서 최빈 settemp 값을 찾아 반환"
                 ]
             },
@@ -1633,7 +1645,7 @@
                             "settemp"
                         ],
                         "conditions": [
-                            "timestamp BETWEEN '2022-09-22 00:00:00' AND '2022-09-28 23:59:59'"
+                            "timestamp BETWEEN '2022-09-19 00:00:00' AND '2022-09-25 23:59:59'"
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
@@ -1675,7 +1687,6 @@
                     "args": {
                         "table_name": "data_t",
                         "columns": [
-                            "timestamp",
                             "settemp"
                         ],
                         "conditions": [
@@ -1690,7 +1701,6 @@
                     "args": {
                         "table_name": "data_t",
                         "columns": [
-                            "timestamp",
                             "settemp"
                         ],
                         "conditions": [
@@ -1752,7 +1762,7 @@
             "Formalized Input": "이번주 우리반의 평균 실내온도 알려줘.",
             "Input Semantic Parsing": {
                 "Temporal": {
-                    "이번주": "2022-09-29 00:00:00 ~ 2022-10-05 23:59:59"
+                    "이번주": "2022-09-26 00:00:00 ~ 2022-10-02 23:59:59"
                 },
                 "Spatial": {
                     "우리반": "01_IB5"
@@ -1767,7 +1777,7 @@
                     "이번주 우리반의 평균 실내온도는 24℃ 입니다."
                 ],
                 "Step": [
-                    "우리반 이번주(2022-09-29 ~ 2022-10-05) roomtemp 쿼리 결과 qr에 저장",
+                    "우리반 이번주(2022-09-26 ~ 2022-10-02) roomtemp 쿼리 결과 qr에 저장",
                     "qr에서 roomtemp의 평균값 반환"
                 ]
             },
@@ -1780,7 +1790,7 @@
                             "roomtemp"
                         ],
                         "conditions": [
-                            "timestamp BETWEEN '2022-09-29 00:00:00' AND '2022-10-05 23:59:59'"
+                            "timestamp BETWEEN '2022-09-26 00:00:00' AND '2022-10-02 23:59:59'"
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
@@ -1956,7 +1966,7 @@
                     "예측하기는 아직 지원되지 않는 기능입니다."
                 ],
                 "Step": [
-                    "예측하지 않음"
+                    "예측하기가 지원되지 않는다는 메시지 반환"
                 ]
             },
             "Instruction Set": []
@@ -2148,7 +2158,6 @@
                     "args": {
                         "table_name": "data_t",
                         "columns": [
-                            "timestamp",
                             "oper"
                         ],
                         "conditions": [

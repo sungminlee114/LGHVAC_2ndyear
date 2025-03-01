@@ -20,7 +20,7 @@
                 ],
                 "Step": [
                     "우리반의 오늘(2022-09-30) roomtemp, settemp, oper 쿼리 후 qr에 저장",
-                    "qr에서 가장 최신 데이터를 선택해 현재 roomtemp, settemp, oper 상태를 추출",
+                    "qr에서 가장 최근 데이터를 선택해 현재 roomtemp, settemp, oper 상태를 추출",
                     "oper가 켜져있거나 settemp가 너무 낮은 경우, 꺼져있는 시간을 계산해 반환",
                     "데이터를 바탕으로 추운 이유를 분석해 반환"
                 ]
@@ -79,7 +79,6 @@
                     "args": {
                         "table_name": "data_t",
                         "columns": [
-                            "timestamp",
                             "roomtemp"
                         ],
                         "conditions": [
@@ -94,7 +93,6 @@
                     "args": {
                         "table_name": "data_t",
                         "columns": [
-                            "timestamp",
                             "roomtemp"
                         ],
                         "conditions": [
@@ -172,7 +170,7 @@
             "Formalized Input": "이번주 우리반과 옆반의 실내온도 변화 추이 비교해줘.",
             "Input Semantic Parsing": {
                 "Temporal": {
-                    "이번주": "2022-09-29 00:00:00 ~ 2022-10-04 23:59:59"
+                    "이번주": "2022-09-26 00:00:00 ~ 2022-10-02 23:59:59"
                 },
                 "Spatial": {
                     "우리반": "01_IB5",
@@ -190,7 +188,7 @@
                     "이번주 옆반의 평균 실내온도는 25℃, 최저 23℃, 최고 28℃입니다."
                 ],
                 "Step": [
-                    "우리반과 옆반의 이번주(2022-09-29 ~ 2022-10-04) roomtemp 쿼리 결과 qr_ours와 qr_beside에 저장",
+                    "우리반과 옆반의 이번주(2022-09-26 ~ 2022-10-02) roomtemp 쿼리 결과 qr_ours와 qr_beside에 저장",
                     "두 반의 데이터를 시각화해 변화 추이 비교 그래프 생성",
                     "각 반의 평균, 최저, 최고값 계산",
                     "그래프와 통계적 비교 정보 반환"
@@ -206,7 +204,7 @@
                             "roomtemp"
                         ],
                         "conditions": [
-                            "timestamp BETWEEN '2022-09-29 00:00:00' AND '2022-10-04 23:59:59'"
+                            "timestamp BETWEEN '2022-09-26 00:00:00' AND '2022-10-02 23:59:59'"
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
@@ -221,7 +219,7 @@
                             "roomtemp"
                         ],
                         "conditions": [
-                            "timestamp BETWEEN '2022-09-29 00:00:00' AND '2022-10-04 23:59:59'"
+                            "timestamp BETWEEN '2022-09-26 00:00:00' AND '2022-10-02 23:59:59'"
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
                     },
@@ -281,7 +279,7 @@
             "Formalized Input": "지난주 우리반 설정온도와 실내온도 차이가 가장 많이 났던 날을 알려줘.",
             "Input Semantic Parsing": {
                 "Temporal": {
-                    "지난주": "2022-09-23 00:00:00 ~ 2022-09-29 23:59:59"
+                    "지난주": "2022-09-19 00:00:00 ~ 2022-09-25 23:59:59"
                 },
                 "Spatial": {
                     "우리반": "01_IB5"
@@ -297,7 +295,7 @@
                     "지난주 27일에 설정온도(25℃)와 실내온도(22℃)의 차이가 3℃로 가장 많이 났습니다."
                 ],
                 "Step": [
-                    "지난주 우리반 settemp와 roomtemp 쿼리 후 qr에 저장",
+                    "지난주(2022-09-19 ~ 2022-09-25) 우리반 settemp와 roomtemp 쿼리 후 qr에 저장",
                     "각 날짜별 settemp와 roomtemp의 차이를 계산해 최대 차이가 났던 날짜 찾기",
                     "그 날짜와 그 날의 settemp, roomtemp, 차이 반환"
                 ]
@@ -313,7 +311,7 @@
                             "roomtemp"
                         ],
                         "conditions": [
-                            "timestamp BETWEEN '2022-09-23 00:00:00' AND '2022-09-29 23:59:59'"
+                            "timestamp BETWEEN '2022-09-19 00:00:00' AND '2022-09-25 23:59:59'"
                         ],
                         "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
                     },
