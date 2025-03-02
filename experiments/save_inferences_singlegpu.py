@@ -56,7 +56,7 @@ class DistributedInference:
                     # load_in_4bit=self.load_in_4bit,
                     # load_in_8bit=True,
                     local_files_only=True,
-                    device_map="cuda:0"
+                    device_map="cuda"
                 )
                 
                 tokenizer = AutoTokenizer.from_pretrained(
