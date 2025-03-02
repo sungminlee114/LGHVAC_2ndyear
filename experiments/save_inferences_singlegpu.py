@@ -269,7 +269,7 @@ def main():
 
         model_name, tr_config = \
             "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "v5_r256_a512_ours/checkpoint-24"
+            "v5_r256_a512_ours/checkpoint-54"
     print(f"Model: {model_name}, Config: {tr_config}")
 
     checkpoint_dir = Path(f"/model/{model_name}/chkpts/{tr_config}")

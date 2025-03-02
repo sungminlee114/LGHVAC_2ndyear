@@ -439,7 +439,6 @@
                     "args": {
                         "table_name": "data_t",
                         "columns": [
-                            "timestamp",
                             "oper"
                         ],
                         "conditions": [
