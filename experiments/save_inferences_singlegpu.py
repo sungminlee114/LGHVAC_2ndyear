@@ -236,13 +236,16 @@ def main():
         "FI", # 1
         "ISP", # 2
         "ours" # 3
-    ][3]
+    ][0]
 
     if train_type == "woall":
         model_name, tr_config = \
             "sh2orc-Llama-3.1-Korean-8B-Instruct", \
             "r128_a256_woall/checkpoint-60"
-
+        
+        model_name, tr_config = \
+            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+            "v5_r64_a128_woall/checkpoint-72"
         # model_name, tr_config = \
         #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
         #     "r256_a512_woall/checkpoint-72"
@@ -270,6 +273,10 @@ def main():
         model_name, tr_config = \
             "sh2orc-Llama-3.1-Korean-8B-Instruct", \
             "v5_r256_a512_ours/checkpoint-54"
+        
+        model_name, tr_config = \
+            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+            "v5_r64_a128_ours/checkpoint-60"
     print(f"Model: {model_name}, Config: {tr_config}")
 
     checkpoint_dir = Path(f"/model/{model_name}/chkpts/{tr_config}")

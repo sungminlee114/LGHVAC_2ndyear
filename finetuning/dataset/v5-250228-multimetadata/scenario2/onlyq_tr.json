@@ -669,31 +669,6 @@
         }
     },
     {
-        "Input": "What time is it now?",
-        "Response": {
-            "Formalized Input": "현재 몇 시인지 알려줘.",
-            "Input Semantic Parsing": {
-                "Temporal": {
-                    "현재": "2022-09-30 12:00:00"
-                },
-                "Modality": {
-                    "시간": "current_time"
-                }
-            },
-            "Strategy": {
-                "Objective": "현재 시간을 Metadata에서 읽어서 반환",
-                "Expected Outputs": [
-                    "현재 시간은 14:35입니다.",
-                    "지금은 오후 2시 35분입니다."
-                ],
-                "Step": [
-                    "시간 데이터를 대답"
-                ]
-            },
-            "Instruction Set": []
-        }
-    },
-    {
         "Input": "What is the current temperature in our class?",
         "Response": {
             "Formalized Input": "우리반의 현재 실내온도를 알려줘.",
@@ -847,51 +822,6 @@
                     "result_name": "qr"
                 }
             ]
-        }
-    },
-    {
-        "Input": "롯데캐슬의 현재 온도 알려줘",
-        "Response": {
-            "Formalized Input": "롯데캐슬의 현재 실내온도를 알려줘.",
-            "Input Semantic Parsing": {
-                "Temporal": {
-                    "현재": "2022-09-30 12:00:00"
-                },
-                "Spatial": {
-                    "롯데캐슬": "Unknown"
-                },
-                "Modality": {
-                    "실내온도": "roomtemp"
-                }
-            },
-            "Strategy": {
-                "Objective": "Unknown spatial entity의 정의를 사용자에게 물어보고, 해당 정보를 변수에 저장함",
-                "Expected Outputs": [
-                    "롯데캐슬이 어떤 곳인지 알려주세요."
-                ],
-                "Step": [
-                    "Unknown spatial entity의 정의를 사용자에게 물어봄.",
-                    "사용자의 답변을 변수에 저장"
-                ]
-            },
-            "Instruction Set": []
-        }
-    },
-    {
-        "Input": "다음 대통령 선거는 언제인가요?",
-        "Response": {
-            "Formalized Input": "다음 대통령 선거의 일자를 알려줘.",
-            "Input Semantic Parsing": {},
-            "Strategy": {
-                "Objective": "HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
-                "Expected Outputs": [
-                    "HVAC 시스템과 관련 없는 질문입니다."
-                ],
-                "Step": [
-                    "답변 불가 메시지 출력"
-                ]
-            },
-            "Instruction Set": []
         }
     },
     {
@@ -1186,23 +1116,6 @@
                 "Step": [
                     "Unknown spatial entity의 정의를 사용자에게 물어봄.",
                     "사용자의 답변을 변수에 저장"
-                ]
-            },
-            "Instruction Set": []
-        }
-    },
-    {
-        "Input": "농담 좀 해줘",
-        "Response": {
-            "Formalized Input": "농담을 해주세요.",
-            "Input Semantic Parsing": {},
-            "Strategy": {
-                "Objective": "HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
-                "Expected Outputs": [
-                    "HVAC 시스템과 관련 없는 질문입니다."
-                ],
-                "Step": [
-                    "답변 불가 메시지 출력"
                 ]
             },
             "Instruction Set": []
@@ -1516,27 +1429,6 @@
                     "result_name": "qr"
                 }
             ]
-        }
-    },
-    {
-        "Input": "이번주 경제 소식 알려줘.",
-        "Response": {
-            "Formalized Input": "이번주 경제 소식을 알려줘.",
-            "Input Semantic Parsing": {
-                "Temporal": {
-                    "이번주": "2022-09-26 00:00:00 ~ 2022-10-02 23:59:59"
-                }
-            },
-            "Strategy": {
-                "Objective": "HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
-                "Expected Outputs": [
-                    "HVAC 시스템과 관련 없는 질문입니다."
-                ],
-                "Step": [
-                    "답변 불가 메시지 출력"
-                ]
-            },
-            "Instruction Set": []
         }
     },
     {

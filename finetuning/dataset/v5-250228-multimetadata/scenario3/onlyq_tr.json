@@ -438,34 +438,6 @@
         }
     },
     {
-        "Input": "이번달 중 뒷반 온도가 가장 더운날이 언제야?",
-        "Response": {
-            "Formalized Input": "이번달 뒷반 실내온도가 최고인 날짜 알려줘.",
-            "Input Semantic Parsing": {
-                "Temporal": {
-                    "이번달": "2021-08-01 00:00:00 ~ 2021-08-05 23:59:59"
-                },
-                "Spatial": {
-                    "뒷반": "Unknown"
-                },
-                "Modality": {
-                    "실내온도": "roomtemp"
-                }
-            },
-            "Strategy": {
-                "Objective": "Unknown spatial entity의 정의를 사용자에게 물어보고, 해당 정보를 변수에 저장함",
-                "Expected Outputs": [
-                    "뒷반이 어떤 곳인지 알려주세요."
-                ],
-                "Step": [
-                    "Unknown spatial entity의 정의를 사용자에게 물어봄.",
-                    "사용자의 답변을 변수에 저장"
-                ]
-            },
-            "Instruction Set": []
-        }
-    },
-    {
         "Input": "지난주 설정온도 변화 추이 보여줘",
         "Response": {
             "Formalized Input": "지난주 우리반의 설정온도 변화 추이 시각화 해줘.",
@@ -876,51 +848,6 @@
         }
     },
     {
-        "Input": "롯데캐슬의 현재 온도 알려줘",
-        "Response": {
-            "Formalized Input": "롯데캐슬의 현재 실내온도를 알려줘.",
-            "Input Semantic Parsing": {
-                "Temporal": {
-                    "현재": "2021-08-05 14:30:00"
-                },
-                "Spatial": {
-                    "롯데캐슬": "Unknown"
-                },
-                "Modality": {
-                    "실내온도": "roomtemp"
-                }
-            },
-            "Strategy": {
-                "Objective": "Unknown spatial entity의 정의를 사용자에게 물어보고, 해당 정보를 변수에 저장함",
-                "Expected Outputs": [
-                    "롯데캐슬이 어떤 곳인지 알려주세요."
-                ],
-                "Step": [
-                    "Unknown spatial entity의 정의를 사용자에게 물어봄.",
-                    "사용자의 답변을 변수에 저장"
-                ]
-            },
-            "Instruction Set": []
-        }
-    },
-    {
-        "Input": "다음 대통령 선거는 언제인가요?",
-        "Response": {
-            "Formalized Input": "다음 대통령 선거의 일자를 알려줘.",
-            "Input Semantic Parsing": {},
-            "Strategy": {
-                "Objective": "HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
-                "Expected Outputs": [
-                    "HVAC 시스템과 관련 없는 질문입니다."
-                ],
-                "Step": [
-                    "답변 불가 메시지 출력"
-                ]
-            },
-            "Instruction Set": []
-        }
-    },
-    {
         "Input": "1층 평균 실내온도 알려줘",
         "Response": {
             "Formalized Input": "1층의 평균 실내온도를 알려줘.",
@@ -1262,23 +1189,6 @@
         }
     },
     {
-        "Input": "농담 좀 해줘",
-        "Response": {
-            "Formalized Input": "농담을 해주세요.",
-            "Input Semantic Parsing": {},
-            "Strategy": {
-                "Objective": "HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
-                "Expected Outputs": [
-                    "HVAC 시스템과 관련 없는 질문입니다."
-                ],
-                "Step": [
-                    "답변 불가 메시지 출력"
-                ]
-            },
-            "Instruction Set": []
-        }
-    },
-    {
         "Input": "에어켠 제일 세게 킨 방 3개 알려줘",
         "Response": {
             "Formalized Input": "현재 에어컨 전원이 켜져있으며 설정 온도가 제일 낮은 방 3개 알려줘.",
@@ -1586,27 +1496,6 @@
                     "result_name": "qr"
                 }
             ]
-        }
-    },
-    {
-        "Input": "이번주 경제 소식 알려줘.",
-        "Response": {
-            "Formalized Input": "이번주 경제 소식을 알려줘.",
-            "Input Semantic Parsing": {
-                "Temporal": {
-                    "이번주": "2021-08-01 00:00:00 ~ 2021-08-07 23:59:59"
-                }
-            },
-            "Strategy": {
-                "Objective": "HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
-                "Expected Outputs": [
-                    "HVAC 시스템과 관련 없는 질문입니다."
-                ],
-                "Step": [
-                    "답변 불가 메시지 출력"
-                ]
-            },
-            "Instruction Set": []
         }
     },
     {

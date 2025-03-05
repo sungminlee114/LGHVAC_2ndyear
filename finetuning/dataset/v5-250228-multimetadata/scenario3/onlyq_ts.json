@@ -496,55 +496,6 @@
         }
     },
     {
-        "Input": "화성의 설정온도 확인해줘",
-        "Response": {
-            "Formalized Input": "화성의 현재 설정온도를 알려줘.",
-            "Input Semantic Parsing": {
-                "Temporal": {
-                    "현재": "2021-08-05 14:30:00"
-                },
-                "Spatial": {
-                    "화성": "Unknown"
-                },
-                "Modality": {
-                    "설정온도": "settemp"
-                }
-            },
-            "Strategy": {
-                "Objective": "Unknown spatial entity의 정의를 사용자에게 물어보고, 해당 정보를 변수에 저장함.",
-                "Expected Outputs": [
-                    "화성이 어떤 곳인지 알려주세요."
-                ],
-                "Step": [
-                    "Unknown spatial entity의 정의를 사용자에게 물어봄.",
-                    "사용자의 답변을 변수에 저장"
-                ]
-            },
-            "Instruction Set": []
-        }
-    },
-    {
-        "Input": "올해 경상수지는?",
-        "Response": {
-            "Formalized Input": "올해 경상수지를 알려줘.",
-            "Input Semantic Parsing": {
-                "Temporal": {
-                    "올해": "2021-01-01 00:00:00 ~ 2021-12-31 23:59:59"
-                }
-            },
-            "Strategy": {
-                "Objective": "HVAC 시스템과 관련 없는 질문에 대한 답변을 제공할 수 없음을 사용자에게 알림.",
-                "Expected Outputs": [
-                    "HVAC 시스템과 관련 없는 질문입니다."
-                ],
-                "Step": [
-                    "답변 불가 메시지 출력"
-                ]
-            },
-            "Instruction Set": []
-        }
-    },
-    {
         "Input": "지난 3일 동안 우리반 실내 온도 평균 값 알려줘.",
         "Response": {
             "Formalized Input": "지난 3일 동안 우리반 실내 온도 평균 값을 알려줘.",
