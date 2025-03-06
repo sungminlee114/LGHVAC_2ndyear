@@ -114,7 +114,6 @@ class DistributedInference:
     ) -> str:
         try:
             batch_data = Dataset.from_list(batch_data)
-            print(1, batch_data)
             
             convos = []
             for metadata, input in zip(batch_data["Metadata"], batch_data["Input"]):
@@ -292,7 +291,7 @@ def main():
         "FI", # 1
         "ISP", # 2
         "ours" # 3
-    ][1]
+    ][0]
 
     if train_type == "woall":
         model_name, tr_config = \
@@ -302,9 +301,10 @@ def main():
         model_name, tr_config = \
             "sh2orc-Llama-3.1-Korean-8B-Instruct", \
             "v5_r64_a128_woall/checkpoint-72"
-        # model_name, tr_config = \
-        #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-        #     "r256_a512_woall/checkpoint-72"
+
+        model_name, tr_config = \
+            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+            "v5_r32_a64_woall/checkpoint-70"
     elif train_type == "FI":
         # model_name, tr_config = \
         #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
@@ -335,7 +335,7 @@ def main():
         
         model_name, tr_config = \
             "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "v5_r64_a128_ours/checkpoint-60"
+            "v5_r128_a256_ours/checkpoint-52"
     print(f"Model: {model_name}, Config: {tr_config}")
 
     checkpoint_dir = Path(f"/workspace/model/{model_name}/chkpts/{tr_config}")

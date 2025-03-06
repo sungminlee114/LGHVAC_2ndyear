@@ -1,0 +1,281 @@
+[
+    {
+        "Input": "Why is our classroom so cold",
+        "Response": {
+            "생각": "사용자는 '현재 우리반 왜 추울까?'라고 입력함. '현재':'2022-08-05 14:30:00', '우리반':'02_I84'에 해당함. 사용자의 의도를 추측하면, 유저는 'The reason our classroom is cold with 15℃ is that the setting temperature is 10℃. Please turn off the air conditioner or raise the setting temperature., The reason our classroom is cold is that the air conditioner is on., The reason our classroom is cold is that the air conditioner has been on for only 30 minutes.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 우리반의 오늘(2022-08-05) roomtemp, settemp, oper 쿼리 후 qr에 저장 2. qr에서 가장 최근 데이터를 선택해 현재 roomtemp, settemp, oper 상태를 추출 3. oper가 켜져있거나 settemp가 너무 낮은 경우, 꺼져있는 시간을 계산해 반환 4. 데이터를 바탕으로 추운 이유를 분석해 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "roomtemp",
+                            "settemp",
+                            "oper"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2022-08-05 00:00:00' AND '2022-08-05 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_I84')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "오늘 아침과 저녁의 온도차이는 얼마나 돼?",
+        "Response": {
+            "생각": "사용자는 '우리반 오늘 아침과 저녁의 실내온도 차이 알려줘.'라고 입력함. '오늘 아침':'2022-08-05 06:00:00 ~ 2022-08-05 09:00:00', '오늘 저녁':'2022-08-05 18:00:00 ~ 2022-08-05 21:00:00', '우리반':'02_I84', '실내온도':'roomtemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '오늘 아침(06:00 ~ 09:00, 24.5℃)과 저녁(18:00 ~ 21:00, 27.3℃)의 온도 차이는 2.8℃ 입니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 오늘 아침 (06:00 ~ 09:00)의 roomtemp 쿼리 후 qr_morning에 저장 2. 오늘 저녁 (18:00 ~ 21:00)의 roomtemp 쿼리 후 qr_evening에 저장 3. qr_morning과 qr_evening의 평균값 및 차이 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2022-08-05 06:00:00' AND '2022-08-05 09:00:00'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_I84')"
+                    },
+                    "result_name": "qr_morning"
+                },
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2022-08-05 18:00:00' AND '2022-08-05 21:00:00'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_I84')"
+                    },
+                    "result_name": "qr_evening"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "지금 옆반 온도랑 우리반 온도 알려줘",
+        "Response": {
+            "생각": "사용자는 '현재 옆반과 우리반의 실내온도 알려줘.'라고 입력함. '현재':'2022-08-05 14:30:00', '옆반':'02_I85', '우리반':'02_I84', '실내온도':'roomtemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '옆반과 우리반의 실내온도는 각각 25℃, 27℃입니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 옆반의 현재(2022-08-05 14:30:00) roomtemp 쿼리 후 qr_beside에 저장 2. 우리반의 현재(2022-08-05 14:30:00) roomtemp 쿼리 후 qr_ours에 저장 3. 두 반의 roomtemp 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp = '2022-08-05 14:30:00'"
+                        ],
+                        "subquery": "idu_id IN (SELECT id FROM idu_t WHERE name IN ('02_I85'))"
+                    },
+                    "result_name": "qr_beside"
+                },
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp = '2022-08-05 14:30:00'"
+                        ],
+                        "subquery": "idu_id IN (SELECT id FROM idu_t WHERE name IN ('02_I84'))"
+                    },
+                    "result_name": "qr_ours"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "이번주 우리반과 옆반 온도 변화 추이 비교해줘",
+        "Response": {
+            "생각": "사용자는 '이번주 우리반과 옆반의 실내온도 변화 추이 비교해줘.'라고 입력함. '이번주':'2022-09-26 00:00:00 ~ 2022-10-02 23:59:59', '우리반':'02_I84', '옆반':'02_I85', '실내온도':'roomtemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '(그래프) X축: 날짜, Y축: 실내온도, 두 반의 변화 추이 그래프, 이번주 우리반의 평균 실내온도는 24℃, 최저 22℃, 최고 26℃입니다., 이번주 옆반의 평균 실내온도는 25℃, 최저 23℃, 최고 28℃입니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 우리반과 옆반의 이번주(2022-09-26 ~ 2022-10-02) roomtemp 쿼리 결과 qr_ours와 qr_beside에 저장 2. 두 반의 데이터를 시각화해 변화 추이 비교 그래프 생성 3. 각 반의 평균, 최저, 최고값 계산 4. 그래프와 통계적 비교 정보 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2022-09-26 00:00:00' AND '2022-10-02 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_I84')"
+                    },
+                    "result_name": "qr_ours"
+                },
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2022-09-26 00:00:00' AND '2022-10-02 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_I85')"
+                    },
+                    "result_name": "qr_beside"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "현재 설정온도랑 실내온도 차이 알려줘.",
+        "Response": {
+            "생각": "사용자는 '현재 우리반 설정온도와 실내온도의 차이를 알려줘.'라고 입력함. '현재':'2022-08-05 14:30:00', '우리반':'02_I84', '설정온도':'settemp', '실내온도':'roomtemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '현재 설정온도(25℃)와 실내온도(27℃)의 차이는 2℃입니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 현재(2022-08-05 14:30:00) 우리반 settemp와 roomtemp의 쿼리 후 qr에 저장 2. qr에서 settemp와 roomtemp와 차이 계산해 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "settemp",
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp = '2022-08-05 14:30:00'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_I84')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "저번주 설정온도와 실내온도 차이가 가장 많이 났던 날은?",
+        "Response": {
+            "생각": "사용자는 '지난주 우리반 설정온도와 실내온도 차이가 가장 많이 났던 날을 알려줘.'라고 입력함. '지난주':'2022-09-19 00:00:00 ~ 2022-09-25 23:59:59', '우리반':'02_I84', '설정온도':'settemp', '실내온도':'roomtemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '지난주 27일에 설정온도(25℃)와 실내온도(22℃)의 차이가 3℃로 가장 많이 났습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 지난주(2022-09-19 ~ 2022-09-25) 우리반 settemp와 roomtemp 쿼리 후 qr에 저장 2. 각 날짜별 settemp와 roomtemp의 차이를 계산해 최대 차이가 났던 날짜 찾기 3. 그 날짜와 그 날의 settemp, roomtemp, 차이 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "settemp",
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2022-09-19 00:00:00' AND '2022-09-25 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_I84')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "어제 옆반 에어컨 전원 언제 꺼졌는지 알려줘.",
+        "Response": {
+            "생각": "사용자는 '어제 옆반 에어컨 전원이 마지막으로 꺼진 시각 알려줘.'라고 입력함. '어제':'2022-09-29 00:00:00 ~ 2022-09-29 23:59:59', '옆반':'02_I85', '에어컨 전원':'oper'에 해당함. 사용자의 의도를 추측하면, 유저는 '어제 옆반 에어컨은 15:30에 마지막으로 꺼졌습니다., 어제 옆반 에어컨은 계속 켜져있었습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 옆반 어제(2022-09-29) oper 쿼리 후 qr에 저장 2. qr에서 oper=false인 마지막 시각 찾아 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "oper"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2022-09-29 00:00:00' AND '2022-09-29 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_I85')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "앞반 전원 켜져있어?",
+        "Response": {
+            "생각": "사용자는 '현재 앞반의 에어컨 전원 상태 알려줘.'라고 입력함. '현재':'2022-08-05 14:30:00', '앞반':'Unknown', '에어컨 전원':'oper'에 해당함. 사용자의 의도를 추측하면, 유저는 '앞반이 어떤 곳인지 알려주세요.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. Unknown spatial entity의 정의를 사용자에게 물어봄. 2. 사용자의 답변을 변수에 저장",
+            "지시": []
+        }
+    },
+    {
+        "Input": "어제 전원 껐어?",
+        "Response": {
+            "생각": "사용자는 '어제 우리반 마지막 에어컨 전원 알려줘.'라고 입력함. '어제':'2022-09-29 00:00:00 ~ 2022-09-29 23:59:59', '우리반':'02_I84', '에어컨 전원':'oper'에 해당함. 사용자의 의도를 추측하면, 유저는 '어제 에어컨을 끄지 않았습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 우리반의 어제(2022-09-29) oper 쿼리 후 qr에 저장 2. qr에서 oper의 마지막 상태 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "oper"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2022-09-29 00:00:00' AND '2022-09-29 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_I84')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "최근에 설정온도가 가장 높았던 날 알려줘",
+        "Response": {
+            "생각": "사용자는 '최근(1주일) 우리반 설정온도가 최고였던 날짜 알려줘.'라고 입력함. '최근(1주일)':'2022-09-24 00:00:00 ~ 2022-09-30 23:59:59', '우리반':'02_I84', '설정온도':'settemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '최근 2022-08-05 11:39에 26.5℃로 설정온도가 가장 높았습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 우리반의 1주일 이내(2022-09-24 ~ 2022-09-30) settemp 쿼리 결과 qr에 저장 2. qr에서 가장 높은 settemp와 해당 일시 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "settemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2022-09-24 00:00:00' AND '2022-09-30 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_I84')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "지난 3일 동안 우리반 실내 온도 평균 값 알려줘.",
+        "Response": {
+            "생각": "사용자는 '지난 3일 동안 우리반 실내 온도 평균 값을 알려줘.'라고 입력함. '지난 3일':'2022-09-27 00:00:00 ~ 2022-09-29 11:59:59', '우리반':'02_I84', '실내온도':'roomtemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '지난 3일 동안 우리반 실내 온도의 평균 값은 22.3℃였습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 지난 3일 동안의 roomtemp 쿼리 결과 qr에 저장 2. qr에서 평균 roomtemp 계산",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2022-09-27 00:00:00' AND '2022-09-29 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_I84')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    }
+]
