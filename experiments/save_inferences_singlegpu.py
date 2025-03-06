@@ -282,7 +282,7 @@ def read_dataset(train_type, dir, path):
 def main():
     
     # Configuration
-    BASE_DIR = Path("../finetuning/dataset/v5-250228-multimetadata")
+    BASE_DIR = Path("../finetuning/dataset/v6-250306-optimizetoken")
     # checkpoint_dir = Path("/workspace/model/Bllossom-llama-3.2-Korean-Bllossom-3B/chkpts/r1700_a1500/checkpoint-12")
     
 
@@ -291,7 +291,7 @@ def main():
         "FI", # 1
         "ISP", # 2
         "ours" # 3
-    ][0]
+    ][3]
 
     if train_type == "woall":
         model_name, tr_config = \
@@ -336,6 +336,15 @@ def main():
         model_name, tr_config = \
             "sh2orc-Llama-3.1-Korean-8B-Instruct", \
             "v5_r128_a256_ours/checkpoint-52"
+        
+        model_name, tr_config = \
+            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+            "v5_r128_a256_ours_noexample/checkpoint-50"
+        
+        model_name, tr_config = \
+            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+            "v6_r128_a256_ours/checkpoint-52"
+
     print(f"Model: {model_name}, Config: {tr_config}")
 
     checkpoint_dir = Path(f"/workspace/model/{model_name}/chkpts/{tr_config}")
@@ -357,15 +366,19 @@ def main():
     
     common_prompt = open(BASE_DIR / F"prompt.txt", "r").read()
 
-    if train_type in ["woall", "FI", "ISP"]:
-        # search <|ST|>~~<|ST|> and remove between them
-        common_prompt = re.sub(r"\n?<\|ST\|>(.|\n)*?<\|ST\|>", "", common_prompt)
-    if train_type in ["woall", "FI"]:
-        # search <|ISP|>~~<|ISP|> and remove between them
-        common_prompt = re.sub(r"\n?<\|ISP\|>(.|\n)*?<\|ISP\|>", "", common_prompt)
+    # if train_type in ["woall", "FI", "ISP"]:
+    #     # search <|ST|>~~<|ST|> and remove between them
+    #     common_prompt = re.sub(r"\n?<\|ST\|>(.|\n)*?<\|ST\|>", "", common_prompt)
+    # if train_type in ["woall", "FI"]:
+    #     # search <|ISP|>~~<|ISP|> and remove between them
+    #     common_prompt = re.sub(r"\n?<\|ISP\|>(.|\n)*?<\|ISP\|>", "", common_prompt)
+    # if train_type in ["woall"]:
+    #     # search <|FI|>~~<|FI|> and remove between them
+    #     common_prompt = re.sub(r"\n?<\|FI\|>(.|\n)*?<\|FI\|>", "", common_prompt)
+    
     if train_type in ["woall"]:
         # search <|FI|>~~<|FI|> and remove between them
-        common_prompt = re.sub(r"\n?<\|FI\|>(.|\n)*?<\|FI\|>", "", common_prompt)
+        common_prompt = re.sub(r"\n?<\|Ours\|>(.|\n)*?<\|Ours\|>", "", common_prompt)
 
     # remove all <||>
     common_prompt = re.sub(r"<\|.*?\|>", "", common_prompt)
@@ -379,7 +392,7 @@ def main():
     )
     
     # Setup output file
-    output_file = f"r-{tr_config.replace('/', '-')}-batch.json"
+    output_file = f"r-{tr_config.replace('/', '-')}.json"
     open(output_file, "w").close()  # Clear output file
     
     inference.run(

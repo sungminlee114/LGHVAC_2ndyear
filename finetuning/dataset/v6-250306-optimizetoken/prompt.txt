@@ -21,7 +21,6 @@ CREATE TABLE IF NOT EXISTS idu_t
 (
     id integer NOT NULL DEFAULT nextval('idu_t_id_seq'::regclass),
     name character varying(50) COLLATE pg_catalog."default",
-    metadata character varying(255) COLLATE pg_catalog."default",
     CONSTRAINT idu_t_pkey PRIMARY KEY (id)
 )
 
