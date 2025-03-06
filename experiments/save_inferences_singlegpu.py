@@ -1,8 +1,10 @@
+from unsloth import FastLanguageModel
 import os
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 import json
 from tqdm import tqdm
+from datasets import Dataset
 from pathlib import Path
 import re
 import time
@@ -24,14 +26,16 @@ class DistributedInference:
         cache_dir: str,
         max_seq_length: int = 3500,
         attn_implementation: str = attn_implementation,
-        load_in_4bit: bool = False
+        load_in_4bit: bool = False,
+        batch_size: int = 8  # 배치 크기 매개변수 추가
     ):
         self.checkpoint_dir = Path(checkpoint_dir)
         self.cache_dir = Path(cache_dir)
         self.max_seq_length = max_seq_length
         self.attn_implementation = attn_implementation
         self.load_in_4bit = load_in_4bit
-        
+        self.batch_size = batch_size
+
         # Verify model files exist
         if not self.checkpoint_dir.exists():
             raise ValueError(f"Checkpoint directory {checkpoint_dir} does not exist")
@@ -65,7 +69,7 @@ class DistributedInference:
                     local_files_only=True
                 )
             else:
-                from unsloth import FastLanguageModel
+                # from unsloth import FastLanguageModel
                 
                 model, tokenizer = FastLanguageModel.from_pretrained(
                     self.checkpoint_dir.as_posix(),
@@ -101,52 +105,98 @@ class DistributedInference:
         match = re.search(pattern, text, re.DOTALL)
         return match.group(1).strip() if match else None
 
-    def process_sample(
+    def process_batch(
         self,
         model: AutoModelForCausalLM,
         tokenizer: AutoTokenizer,
-        query: str,
+        batch_data: List[Dict],
         common_prompt: str,
-        metadata: Dict
     ) -> str:
-        """Process a single sample using the model."""
         try:
-            if "llama" in model.config.architectures[0].lower():
-                chat = [
-                    {"role": "system", "content": common_prompt},
-                    {"role": "user", "content": f"Metadata:{metadata};Input:{query};"},
-                ]
-            elif "gemma" in model.config.architectures[0].lower():
-                chat = [
-                    {"role": "user", "content": f"{common_prompt};{json.dumps(metadata)};{query}"},
-                ]
-            else:
-                raise ValueError(f"Unsupported model architecture: {model.config.architectures[0]}")
+            batch_data = Dataset.from_list(batch_data)
+            print(1, batch_data)
             
-            inputs = tokenizer.apply_chat_template(
-                chat,
-                tokenize=True,
-                add_generation_prompt=True,
-                return_tensors="pt"
-            ).to(model.device)
+            convos = []
+            for metadata, input in zip(batch_data["Metadata"], batch_data["Input"]):
+                if "llama" in model.config.architectures[0].lower():
+                    chat = [
+                        {"role": "system", "content": common_prompt},
+                        {"role": "user", "content": f"Metadata:{metadata};Input:{input};"},
+                    ]
+                elif "gemma" in model.config.architectures[0].lower():
+                    chat = [
+                        {"role": "user", "content": f"{common_prompt};{json.dumps(metadata)};{input}"},
+                    ]
+                else:
+                    raise ValueError(f"Unsupported model architecture: {model.config.architectures[0]}")
+                
+                chat = tokenizer.apply_chat_template(
+                    chat,
+                    tokenize=True,
+                    add_generation_prompt=True,
+                    return_tensors="pt"
+                ).to(model.device)
+                convos.append(chat)
             
+            max_length = max(inputs.size(1) for inputs in convos)
+        
+            # 패딩 적용하여 입력 준비
+            padded_inputs = []
+            attention_masks = []
+            
+            for inputs in convos:
+                pad_length = max_length - inputs.size(1)
+                
+                if pad_length > 0:
+                    # 패딩 추가
+                    padded = torch.cat([
+                        torch.full((1, pad_length), tokenizer.pad_token_id, device=model.device),
+                        inputs,
+                    ], dim=1)
+                    
+                    # 어텐션 마스크 생성 (원본 시퀀스는 1, 패딩은 0)
+                    mask = torch.cat([
+                        torch.zeros(1, pad_length, device=model.device),
+                        torch.ones(1, inputs.size(1), device=model.device),
+                    ], dim=1)
+                else:
+                    padded = inputs
+                    mask = torch.ones(1, inputs.size(1), device=model.device)
+                
+                padded_inputs.append(padded)
+                attention_masks.append(mask)
+            
+            # 배치 텐서 생성
+            batch_tensor = torch.cat(padded_inputs, dim=0)
+            attention_mask = torch.cat(attention_masks, dim=0)
+            
+            # 배치 추론 실행
             outputs = model.generate(
-                input_ids=inputs,
+                input_ids=batch_tensor,
+                attention_mask=attention_mask,
                 max_new_tokens=self.max_seq_length,
                 use_cache=True,
+                pad_token_id=tokenizer.pad_token_id,
+                do_sample=False  # 결정론적 생성
             )
             
-            response = tokenizer.batch_decode(outputs)[0]
-            parsed_response = self.extract_content(response)
+            # 결과 디코딩 및 파싱
+            responses = tokenizer.batch_decode(outputs, skip_special_tokens=False)
             
-            if parsed_response is None:
-                print(f"Error in parsing response: {response}")
+            parsed_responses = []
+            for response in responses:
+                parsed = self.extract_content(response)
+                if parsed is None:
+                    print(f"Error parsing response: {response[:100]}...")
+                    parsed_responses.append(None)
+                else:
+                    parsed_responses.append(parsed)
             
-            return parsed_response
+            return parsed_responses
             
         except Exception as e:
-            print(f"Error in process_sample: {str(e)}")
-            return None
+            print(f"Error in process_batch: {str(e)}")
+            return [None] * len(batch_data)
 
     def run(
         self,
@@ -154,43 +204,49 @@ class DistributedInference:
         common_prompt: str, 
         output_file: str
     ):
-        """Run inference on a specific rank."""
+        """Run inference in batches."""
             
         # Setup model and tokenizer
         model, tokenizer = self.setup_model()
+        tokenizer.padding_side = "left"
         
-        # Process assigned chunk
-        with tqdm(
-            total=len(dataset),
-        ) as pbar:
-            for idx in range(len(dataset)):
-                sample = dataset[idx]
-                response = self.process_sample(
-                    model, tokenizer, sample["Input"],
-                    common_prompt, sample["Metadata"]
+        # 토크나이저에 패딩 토큰 설정
+        # if tokenizer.pad_token is None:
+        #     tokenizer.pad_token = tokenizer.eos_token
+        print(tokenizer.pad_token, tokenizer.eos_token)
+        # 배치 처리
+        with tqdm(total=len(dataset)) as pbar:
+            for batch_start in range(0, len(dataset), self.batch_size):
+                batch_end = min(batch_start + self.batch_size, len(dataset))
+                batch_data = dataset[batch_start:batch_end]
+                
+                # 배치 처리
+                responses = self.process_batch(
+                    model, tokenizer, batch_data, common_prompt
                 )
                 
-                if response is not None:
+                # 결과 저장
+                for i, response in enumerate(responses):
+                    sample = batch_data[i]
                     
-                    try:
-                        response = eval(response)
-                    except Exception as e:
-                        print(f"Error in eval: {str(e)}")
-                        response = response
-                    
-                    result = {
-                        "Input": sample["Input"],
-                        # "Reference": sample["Response"],
-                        # "Metadata": sample["Metadata"],
-                        "Scenario": sample["Scenario"],
-                        "Candidate": response,
-                    }
-                    
-                    with open(output_file, "a", encoding="utf-8") as f:
-                        f.write(json.dumps(result, ensure_ascii=False) + "\n")
-                else:
-                    print(f"Error in response")
-                pbar.update(1)
+                    if response is not None:
+                        try:
+                            response = eval(response)
+                        except Exception as e:
+                            print(f"Error in eval: {str(e)}")
+                        
+                        result = {
+                            "Input": sample["Input"],
+                            "Scenario": sample["Scenario"],
+                            "Candidate": response,
+                        }
+                        
+                        with open(output_file, "a", encoding="utf-8") as f:
+                            f.write(json.dumps(result, ensure_ascii=False) + "\n")
+                    else:
+                        print(f"Error in response for sample {batch_start + i}")
+                
+                pbar.update(batch_end - batch_start)
 
 def read_dataset(train_type, dir, path):
     # the file is originally json-list format
@@ -228,7 +284,7 @@ def main():
     
     # Configuration
     BASE_DIR = Path("../finetuning/dataset/v5-250228-multimetadata")
-    # checkpoint_dir = Path("/model/Bllossom-llama-3.2-Korean-Bllossom-3B/chkpts/r1700_a1500/checkpoint-12")
+    # checkpoint_dir = Path("/workspace/model/Bllossom-llama-3.2-Korean-Bllossom-3B/chkpts/r1700_a1500/checkpoint-12")
     
 
     train_type = [
@@ -236,7 +292,7 @@ def main():
         "FI", # 1
         "ISP", # 2
         "ours" # 3
-    ][0]
+    ][1]
 
     if train_type == "woall":
         model_name, tr_config = \
@@ -253,6 +309,9 @@ def main():
         # model_name, tr_config = \
         #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
         #     f"r256_a512_FI/checkpoint-57"
+        model_name, tr_config = \
+            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+            f"v5_r256_a512_FI/checkpoint-43"
         pass
     
     elif train_type == "ISP":
@@ -279,8 +338,8 @@ def main():
             "v5_r64_a128_ours/checkpoint-60"
     print(f"Model: {model_name}, Config: {tr_config}")
 
-    checkpoint_dir = Path(f"/model/{model_name}/chkpts/{tr_config}")
-    cache_dir = Path(f"/model/{model_name}/cache")
+    checkpoint_dir = Path(f"/workspace/model/{model_name}/chkpts/{tr_config}")
+    cache_dir = Path(f"/workspace/model/{model_name}/cache")
     
     # Verify paths exist
     if not checkpoint_dir.exists():
@@ -312,13 +371,15 @@ def main():
     common_prompt = re.sub(r"<\|.*?\|>", "", common_prompt)
     
     # Initialize distributed inference
+    batch_size = 50  # 배치 크기 설정
     inference = DistributedInference(
         checkpoint_dir=str(checkpoint_dir),
-        cache_dir=str(cache_dir)
+        cache_dir=str(cache_dir),
+        batch_size=batch_size
     )
     
     # Setup output file
-    output_file = f"response-{model_name}-{tr_config.replace('/', '-')}.json"
+    output_file = f"r-{tr_config.replace('/', '-')}-batch.json"
     open(output_file, "w").close()  # Clear output file
     
     inference.run(
