@@ -1,0 +1,515 @@
+[
+    {
+        "Input": "어제 우리반과 옆반의 설정온도 차이 알려줘",
+        "Response": {
+            "생각": "사용자는 '어제 우리반과 옆반의 일평균 설정온도 차이 알려줘.'라고 입력함. '어제':'2021-08-04 00:00:00 ~ 2021-08-04 23:59:59', '우리반':'01_IB5', '옆반':'01_IB7', '설정온도':'settemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '우리반의 설정온도(19.3℃)가 옆반의 설정온도(17.0℃)보다 2.3℃ 높습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 우리반의 어제(2021-08-04) settemp 쿼리 결과 qr_ours에 저장 2. 옆반의 어제(2021-08-04) settemp 쿼리 결과 qr_beside에 저장 3. 각 반의 일평균 settemp와 차이 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "settemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-08-04 00:00:00' AND '2021-08-04 23:59:59'"
+                        ],
+                        "subquery": "idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5'))"
+                    },
+                    "result_name": "qr_ours"
+                },
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "settemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-08-04 00:00:00' AND '2021-08-04 23:59:59'"
+                        ],
+                        "subquery": "idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB7'))"
+                    },
+                    "result_name": "qr_beside"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "오늘 우리반과 옆반의 평균 온도차이 알려줘",
+        "Response": {
+            "생각": "사용자는 '오늘 우리반과 옆반의 일평균 실내온도 차이 알려줘.'라고 입력함. '오늘':'2021-08-05 00:00:00 ~ 2021-08-05 23:59:59', '우리반':'01_IB5', '옆반':'01_IB7', '실내온도':'roomtemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '우리반(19.3℃)이 옆반(17.0℃)보다 2.3℃ 높습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 우리반의 오늘(2021-08-05) roomtemp 쿼리 결과 qr_ours 에 저장 2. 옆반의 오늘(2021-08-05) roomtemp 쿼리 결과 qr_beside 에 저장 3. 각 반의 일평균 roomtemp와 차이 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-08-05 00:00:00' AND '2021-08-05 23:59:59'"
+                        ],
+                        "subquery": "idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5'))"
+                    },
+                    "result_name": "qr_ours"
+                },
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-08-05 00:00:00' AND '2021-08-05 23:59:59'"
+                        ],
+                        "subquery": "idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB7'))"
+                    },
+                    "result_name": "qr_beside"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "작년 겨울 우리반 평균온도 알려줘",
+        "Response": {
+            "생각": "사용자는 '작년 겨울 우리반의 평균 실내온도 알려줘.'라고 입력함. '작년':'2020-12-01 00:00:00 ~ 2021-02-28 23:59:59', '우리반':'01_IB5', '실내온도':'roomtemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '작년 겨울 우리반의 평균 온도는 26℃ 입니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 우리반의 작년 겨울(2020-12-01 ~ 2021-02-28) roomtemp 쿼리 결과 qr에 저장 2. qr에서 roomtemp의 평균값 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2020-12-01 00:00:00' AND '2021-02-28 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "올해 여름 앞반 평균온도 알려줘",
+        "Response": {
+            "생각": "사용자는 '올해 여름 앞반의 평균 실내온도 알려줘.'라고 입력함. '올해 여름':'2021-06-01 00:00:00 ~ 2021-08-31 23:59:59', '앞반':'02_I81', '실내온도':'roomtemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '올해 여름 앞반의 평균 온도는 26℃ 입니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 앞반의 올해 여름(2021-06-01 ~ 2021-08-31) roomtemp 쿼리 결과 qr에 저장 2. qr에서 roomtemp의 평균값 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-06-01 00:00:00' AND '2021-08-31 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_I81')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "올해 봄 옆반 제일 추웠던 날 알려줘",
+        "Response": {
+            "생각": "사용자는 '올해 봄 옆반 실내온도 최저인 날 알려줘.'라고 입력함. '올해 봄':'2021-03-01 00:00:00 ~ 2021-05-31 23:59:59', '옆반':'01_IB7', '실내온도':'roomtemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '올해 봄 옆반은 3월 1일에 8℃로 제일 추웠습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 옆반의 올해 봄(2021-03-01 ~ 2021-05-31) roomtemp 쿼리 결과 qr에 저장 2. qr에서 roomtemp 최저값 및 해당 날짜 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-03-01 00:00:00' AND '2021-05-31 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "4월 앞반 평균온도 알려줘",
+        "Response": {
+            "생각": "사용자는 '올해 4월 앞반의 평균 실내온도 알려줘.'라고 입력함. '올해 4월':'2021-04-01 00:00:00 ~ 2021-04-30 23:59:59', '앞반':'02_I81', '실내온도':'roomtemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '올해 4월 앞반의 평균 온도는 26℃ 입니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 앞반의 올해 4월(2021-04-01 ~ 2021-04-30) roomtemp 쿼리 결과 qr에 저장 2. qr에서 roomtemp의 평균값 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-04-01 00:00:00' AND '2021-04-30 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_I81')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "이번달 중 우리반 온도가 가장 덜 더운날이 언제야?",
+        "Response": {
+            "생각": "사용자는 '이번달 우리반 실내온도가 최저였던 날짜 알려줘.'라고 입력함. '이번달':'2021-08-01 00:00:00 ~ 2021-08-05 23:59:59', '우리반':'01_IB5', '실내온도':'roomtemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '이번달 우리반은 15일에 27℃로 가장 덜 더웠습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 우리반의 이번달(2021-08-01 ~ 2021-08-05) roomtemp 쿼리 결과 qr에 저장 2. qr에서 roomtemp의 최저값 및 해당 날짜 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-08-01 00:00:00' AND '2021-08-05 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "2주전 우리반과 옆반 합쳐서 설정온도가 가장 낮은날이 언제야?",
+        "Response": {
+            "생각": "사용자는 '2주전 한주 동안 우리반과 옆반 합쳐서 설정온도가 최저였던 날짜 알려줘.'라고 입력함. '2주전 한주':'2021-07-18 00:00:00 ~ 2021-07-24 23:59:59', '우리반':'01_IB5', '옆반':'01_IB7', '설정온도':'settemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '2주전 옆반의 설정온도는 9월 17일에 25℃로 가장 낮았습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 우리반의 2주전 한주 동안(2021-07-18 ~ 2021-07-24) settemp 쿼리 결과 qr_ours에 저장 2. 옆반의 2주전 한주 동안(2021-07-18 ~ 2021-07-24) settemp 쿼리 결과 qr_beside에 저장 3. qr_ours와 qr_beside를 합쳐서 settemp 최저값, 해당 반 및 날짜 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-07-18 00:00:00' AND '2021-07-24 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                    },
+                    "result_name": "qr_ours"
+                },
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-07-18 00:00:00' AND '2021-07-24 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
+                    },
+                    "result_name": "qr_beside"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "지난주 설정온도 변화 추이 보여줘",
+        "Response": {
+            "생각": "사용자는 '지난주 우리반의 설정온도 변화 추이 시각화 해줘.'라고 입력함. '지난주':'2021-07-25 00:00:00 ~ 2021-07-31 23:59:59', '우리반':'01_IB5', '설정온도':'settemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '(그래프) X축: 날짜, Y축: 설정온도, 변화 추이 그래프, 지난주 우리반의 설정온도는 25℃에서 27℃로 2℃ 증가했습니다., 지난주 우리반의 설정온도는 평균 26℃, 최저 25℃, 최고 27℃였습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 우리반의 지난주(2021-07-25 ~ 2021-07-31) settemp 쿼리 결과 qr에 저장 2. qr를 시각화해 변화 추이 그래프 생성 3. qr에서 settemp의 평균, 최저, 최고값 계산 4. 그래프 및 통계적 정보 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "settemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-07-25 00:00:00' AND '2021-07-31 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "우리반의 가장 최근 설정 온도 알려줘",
+        "Response": {
+            "생각": "사용자는 '우리반의 가장 최근 설정온도를 알려줘.'라고 입력함. '우리반':'01_IB5', '설정온도':'settemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '우리반의 1주일 이내 가장 최근 설정온도는 2시간 전 설정한 26℃입니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 우리반의 1주일 이내(2021-07-30 ~ 2021-08-05) settemp 쿼리 결과 qr에 저장 2. qr에서 가장 최근 settemp 값 및 해당 시간 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "settemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-07-30 00:00:00' AND '2021-08-05 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "What time is it now?",
+        "Response": {
+            "생각": "사용자는 '현재 몇 시인지 알려줘.'라고 입력함. '현재':'2021-08-05 14:30:00', '시간':'current_time'에 해당함. 사용자의 의도를 추측하면, 유저는 '현재 시간은 14:35입니다., 지금은 오후 2시 35분입니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 시간 데이터를 대답",
+            "지시": []
+        }
+    },
+    {
+        "Input": "What is the current temperature in our class?",
+        "Response": {
+            "생각": "사용자는 '우리반의 현재 실내온도를 알려줘.'라고 입력함. '현재':'2021-08-05 14:30:00', '우리반':'01_IB5', '실내온도':'roomtemp'에 해당함. 사용자의 의도를 추측하면, 유저는 'The current temperature in our class is 24℃.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 우리반의 현재 roomtemp 쿼리 결과 qr에 저장 2. qr에서 roomtemp 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp = '2021-08-05 14:30:00'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "8일전 설정온도는?",
+        "Response": {
+            "생각": "사용자는 '8일전 우리반의 일평균 설정온도를 알려줘.'라고 입력함. '8일 전':'2021-07-28 00:00:00 ~ 2021-07-28 23:59:59', '우리반':'01_IB5', '설정온도':'settemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '8일전 우리반의 설정온도는 24℃였습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 우리반의 8일전(2021-07-28) settemp 쿼리 후 qr에 저장 2. qr에서 settemp의 평균값 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "settemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-07-28 00:00:00' AND '2021-07-28 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "10년 전 오늘 우리반 온도는?",
+        "Response": {
+            "생각": "사용자는 '10년 전 오늘 우리반의 평균 실내온도를 알려줘.'라고 입력함. '10년 전 오늘':'2011-08-05 00:00:00 ~ 2011-08-05 23:59:59', '우리반':'01_IB5', '실내온도':'roomtemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '10년 전 오늘 우리반의 실내온도는 24℃였습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 우리반의 10년 전 오늘(2011-08-05) roomtemp 쿼리 후 qr에 저장 2. qr에서 roomtemp의 평균값 계산해 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2011-08-05 00:00:00' AND '2011-08-05 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "우리반 이번달 제일 추웠던 날은 언제냐?",
+        "Response": {
+            "생각": "사용자는 '이번달 우리반의 실내온도가 최저였던 날짜를 알려줘.'라고 입력함. '이번달':'2021-08-01 00:00:00 ~ 2021-08-05 23:59:59', '우리반':'01_IB5', '실내온도':'roomtemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '이번달 우리반은 20일에 24.3℃로 가장 추웠습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 우리반의 이번달(2021-08-01 ~ 2021-08-05) roomtemp 쿼리 결과 qr에 저장 2. qr에서 가장 낮은 roomtemp 값 및 해당 날짜 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-08-01 00:00:00' AND '2021-08-05 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "우리반과 옆반 이번주 설정온도 차이 보여줘",
+        "Response": {
+            "생각": "사용자는 '이번주 우리반과 옆반의 설정온도 차이 시각화 해줘.'라고 입력함. '이번주':'2021-08-01 00:00:00 ~ 2021-08-07 23:59:59', '우리반':'01_IB5', '옆반':'01_IB7', '설정온도':'settemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '(그래프) X축: 날짜, Y축: 설정온도 차이, 차이 추이 그래프, 이번주 우리반의 평균 설정온도는 25℃이고, 옆반은 26℃로 1℃ 차이가 있습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 우리반과 옆반의 이번주(2021-08-01 ~ 2021-08-07) settemp 각각 쿼리 결과 qr_ours와 qr_beside에 저장 2. qr_ours와 qr_beside를 시각화해 settemp 차이 추이 그래프 생성 3. qr_ours와 qr_beside에서 settemp의 평균값 계산 4. 그래프, settemp의 평균값들 및 차이 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "settemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-08-01 00:00:00' AND '2021-08-07 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                    },
+                    "result_name": "qr_ours"
+                },
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "settemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-08-01 00:00:00' AND '2021-08-07 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
+                    },
+                    "result_name": "qr_beside"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "지난 4개월동안 옆반에서 가장 더웠던 날 알려줘.",
+        "Response": {
+            "생각": "사용자는 '지난 4개월 동안 옆반에서 실내온도가 최고였던 날짜를 알려줘.'라고 입력함. '지난 4개월':'2021-05-29 00:00:00 ~ 2021-08-04 23:59:59', '옆반':'01_IB7', '온도':'roomtemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '2021년 8월 15일에 33.5℃로 가장 더웠습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 지난 4개월(2021-05-29 ~ 2021-08-04)간 옆반의 roomtemp 쿼리 후 qr에 저장 2. qr에서 가장 높은 roomtemp를 기록한 날짜 및 온도 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-05-29 00:00:00' AND '2021-08-04 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "지난 한달간 설정온도 평균을 알려줘.",
+        "Response": {
+            "생각": "사용자는 '지난 한달간 우리반 설정온도 평균 알려줘.'라고 입력함. '지난 한달':'2021-07-04 00:00:00 ~ 2021-08-04 23:59:59', '우리반':'01_IB5', '설정온도':'settemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '지난 한달간 설정온도 평균은 22.5℃였습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 지난 한달(2021-07-04 ~ 2021-08-04) 동안의 settemp 쿼리 결과 qr에 저장 2. qr에서 settemp의 평균 계산 후 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "settemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-07-04 00:00:00' AND '2021-08-04 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "오늘 우리반 에어컨 전원이 처음 켜진 시각 알려줘.",
+        "Response": {
+            "생각": "사용자는 '오늘 우리반 에어컨 전원이 처음 켜진 시각 알려줘.'라고 입력함. '오늘':'2021-08-05 00:00:00 ~ 2021-08-05 23:59:59', '우리반':'01_IB5', '에어컨 전원':'oper'에 해당함. 사용자의 의도를 추측하면, 유저는 '오늘 우리반의 에어컨 전원이 처음 켜진 시각은 08:15입니다., 어제 에어컨은 계속 꺼져있었습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 우리반 오늘(2021-08-05) oper 쿼리 후 qr에 저장 2. qr에서 oper=true인 첫 번째 시각 찾아 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "oper"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2021-08-05 00:00:00' AND '2021-08-05 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "1년 전 옆반 온도는?",
+        "Response": {
+            "생각": "사용자는 '1년 전 오늘의 옆반의 일평균 실내온도를 조회해줘.'라고 입력함. '1년 전 오늘':'2020-08-05 00:00:00 ~ 2020-08-05 23:59:59', '옆반':'01_IB7', '실내온도':'roomtemp'에 해당함. 사용자의 의도를 추측하면, 유저는 '1년 전 오늘의 옆반의 평균 실내온도는 24.2℃입니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 옆반의 1년 전 오늘(2020-08-05)의 roomtemp 쿼리 후 qr에 저장 2. qr에서 평균 roomtemp 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "conditions": [
+                            "timestamp BETWEEN '2020-08-05 00:00:00' AND '2020-08-05 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB7')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "우리 반 에어컨이 가장 오래 작동했던 날은 언제야?",
+        "Response": {
+            "생각": "사용자는 '우리반 최근(1주일) 에어컨 작동 시간이 가장 길었던 날짜를 알려줘.'라고 입력함. '최근(1주일)':'2021-07-30 00:00:00 ~ 2021-08-05 23:59:59', '우리반':'01_IB5', '에어컨 작동':'oper'에 해당함. 사용자의 의도를 추측하면, 유저는 '우리반은 1주일 이내 2021-08-05에 에어컨을 가장 오래(9시간) 작동했습니다.' 와 비슷한 답변을 기대할것. 퀄리티 있는 대답을 위해 나는 다음 단계를 수행. 1. 우리반의 1주일 이내(2021-07-30 ~ 2021-08-05) oper 쿼리 결과 qr에 저장 2. qr에서 하루동안 가장 오래 작동한 날짜 및 작동 시간 반환",
+            "지시": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "oper"
+                        ],
+                        "conditions": [
+                            "oper = True",
+                            "timestamp BETWEEN '2021-07-30 00:00:00' AND '2021-08-05 23:59:59'"
+                        ],
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    }
+]
