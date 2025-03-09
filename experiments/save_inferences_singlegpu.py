@@ -260,15 +260,19 @@ def read_dataset(train_type, dir, path):
     
     result = []
     for d in data:
-        if train_type in ["woall", "FI", "ISP"]:
-            del d["Response"]["Strategy"]
-        
-        if train_type in ["woall", "FI"]:
-            del d["Response"]["Input Semantic Parsing"]
-        
-        if train_type in ["woall"]:
-            del d["Response"]["Formalized Input"]
-        
+        if "v5" in dir.name:
+            if train_type in ["woall", "FI", "ISP"]:
+                del d["Response"]["Strategy"]
+            
+            if train_type in ["woall", "FI"]:
+                del d["Response"]["Input Semantic Parsing"]
+            
+            if train_type in ["woall"]:
+                del d["Response"]["Formalized Input"]
+        elif "v6" in dir.name:
+            if train_type in ["woall"]:
+                del d["Response"]["생각"]
+
         result.append({"Metadata": metadata, "Input": d["Input"], "Response": json.dumps(d["Response"], ensure_ascii=False)})
     # result = [{"Input": d["Input"], "Response": json.dumps(d["Response"], ensure_ascii=False)} for d in data]
     # print(f"Read {len(result)} examples from {path}")
@@ -291,7 +295,7 @@ def main():
         "FI", # 1
         "ISP", # 2
         "ours" # 3
-    ][3]
+    ][0]
 
     if train_type == "woall":
         model_name, tr_config = \
@@ -305,6 +309,10 @@ def main():
         model_name, tr_config = \
             "sh2orc-Llama-3.1-Korean-8B-Instruct", \
             "v5_r32_a64_woall/checkpoint-70"
+        
+        model_name, tr_config = \
+            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+            "v6_r64_a128_woall_shorten/checkpoint-53"
     elif train_type == "FI":
         # model_name, tr_config = \
         #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
@@ -344,6 +352,14 @@ def main():
         model_name, tr_config = \
             "sh2orc-Llama-3.1-Korean-8B-Instruct", \
             "v6_r128_a256_ours/checkpoint-52"
+        
+        model_name, tr_config = \
+            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+            "v6_r256_a512_ours/checkpoint-72"
+        
+        model_name, tr_config = \
+            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+            "v6_r256_a512_ours_shorten/checkpoint-30"
 
     print(f"Model: {model_name}, Config: {tr_config}")
 
@@ -366,19 +382,21 @@ def main():
     
     common_prompt = open(BASE_DIR / F"prompt.txt", "r").read()
 
-    # if train_type in ["woall", "FI", "ISP"]:
-    #     # search <|ST|>~~<|ST|> and remove between them
-    #     common_prompt = re.sub(r"\n?<\|ST\|>(.|\n)*?<\|ST\|>", "", common_prompt)
-    # if train_type in ["woall", "FI"]:
-    #     # search <|ISP|>~~<|ISP|> and remove between them
-    #     common_prompt = re.sub(r"\n?<\|ISP\|>(.|\n)*?<\|ISP\|>", "", common_prompt)
-    # if train_type in ["woall"]:
-    #     # search <|FI|>~~<|FI|> and remove between them
-    #     common_prompt = re.sub(r"\n?<\|FI\|>(.|\n)*?<\|FI\|>", "", common_prompt)
+    if "v5" in BASE_DIR.name:
+        if train_type in ["woall", "FI", "ISP"]:
+            # search <|ST|>~~<|ST|> and remove between them
+            common_prompt = re.sub(r"\n?<\|ST\|>(.|\n)*?<\|ST\|>", "", common_prompt)
+        if train_type in ["woall", "FI"]:
+            # search <|ISP|>~~<|ISP|> and remove between them
+            common_prompt = re.sub(r"\n?<\|ISP\|>(.|\n)*?<\|ISP\|>", "", common_prompt)
+        if train_type in ["woall"]:
+            # search <|FI|>~~<|FI|> and remove between them
+            common_prompt = re.sub(r"\n?<\|FI\|>(.|\n)*?<\|FI\|>", "", common_prompt)
     
-    if train_type in ["woall"]:
-        # search <|FI|>~~<|FI|> and remove between them
-        common_prompt = re.sub(r"\n?<\|Ours\|>(.|\n)*?<\|Ours\|>", "", common_prompt)
+    elif "v6" in BASE_DIR.name:
+        if train_type in ["woall"]:
+            # search <|FI|>~~<|FI|> and remove between them
+            common_prompt = re.sub(r"\n?<\|Ours\|>(.|\n)*?<\|Ours\|>", "", common_prompt)
 
     # remove all <||>
     common_prompt = re.sub(r"<\|.*?\|>", "", common_prompt)
