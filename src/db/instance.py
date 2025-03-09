@@ -231,8 +231,8 @@ class DBInstance:
                 else:
                     columns = ["id"]
                 
-                if "timestamp" not in columns:
-                    columns.append("timestamp")
+                # if "timestamp" not in columns:
+                #     columns.append("timestamp")
             
             if columns:
                 formatted_columns = []
