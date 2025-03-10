@@ -237,6 +237,7 @@ class DistributedInference:
                         result = {
                             "Input": sample["Input"],
                             "Scenario": sample["Scenario"],
+                            "Metadata": sample["Metadata"],
                             "Candidate": response,
                         }
                         
@@ -286,7 +287,9 @@ def read_dataset(train_type, dir, path):
 def main():
     
     # Configuration
-    BASE_DIR = Path("../finetuning/dataset/v6-250306-optimizetoken")
+    dataset_name = "v6-250306-optimizetoken"
+    dataset_name = "v7-250309-reduceinputanddatefunctioncall"
+    BASE_DIR = Path(f"../finetuning/dataset/{dataset_name}")
     # checkpoint_dir = Path("/workspace/model/Bllossom-llama-3.2-Korean-Bllossom-3B/chkpts/r1700_a1500/checkpoint-12")
     
 
@@ -295,7 +298,7 @@ def main():
         "FI", # 1
         "ISP", # 2
         "ours" # 3
-    ][0]
+    ][3]
 
     if train_type == "woall":
         model_name, tr_config = \
@@ -360,11 +363,15 @@ def main():
         model_name, tr_config = \
             "sh2orc-Llama-3.1-Korean-8B-Instruct", \
             "v6_r256_a512_ours_shorten/checkpoint-30"
+        
+        model_name, tr_config = \
+            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+            "v7_r256_a512_ours/checkpoint-100"
 
     print(f"Model: {model_name}, Config: {tr_config}")
 
-    checkpoint_dir = Path(f"/workspace/model/{model_name}/chkpts/{tr_config}")
-    cache_dir = Path(f"/workspace/model/{model_name}/cache")
+    checkpoint_dir = Path(f"/model/{model_name}/chkpts/{tr_config}")
+    cache_dir = Path(f"/model/{model_name}/cache")
     
     # Verify paths exist
     if not checkpoint_dir.exists():
@@ -393,7 +400,7 @@ def main():
             # search <|FI|>~~<|FI|> and remove between them
             common_prompt = re.sub(r"\n?<\|FI\|>(.|\n)*?<\|FI\|>", "", common_prompt)
     
-    elif "v6" in BASE_DIR.name:
+    elif "v6" in BASE_DIR.name or "v7" in BASE_DIR.name:
         if train_type in ["woall"]:
             # search <|FI|>~~<|FI|> and remove between them
             common_prompt = re.sub(r"\n?<\|Ours\|>(.|\n)*?<\|Ours\|>", "", common_prompt)
@@ -402,7 +409,7 @@ def main():
     common_prompt = re.sub(r"<\|.*?\|>", "", common_prompt)
     
     # Initialize distributed inference
-    batch_size = 50  # 배치 크기 설정
+    batch_size = 30  # 배치 크기 설정
     inference = DistributedInference(
         checkpoint_dir=str(checkpoint_dir),
         cache_dir=str(cache_dir),

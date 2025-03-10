@@ -2,9 +2,60 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+import re
+from copy import deepcopy
+
 import pandas as pd
 import psycopg2
 from psycopg2 import sql
+
+def parse_temporal(temporal):
+    if temporal is None:
+        return ""
+
+    temporal = temporal.strip()
+    if temporal[0] not in "[(" or temporal[-1] not in "])":
+        raise ValueError(f"Invalid temporal format: {temporal}")
+
+    # 외부 괄호 제거
+    left_bracket = temporal[0]
+    right_bracket = temporal[-1]
+    inner = temporal[1:-1]
+
+    # 중첩된 괄호를 고려하여 외부 콤마 위치 찾기
+    paren_count = 0
+    split_index = None
+    for i, ch in enumerate(inner):
+        if ch == '(':
+            paren_count += 1
+        elif ch == ')':
+            paren_count -= 1
+        elif ch == ',' and paren_count == 0:
+            split_index = i
+            break
+
+    if split_index is None:
+        raise ValueError(f"Invalid temporal format: {temporal}")
+
+    start = inner[:split_index].strip()
+    end = inner[split_index+1:].strip()
+
+    conditions = []
+
+    # 시작 시간 처리
+    if start != '~':
+        operator = ">=" if left_bracket == "[" else ">"
+        conditions.append(f"timestamp {operator} {start}")
+
+    # 종료 시간 처리
+    if end != '~':
+        operator = "<=" if right_bracket == "]" else "<"
+        conditions.append(f"timestamp {operator} {end}")
+
+    if not conditions:
+        return None
+
+    return " AND ".join(conditions)
 
 class DBInstance:
     """
@@ -226,11 +277,11 @@ class DBInstance:
             # 그렇지 않으면 sql.Identifier로 처리하도록 함.
             
             if get_rowids:
-                if columns:
+                if columns and "id" not in columns:
                     columns.append("id")
                 else:
                     columns = ["id"]
-                
+            
                 # if "timestamp" not in columns:
                 #     columns.append("timestamp")
             
@@ -283,6 +334,7 @@ class DBInstance:
             
             
             logger.debug(f"Select query as string: {select_query.as_string(self.connection)}")
+            print(select_query.as_string(self.connection), flush=True)
             # Execute the query
             self.cursor.execute(select_query)
             rows = self.cursor.fetchall()
@@ -302,8 +354,48 @@ class DBInstance:
             logger.error("An error occurred while selecting data with\n{}".format(select_query.as_string(self.connection)))
             logger.error("Error message: {}".format(e))
             return None
+    
+    def structured_query_data_t(self, metadata, columns, temporal=None, spatials=None, get_rowids=False) -> pd.DataFrame:
+        """
+        temporal: '[~, ~]', '(~, ~)', '[~, ~)', '(~, ~]', '(~', '~)', '[~', '~]', '~'
+        """
 
+        temporal = parse_temporal(temporal)
+
+        if temporal != None:
+            current_datetime = metadata["current_datetime"] # '2022-09-30 00:00:00'
+            current_date = current_datetime.split()[0] # '2022-09-30'
+            year, month, day = map(int, current_date.split('-'))
+            temporal = temporal.replace("CURRENT_DATE", f"{current_date}")
+            temporal = temporal.replace("CURRENT_YEAR", f"{year}")
+            temporal = temporal.replace("CURRENT_MONTH", f"{month}")
+            temporal = temporal.replace("CURRENT_TIMESTAMP", f"'{current_datetime}'")
+            print(temporal, flush=True)
+            temporal = [temporal]
         
+        if spatials is not None:
+            spatials = [f"'{name}'" for name in spatials]
+            # spatials = 
+            # print(spatials, flush=True)
+        
+        result = {}
+        for spatial in spatials:
+            r = self.structured_query(
+                table_name='data_t',
+                columns=deepcopy(columns),
+                conditions=deepcopy(temporal),
+                subquery=f"idu_id IN (SELECT id FROM idu_t WHERE name = {spatial})",
+                get_rowids=get_rowids
+            )
+            if r is None:
+                continue
+
+            r["idu"] = spatial
+            result[spatial] = r
+        if len(result) == 0:
+            return None
+        df_result = pd.concat(result.values(), ignore_index=True)
+        return df_result
     
     def create_continuous_aggregate(self, agg_name, select_query):
         """
@@ -354,6 +446,12 @@ class DBInstance:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
+
+    print(parse_temporal('[~, ~]'))
+    print(
+        parse_temporal("[CURRENT_DATE - INTERVAL '1 day',  CURRENT_DATE)")
+    )
+    exit()
     
     # Exampe usage of the DBInstance class
     db_instance = DBInstance(dbname='PerSite_DB')
