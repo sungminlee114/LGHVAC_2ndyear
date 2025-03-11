@@ -21,7 +21,7 @@
                         ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '3 hours', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -46,7 +46,7 @@
                         ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '6 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '9 hours')",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr_morning"
@@ -60,7 +60,7 @@
                         ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '18 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '21 hours')",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr_evening"
@@ -85,8 +85,8 @@
                         ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
-                            "01_IB7",
-                            "01_IB5"
+                            "02_I85",
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -114,8 +114,8 @@
                         ],
                         "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE') + INTERVAL '1 week')",
                         "spatials": [
-                            "01_IB5",
-                            "01_IB7"
+                            "02_I84",
+                            "02_I85"
                         ]
                     },
                     "result_name": "qr"
@@ -141,7 +141,7 @@
                         ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -168,7 +168,7 @@
                         ],
                         "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE') - INTERVAL '1 week', DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -193,7 +193,7 @@
                         ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') - INTERVAL '1 day', DATE_TRUNC('day', DATE 'CURRENT_DATE'))",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -219,7 +219,7 @@
                         ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') - INTERVAL '1 week', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '1 day')",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -265,21 +265,12 @@
                         ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') - INTERVAL '3 days', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '1 day')",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
                 }
             ]
-        }
-    },{
-        "Input": "3층 평균 실내온도는?",
-        "Response": {
-            "Thinking": "질문의 맥락 상 공간정보는 3층인데, metadata에는 없음. 사용자에게 3층이 어떤 곳인지 물어보고, 해당 정보를 변수에 저장해야 함.",
-            "Expectations": [
-                "3층이 어떤 곳인지 알려주세요."
-            ],
-            "Instructions": []
         }
     }
 ]

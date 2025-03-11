@@ -1,3 +1,0 @@
-"Input mapping": "Metadata에 의하면 '우리반': '01_IB5', '옆반': '01_IB7', '설정온도': 'settemp'. 어제는 지금으로부터 1일 전임.",
-
-"Strategy": "우리반(01_IB5)과 옆반(01_IB7)의 1일 전 하루동안( [CURRENT_DATE - INTERVAL '1 day', CURRENT_DATE)) 설정온도(settemp) 데이터 쿼리 후 각 반의 평균 settemp 값과 차이를 계산함.",

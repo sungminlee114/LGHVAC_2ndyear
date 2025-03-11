@@ -1,31 +1,5 @@
 [
     {
-        "Input": "어제 우리반과 옆반의 설정온도 차이 알려줘",
-        "Response": {
-            "Thinking": "설정온도는 하루동안 여러번의 측정값이 있는데, 사용자는 특정 시점을 언급하지 않았으므로 특정 시점이 아닌 1일 전 하루동안 측정된 설정온도의 평균값을 기반해서 대답해야함. 또한 차이 결과 뿐만 아니라 계산에 사용된 각 반의 평균 설정온도 값도 궁금할 것임.",
-            "Expectations": [
-                "어제 우리반의 설정온도(19.3℃)는 옆반의 설정온도(17.0℃)보다 2.3℃ 높습니다."
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))",
-                        "spatials": [
-                            "01_IB5",
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
-                }
-            ]
-        }
-    },
-    {
         "Input": "오늘 우리반과 옆반의 평균 온도차이 알려줘",
         "Response": {
             "Thinking": "온도는 실내온도를 의미함. 사용자는 오늘 하루 평균 각 반 실내온도의 차이를 알고 싶어함. 사용자는 차이 결과 뿐만 아니라 계산에 사용된 각 반의 평균 실내온도 값도 궁금할 것임.",
@@ -42,8 +16,8 @@
                         ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE'), DATE_TRUNC('day', DATE 'CURRENT_DATE' + INTERVAL '1 day'))",
                         "spatials": [
-                            "01_IB5",
-                            "01_IB7"
+                            "02_I84",
+                            "02_I85"
                         ]
                     },
                     "result_name": "qr"
@@ -68,7 +42,7 @@
                         ],
                         "temporal": "[DATE 'CURRENT_YEAR-12-01' - INTERVAL '1 year', DATE 'CURRENT_YEAR-03-01')",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -79,50 +53,11 @@
     {
         "Input": "올해 여름 앞반 평균온도 알려줘",
         "Response": {
-            "Thinking": "온도는 실내온도를 의미함. 올해 여름은 6월 ~ 8월임. 사용자는 올해 6월 ~ 8월 앞반의 평균 실내온도를 알고 싶어함. 또한 올해 여름이 언제인지 알려주어야 함.",
+            "Thinking": "앞반이라는 공간 정보가 Metadata에 없음. 답변하기 전 사용자에게 앞반이 어떤 곳인지 물어보고 해당 정보를 변수에 저장해야 함.",
             "Expectations": [
-                "올해 여름(6월 ~ 8월) 앞반의 평균 온도는 26℃ 입니다."
+                "앞반이 어디인지 알려주세요."
             ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE 'CURRENT_YEAR-06-01', DATE 'CURRENT_YEAR-09-01')",
-                        "spatials": ["02_I81"]
-                    },
-                    "result_name": "qr"
-                }
-            ]
-        }
-    },
-    {
-        "Input": "올여름 제일 더웠던 날 알려줘",
-        "Response": {
-            "Thinking": "공간 정보가 없으므로 우리반으로 추측함. 더움이나 추움은 실내온도와 관련있다 추측함. 올 여름은 6월 ~ 8월임. 사용자는 올 여름 우리반의 가장 더웠던 날짜를 알고 싶어함. 날 끼리 비교하므로 일평균 실내온도를 계산함. 양질의 답변을 위해 추측한 올 여름이 언제인지, 공간 및 모달리티가 무엇인지, 제일 더웠던 날의 날짜와 온도를 제공해야 함. timestamp도 쿼리해야 함.",
-            "Expectations": [
-                "올여름 우리반은 7월 15일에 실내온도 30℃로 가장 더웠습니다."
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE 'CURRENT_YEAR-06-01', DATE 'CURRENT_YEAR-09-01')",
-                        "spatials": [
-                            "01_IB5"
-                        ]
-                    },
-                    "result_name": "qr"
-                }
-            ]
+            "Instructions": []
         }
     },
     {
@@ -143,32 +78,7 @@
                         ],
                         "temporal": "[DATE 'CURRENT_YEAR-03-01', DATE 'CURRENT_YEAR-06-01')",
                         "spatials": [
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
-                }
-            ]
-        }
-    },
-    {
-        "Input": "4월 앞반 평균온도 알려줘",
-        "Response": {
-            "Thinking": "온도는 실내온도를 의미함. 사용자는 4월 한달간 앞반의 평균 실내온도를 알고 싶어함.",
-            "Expectations": [
-                "4월 앞반의 평균 온도는 20℃ 입니다."
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE 'CURRENT_YEAR-04-01', DATE 'CURRENT_YEAR-05-01')",
-                        "spatials": [
-                            "02_I81"
+                            "02_I85"
                         ]
                     },
                     "result_name": "qr"
@@ -193,7 +103,7 @@
                         ],
                         "temporal": "[DATE_TRUNC('month', DATE 'CURRENT_DATE'), DATE_TRUNC('month', DATE 'CURRENT_DATE' + INTERVAL '1 month'))",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -219,8 +129,8 @@
                         ],
                         "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '2 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week'))",
                         "spatials": [
-                            "01_IB5",
-                            "01_IB7"
+                            "02_I84",
+                            "02_I85"
                         ]
                     },
                     "result_name": "qr"
@@ -258,7 +168,7 @@
                         ],
                         "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -283,7 +193,7 @@
                         ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -310,7 +220,7 @@
                         ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
-                            "01_IB7"
+                            "02_I85"
                         ]
                     },
                     "result_name": "qr"
@@ -339,7 +249,7 @@
                         ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '3 hours', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
-                            "01_IB7"
+                            "02_I85"
                         ]
                     },
                     "result_name": "qr"
@@ -369,7 +279,7 @@
                         ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '3 hours', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -405,7 +315,7 @@
                         ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -441,7 +351,7 @@
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '8 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '7 day'))",
                         
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -450,11 +360,11 @@
         }
     },
     {
-        "Input": "10년 전 오늘 우리반 온도는?",
+        "Input": "5년 전 오늘 우리반 온도는?",
         "Response": {
-            "Thinking": "사용자는 10년 전 오늘 우리반의 실내온도를 알고 싶어함. 10년 전 오늘 우리반의 실내온도의 하루 평균값을 반환하면 됨.",
+            "Thinking": "사용자는 5년 전 오늘 우리반의 실내온도를 알고 싶어함. 5년 전 오늘 우리반의 실내온도의 하루 평균값을 반환하면 됨.",
             "Expectations": [
-                "10년 전 오늘 우리반의 실내온도는 24℃였습니다."
+                "5년 전 오늘 우리반의 실내온도는 24℃였습니다."
             ],
             "Instructions": [
                 {
@@ -464,51 +374,21 @@
                         "columns": [
                             "roomtemp"
                         ],
-                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '10 year'), DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '10 year' + INTERVAL '1 day'))",
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '5 year'), DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '5 year' + INTERVAL '1 day'))",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
                 }
             ]
         }
-    },
-    {
-        "Input": "롯데캐슬의 현재 온도 알려줘",
-        "Response": {
-            "Thinking": "질문의 맥락 상 공간정보는 롯데캐슬인데, metadata에는 없음. 사용자에게 롯데캐슬이 어떤 곳인지 물어보고, 해당 정보를 변수에 저장해야 함.",
-            "Expectations": [
-                "롯데캐슬이 어떤 곳인지 알려주세요."
-            ],
-            "Instructions": []
-        }
-    },
-    {
-        "Input": "다음 대통령 선거는 언제인가요?",
-        "Response": {
-            "Thinking": "질문의 맥락 상 HVAC 시스템과 관련 없는 질문임. HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
-            "Expectations": [
-                "HVAC 시스템과 관련 없는 질문입니다."
-            ],
-            "Instructions": []
-        }
-    },
-    {
-        "Input": "1층 평균 실내온도 알려줘",
-        "Response": {
-            "Thinking": "질문의 맥락 상 공간정보는 1층인데, metadata에는 없음. 사용자에게 1층이 어떤 곳인지 물어보고, 해당 정보를 변수에 저장해야 함.",
-            "Expectations": [
-                "1층이 어떤 곳인지 알려주세요."
-            ],
-            "Instructions": []
-        }
     },{
         "Input": "에어컨 꺼진 방들 알려줘",
         "Response": {
             "Thinking": "사용자는 현재 에어컨이 꺼져있는 방들을 알고 싶어함. 최근 5분간 metadata에 있는 idu들의 에어컨 작동 상태를 쿼리한 후 가장 최근 데이터가 false인 방들을 반환하면 됨. Human readable한 방 이름을 반환하기 위해 idu_name도 쿼리해야 함.",
             "Expectations": [
-                "현재 에어컨이 꺼져있는 방은 01_IB7입니다."
+                "현재 에어컨이 꺼져있는 방은 02_I85입니다."
             ],
             "Instructions": [
                 {
@@ -521,8 +401,8 @@
                         ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
-                            "01_IB5",
-                            "01_IB7",
+                            "02_I84",
+                            "02_I85",
                             "02_I81"
                         ]
                     },
@@ -550,7 +430,7 @@
                         ],
                         "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -576,7 +456,7 @@
                         ],
                         "temporal": "[DATE_TRUNC('month', DATE 'CURRENT_DATE'), DATE_TRUNC('month', DATE 'CURRENT_DATE' + INTERVAL '1 month'))",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -602,8 +482,8 @@
                         ],
                         "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE' + INTERVAL '1 week'))",
                         "spatials": [
-                            "01_IB5",
-                            "01_IB7"
+                            "02_I84",
+                            "02_I85"
                         ]
                     },
                     "result_name": "qr"
@@ -631,7 +511,7 @@
                         "temporal": 
                             "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -640,9 +520,9 @@
         }
     },
     {
-        "Input": "우리반, 옆반, 앞반 중 가장 추운 방은?",
+        "Input": "우리반, 옆반 중 가장 추운 방은?",
         "Response": {
-            "Thinking": "사용자는 현재 우리반, 옆반, 앞반 중 가장 추운 방을 알고싶어함. 최근 5분간 세 방의 실내온도를 쿼리한 후 가장 최근 가장 낮은 실내온도를 가진 방과 그 온도를 반환하면 됨.",
+            "Thinking": "사용자는 현재 우리반, 옆반 중 가장 추운 방을 알고싶어함. 최근 5분간 세 방의 실내온도를 쿼리한 후 가장 최근 가장 낮은 실내온도를 가진 방과 그 온도를 반환하면 됨.",
             "Expectations": [
                 "지금 세 방 중 우리반의 실내온도가 24℃로 가장 낮습니다."
             ],
@@ -656,8 +536,8 @@
                         ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
-                            "01_IB5",
-                            "01_IB7",
+                            "02_I84",
+                            "02_I85",
                             "02_I81"
                         ]
                     },
@@ -666,21 +546,12 @@
             ]
         }
     },{
-        "Input": "농담 좀 해줘",
-        "Response": {
-            "Thinking": "질문의 맥락 상 HVAC 시스템과 관련 없는 질문임. HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
-            "Expectations": [
-                "HVAC 시스템과 관련 없는 질문입니다."
-            ],
-            "Instructions": []
-        }
-    },{
         "Input": "에어켠 제일 세게 킨 방 3개 알려줘",
         "Response": {
             "Thinking": "사용자는 현재 Metadata에 존재하는 모든 idu중 oper=true면서 설정온도가 제일 낮은 곳 3개를 알려달라고 하고 있음. 최근 5분간 Metadata에 존재하는 모든 idu의 oper와 설정온도를 쿼리한 후 oper=true인 방만 필터링하고 설정온도가 가장 낮은 방 3개의 이름과 설정온도를 반환하면 됨. Human readable한 방 이름을 반환하기 위해 idu_name도 쿼리해야 함.",
             "Expectations": [
-                "에어컨을 제일 세게 킨 방은 순서대로 01_IB5(27℃), 01_IB7(26℃), 01_IB6(25℃)입니다.",
-                "에어컨을 제일 세게 킨 방은 순서대로 우리반(27℃), 옆반(26℃), 뒷반(25℃)입니다."
+                "에어컨을 제일 세게 킨 방은 순서대로 02_I84(27℃), 02_I85(26℃)입니다.",
+                "에어컨을 제일 세게 킨 방은 순서대로 우리반(27℃), 옆반(26℃)입니다."
             ],
             "Instructions": [
                 {
@@ -694,9 +565,8 @@
                         ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
-                            "01_IB5",
-                            "01_IB7",
-                            "02_I81"
+                            "02_I84",
+                            "02_I85"
                         ]
                     },
                     "result_name": "qr"
@@ -722,7 +592,7 @@
                         ],
                         "temporal": "[DATE 'CURRENT_DATE' - INTERVAL '4 month', DATE 'CURRENT_DATE']",
                         "spatials": [
-                            "01_IB7"
+                            "02_I85"
                         ]
                     },
                     "result_name": "qr"
@@ -748,7 +618,7 @@
                         ],
                         "temporal": "[DATE_TRUNC('month', DATE 'CURRENT_DATE' - INTERVAL '1 month'), DATE_TRUNC('month', DATE 'CURRENT_DATE'))",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -773,7 +643,7 @@
                         ],
                         "temporal": "[DATE 'CURRENT_DATE' - INTERVAL '1 month', DATE 'CURRENT_DATE']",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -797,8 +667,8 @@
                         ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
-                            "01_IB5",
-                            "01_IB7"
+                            "02_I84",
+                            "02_I85"
                         ]
                     },
                     "result_name": "qr"
@@ -814,30 +684,6 @@
                 "에너지 사용량이 무엇인지 알려주세요."
             ],
             "Instructions": []
-        }
-    },{
-        "Input": "앞반 전원 켜져있어?",
-        "Response": {
-            "Thinking": "사용자는 현재 앞반의 에어컨 전원 상태를 조회하여 반환해야 합니다.",
-            "Expectations": [
-                "앞반의 전원은 꺼져있습니다."
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "oper"
-                        ],
-                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
-                        "spatials": [
-                            "02_I81"
-                        ]
-                    },
-                    "result_name": "qr"
-                }
-            ]
         }
     },{
         "Input": "오늘 우리반 에어컨 전원이 처음 켜진 시각 알려줘.",
@@ -858,22 +704,12 @@
                         ],
                         "temporal": "[DATE 'CURRENT_DATE', DATE 'CURRENT_DATE' + INTERVAL '1 day')",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
                 }
             ]
-        }
-    },
-    {
-        "Input": "이번주 경제 소식 알려줘.",
-        "Response": {
-            "Thinking": "질문의 맥락 상 HVAC 시스템과 관련 없는 질문임. HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
-            "Expectations": [
-                "HVAC 시스템과 관련 없는 질문입니다."
-            ],
-            "Instructions": []
         }
     },{
         "Input": "지난주 우리반은 대체로 몇 도로 설정되어 있었나요?",
@@ -892,7 +728,7 @@
                         ],
                         "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
                         "spatials": [
-                            "01_IB5"
+                            "02_I84"
                         ]
                     },
                     "result_name": "qr"
@@ -916,7 +752,7 @@
                             "settemp"
                         ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '6 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '9 hours')",
-                        "spatials": ["01_IB7"]
+                        "spatials": ["02_I85"]
                     },
                     "result_name": "qr_morning"
                 },
@@ -928,7 +764,7 @@
                             "settemp"
                         ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '18 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '21 hours')",
-                        "spatials": ["01_IB7"]
+                        "spatials": ["02_I85"]
                     },
                     "result_name": "qr_evening"
                 }
@@ -950,7 +786,7 @@
                             "oper"
                         ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
-                        "spatials": ["01_IB7"]
+                        "spatials": ["02_I85"]
                     },
                     "result_name": "qr"
                 }
@@ -973,7 +809,7 @@
                             "roomtemp"
                         ],
                         "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE' + INTERVAL '1 week'))",
-                        "spatials": ["01_IB5"]
+                        "spatials": ["02_I84"]
                     },
                     "result_name": "qr"
                 }
@@ -995,7 +831,7 @@
                             "settemp"
                         ],
                         "temporal": "[DATE_TRUNC('month', DATE 'CURRENT_DATE'), DATE_TRUNC('month', DATE 'CURRENT_DATE' + INTERVAL '1 month'))",
-                        "spatials": ["01_IB5"]
+                        "spatials": ["02_I84"]
                     },
                     "result_name": "qr"
                 }
@@ -1017,7 +853,7 @@
                             "roomtemp"
                         ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
-                        "spatials": ["01_IB5", "01_IB7"]
+                        "spatials": ["02_I84", "02_I85"]
                     },
                     "result_name": "qr"
                 }
@@ -1040,7 +876,7 @@
                             "oper"
                         ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
-                        "spatials": ["01_IB5"]
+                        "spatials": ["02_I84"]
                     },
                     "result_name": "qr"
                 }
@@ -1049,9 +885,9 @@
     },{
         "Input": "내일 우리반과 앞반 온도 차이 알려줘",
         "Response": {
-            "Thinking": "사용자는 내일 우리반과 앞반의 실내온도 차이를 알고싶어함. 현재는 예측 기능을 지원하지 않으므로 예측 기능이 지원되지 않는다는 메시지를 반환해야 함.",
+            "Thinking": "사용자는 내일 우리반과 앞반의 실내온도 차이를 알고싶어함. 현재는 예측 기능을 지원하지 않으므로 예측 기능이 지원되지 않는다는 메시지를 반환해야 함. 또한 Metadata에 앞반 정보가 없으므로 사용자에게 앞반이 어떤 곳인지 물어보고, 해당 정보를 변수에 저장해야 함.",
             "Expectations": [
-                "예측하기는 아직 지원되지 않는 기능입니다."
+                "예측하기는 아직 지원되지 않는 기능입니다. 그리고 앞반이 어떤 곳인지 알려주세요."
             ],
             "Instructions": []
         }
@@ -1064,7 +900,7 @@
                     "지난 한달": "2022-08-30 00:00:00 ~ 2022-09-29 23:59:59"
                 },
                 "Spatial": {
-                    "우리반": "01_IB5"
+                    "우리반": "02_I84"
                 }
             },
             "Strategy": {
@@ -1088,7 +924,7 @@
                         "conditions": [
                             "timestamp BETWEEN '2022-08-30 00:00:00' AND '2022-09-29 23:59:59'"
                         ],
-                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '01_IB5')"
+                        "subquery": "idu_id = (SELECT id FROM idu_t WHERE name = '02_I84')"
                     },
                     "result_name": "qr"
                 }
@@ -1112,7 +948,7 @@
                             "oper"
                         ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '7 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE' + INTERVAL '1 day'))",
-                        "spatials": ["01_IB5"]
+                        "spatials": ["02_I84"]
                     },
                     "result_name": "qr"
                 }
