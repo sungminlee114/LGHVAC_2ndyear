@@ -14,7 +14,7 @@
                         "columns": [
                             "settemp"
                         ],
-                        "temporal": "[DATE 'CURRENT_DATE' - INTERVAL '1 day',  DATE 'CURRENT_DATE')",
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))",
                         "spatials": [
                             "01_IB5",
                             "01_IB7"
@@ -40,7 +40,7 @@
                         "columns": [
                             "roomtemp"
                         ],
-                        "temporal": "[DATE 'CURRENT_DATE', DATE 'CURRENT_DATE' + INTERVAL '1 day')",
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE'), DATE_TRUNC('day', DATE 'CURRENT_DATE' + INTERVAL '1 day'))",
                         "spatials": [
                             "01_IB5",
                             "01_IB7"
@@ -191,7 +191,7 @@
                             "timestamp",
                             "roomtemp"
                         ],
-                        "temporal": "[DATE 'CURRENT_YEAR-CURRENT_MONTH-01', DATE 'CURRENT_YEAR-CURRENT_MONTH-01' + INTERVAL '1 month')",
+                        "temporal": "[DATE_TRUNC('month', DATE 'CURRENT_DATE'), DATE_TRUNC('month', DATE 'CURRENT_DATE' + INTERVAL '1 month'))",
                         "spatials": [
                             "01_IB5"
                         ]
@@ -281,7 +281,7 @@
                             "timestamp",
                             "settemp"
                         ],
-                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP')",
+                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "01_IB5"
                         ]
@@ -308,7 +308,7 @@
                             "roomtemp",
                             "settemp"
                         ],
-                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP')",
+                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "01_IB7"
                         ]
@@ -337,7 +337,7 @@
                             "settemp",
                             "oper"
                         ],
-                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '3 hours', TIMESTAMP 'CURRENT_TIMESTAMP')",
+                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '3 hours', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "01_IB7"
                         ]
@@ -367,7 +367,7 @@
                             "settemp",
                             "oper"
                         ],
-                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '3 hours', TIMESTAMP 'CURRENT_TIMESTAMP')",
+                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '3 hours', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "01_IB5"
                         ]
@@ -403,7 +403,7 @@
                         "columns": [
                             "roomtemp"
                         ],
-                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP')",
+                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "01_IB5"
                         ]
