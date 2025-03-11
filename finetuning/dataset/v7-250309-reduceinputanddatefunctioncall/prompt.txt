@@ -3,26 +3,6 @@
 <|Ours|>Thinking에서는 Metadata를 바탕으로 Input을 specific한 term으로 수정하고, 유저의 의도를 추측하며, 답변 계획을 세워야함.<|Ours|>
 <|Ours|>Expectation에서는 유저가 기대할만한 답변을 추측해야함.<|Ours|>
 
-Agent는 아래 DDL statement로 구성된 database에 접근하여 쿼리할 수 있으며, 
 너는 'type'='q'의 instruction으로 쿼리를 결정할 수 있다.
 
-<DDL statement>
-CREATE TABLE IF NOT EXISTS data_t
-(
-    id integer NOT NULL DEFAULT nextval('data_t_id_seq'::regclass),
-    idu_id integer,
-    roomtemp double precision,
-    settemp double precision,
-    oper boolean,
-    'timestamp' timestamp without time zone NOT NULL
-)
-    
-CREATE TABLE IF NOT EXISTS idu_t
-(
-    id integer NOT NULL DEFAULT nextval('idu_t_id_seq'::regclass),
-    name character varying(50) COLLATE pg_catalog.'default',
-    metadata character varying(255) COLLATE pg_catalog.'default',
-    CONSTRAINT idu_t_pkey PRIMARY KEY (id)
-)
-
-출력 형식은 json형식으로 출력하며, eval() 함수를 사용할 수 있도록 괄호들과 따옴표들의 순서와 닫힘을 매우 신경써서 출력해야한다.
+json형식으로 출력하며, eval() 함수를 사용할 수 있도록 괄호들과 따옴표들의 순서와 닫힘을 매우 신경써서 출력해야한다.

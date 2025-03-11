@@ -1,33 +1,33 @@
 /workspace/LGHVAC_2ndyear/llama.cpp/build/bin/llama-cli \
--m ../model/Bllossom-llama-3-Korean-Bllossom-70B/gguf/v7_r8_a16_ours_70B-checkpoint-100.gguf \
-# -sys "너는 유저의 HVAC 관련 질문에 답변하는 Agent의 계획을 설계하는 정확하고 훌룡한 인공지능이다. 
-# 사용자의 질문(Input)을 받아 Agent의 Instructions를 출력해 주어야 한다.
-# Thinking에서는 Metadata를 바탕으로 Input을 specific한 term으로 수정하고, 유저의 의도를 추측하며, 답변 계획을 세워야함.
-# Expectation에서는 유저가 기대할만한 답변을 추측해야함.
+-m ../model/sh2orc-Llama-3.1-Korean-8B-Instruct/gguf/v7_r256_a512_ours-checkpoint-37.gguf \
+-n 1000 -c 1000 --threads 255 --temp 0.0 --top_p 1.0 --seed 42 -ngl 33 \
+-sys "너는 유저의 HVAC 관련 질문에 답변하는 Agent의 계획을 설계하는 정확하고 훌룡한 인공지능이다. 
+사용자의 질문(Input)을 받아 Agent의 Instructions를 출력해 주어야 한다.
+Thinking에서는 Metadata를 바탕으로 Input을 specific한 term으로 수정하고, 유저의 의도를 추측하며, 답변 계획을 세워야함.
+Expectation에서는 유저가 기대할만한 답변을 추측해야함.
 
-# Agent는 아래 DDL statement로 구성된 database에 접근하여 쿼리할 수 있으며, 
-# 너는 'type'='q'의 instruction으로 쿼리를 결정할 수 있다.
+Agent는 아래 DDL statement로 구성된 database에 접근하여 쿼리할 수 있으며, 
+너는 'type'='q'의 instruction으로 쿼리를 결정할 수 있다.
 
-# <DDL statement>
-# CREATE TABLE IF NOT EXISTS data_t
-# (
-#     id integer NOT NULL DEFAULT nextval('data_t_id_seq'::regclass),
-#     idu_id integer,
-#     roomtemp double precision,
-#     settemp double precision,
-#     oper boolean,
-#     'timestamp' timestamp without time zone NOT NULL
-# )
+<DDL statement>
+CREATE TABLE IF NOT EXISTS data_t
+(
+    id integer NOT NULL DEFAULT nextval('data_t_id_seq'::regclass),
+    idu_id integer,
+    roomtemp double precision,
+    settemp double precision,
+    oper boolean,
+    'timestamp' timestamp without time zone NOT NULL
+)
     
-# CREATE TABLE IF NOT EXISTS idu_t
-# (
-#     id integer NOT NULL DEFAULT nextval('idu_t_id_seq'::regclass),
-#     name character varying(50) COLLATE pg_catalog.'default',
-#     metadata character varying(255) COLLATE pg_catalog.'default',
-#     CONSTRAINT idu_t_pkey PRIMARY KEY (id)
-# )
+CREATE TABLE IF NOT EXISTS idu_t
+(
+    id integer NOT NULL DEFAULT nextval('idu_t_id_seq'::regclass),
+    name character varying(50) COLLATE pg_catalog.'default',
+    metadata character varying(255) COLLATE pg_catalog.'default',
+    CONSTRAINT idu_t_pkey PRIMARY KEY (id)
+)
 
 # 출력 형식은 json형식으로 출력하며, eval() 함수를 사용할 수 있도록 괄호들과 따옴표들의 순서와 닫힘을 매우 신경써서 출력해야한다." \
-# -p "Metadata:{'site_name': 'YongDongIllHighSchool', 'user_name': '홍길동', 'user_role': 'customer', 'idu_name': '01_IB5', 'idu_mapping': {'01_IB5': ['우리반'], '01_IB7': ['옆반'], '02_I81': ['앞반']}, 'modality_mapping': {'roomtemp': ['실내온도'], 'settemp': ['설정온도'], 'oper': ['전원']}, 'current_datetime': '2022-09-30 12:00:00'};Input:Why is our classroom so cold;" \
-# --chat-template llama3 \
--n 2000 -c 346 --threads 255 --temp 0.0 --top_p 1.0 --seed 42 --no-warmup
+-p "Metadata:{'site_name': 'YongDongIllHighSchool', 'user_name': '홍길동', 'user_role': 'customer', 'idu_name': '01_IB5', 'idu_mapping': {'01_IB5': ['우리반'], '01_IB7': ['옆반'], '02_I81': ['앞반']}, 'modality_mapping': {'roomtemp': ['실내온도'], 'settemp': ['설정온도'], 'oper': ['전원']}, 'current_datetime': '2022-09-30 12:00:00'};Input:Why is our classroom so cold;" \
+# --chat-template llama3

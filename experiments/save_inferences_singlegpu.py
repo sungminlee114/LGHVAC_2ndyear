@@ -1,4 +1,4 @@
-# from unsloth import FastLanguageModel
+from unsloth import FastLanguageModel
 import os
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
@@ -10,6 +10,7 @@ import re
 import time
 from typing import List, Dict, Any
 import subprocess
+import threading
 
 print(torch.cuda.device_count())
 
@@ -75,7 +76,8 @@ class UnslothInference:
                 model, tokenizer = FastLanguageModel.from_pretrained(
                     self.checkpoint_dir.as_posix(),
                     dtype = self.torch_dtype,
-                    # load_in_4bit = self.load_in_4bit,
+                    load_in_4bit = True,
+                    # load_in_8bit = True,
                     # quantization_config=BitsAndBytesConfig(
                     #     # load_in_4bit=True,
                     #     # bnb_4bit_use_double_quant=True,
@@ -170,7 +172,6 @@ class UnslothInference:
             
             # 배치 텐서 생성
             batch_tensor = torch.cat(padded_inputs, dim=0)
-            print(batch_tensor.size())
             attention_mask = torch.cat(attention_masks, dim=0)
             
             # 배치 추론 실행
@@ -255,6 +256,7 @@ class UnslothInference:
 class LLamaInference(UnslothInference):
     def __init__(
         self,
+        checkpoint_dir: str,
         gguf_path: str,
         binary_path: str = "/workspace/llama-cpp/build/bin/main",
         max_new_tokens: int = 100,
@@ -272,6 +274,11 @@ class LLamaInference(UnslothInference):
         self.temperature = temperature
         self.top_p = top_p
         self.seed = seed
+
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            checkpoint_dir,
+            local_files_only=True,
+        )
 
         # Assume the GGUF model file is named "model.gguf" inside checkpoint_dir
         if not os.path.exists(self.gguf_path):
@@ -292,38 +299,61 @@ class LLamaInference(UnslothInference):
         # else:
         #     raise ValueError(f"Unsupported model architecture: {self.gguf_path}")
         
-        prompt = f"Metadata:{data['Metadata']};Input:{data['Input']};"
+        # text = str(self.tokenizer.apply_chat_template(
+        #     chat,
+        #     add_generation_prompt=True,
+        #     tokenize=False
+        # ))
+        user_input = f"Metadata:{data['Metadata']};Input:{data['Input']};"
         command = [
             str(self.binary_path),
             "-m", str(self.gguf_path),
             "-sys", str(common_prompt),
-            "-p", prompt,
-            "--chat-template", "llama3",
+            "-p", str(user_input),
+            # "--chat-template", "llama3",
 
             "-n", str(self.max_new_tokens),
-            "-c", str(len(prompt)),
+            "-c", str(len(common_prompt) + len(user_input)),
             "--threads", str(os.cpu_count()),
-
+            "-ngl", str(33),
+            "-no-cnv",
             "--temp", str(self.temperature),
             "--top_p", str(self.top_p),
             "--no-warmup",
             "--seed", str(self.seed)
         ]
         # Run the command and capture stdout
+        def read_output(process):
+            for line in iter(process.stdout.readline, ''):
+                print(line, end='')  # 명령어의 출력 실시간 표시
+            process.stdout.close()
+
+        print(" ".join(command))
+        process = subprocess.Popen(
+            command,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1
+        )
+
+        # 출력을 실시간으로 읽는 스레드
+        thread = threading.Thread(target=read_output, args=(process,))
+        thread.start()
+
+        # 사용자의 입력을 받아서 명령어에 전달
         try:
-            print(" ".join(command))
-            result = subprocess.run(
-                command, 
-                capture_output=True, 
-                text=True, 
-                check=True
-            )
-            return result.stdout.strip()
-        except subprocess.CalledProcessError as e:
-            print("Error during inference:")
-            print("STDOUT:", e.stdout)
-            print("STDERR:", e.stderr)
-            return ""
+            while process.poll() is None:  # 프로세스가 살아있는 동안
+                user_input = input()  # 사용자로부터 입력 받기
+                process.stdin.write(user_input + '\n')  # 프로세스에 입력 전달
+                process.stdin.flush()  # 즉시 전송
+        except KeyboardInterrupt:
+            print("Interrupted by user")
+        finally:
+            process.stdin.close()
+            process.wait()
+            thread.join()
 
     def run(
         self,
@@ -353,7 +383,7 @@ class LLamaInference(UnslothInference):
                     with open(output_file, "a", encoding="utf-8") as f:
                         f.write(json.dumps(result, ensure_ascii=False) + "\n")
                 else:
-                    print(f"Error in response for sample {batch_start + i}")
+                    print(f"Error in response for sample {data}")
             
             pbar.update(1)
 
@@ -476,11 +506,11 @@ def main():
         
         model_name, tr_config = \
             "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "v7_r256_a512_ours/checkpoint-100"
+            "v7_r256_a512_ours/checkpoint-37"
         
         model_name, tr_config = \
             "Bllossom-llama-3-Korean-Bllossom-70B", \
-            "v7_r8_a16_ours_70B/checkpoint-100"
+            "v7_r8_a16_ours/checkpoint-40"
 
     print(f"Model: {model_name}, Config: {tr_config}")
 
@@ -524,21 +554,22 @@ def main():
     common_prompt = re.sub(r"<\|.*?\|>", "", common_prompt)
     
     # Initialize distributed inference
-    # batch_size = 1  # 배치 크기 설정
-    # inference = UnslothInference(
-    #     checkpoint_dir=str(checkpoint_dir),
-    #     cache_dir=str(cache_dir),
-    #     batch_size=batch_size
-    # )
-
-    gguf_path = model_dir / f"gguf/{tr_config.replace('/', '-')}.gguf"
-    if not gguf_path.exists():
-        raise ValueError(f"GGUF model file {gguf_path} does not exist")
-    inference = LLamaInference(
-        gguf_path=gguf_path,
-        binary_path = "/workspace/LGHVAC_2ndyear/llama.cpp/build/bin/llama-cli",
-        max_new_tokens = 2000,
+    batch_size = 1  # 배치 크기 설정
+    inference = UnslothInference(
+        checkpoint_dir=str(checkpoint_dir),
+        cache_dir=str(cache_dir),
+        batch_size=batch_size
     )
+
+    # gguf_path = model_dir / f"gguf/{tr_config.replace('/', '-')}.gguf"
+    # if not gguf_path.exists():
+    #     raise ValueError(f"GGUF model file {gguf_path} does not exist")
+    # inference = LLamaInference(
+    #     checkpoint_dir=checkpoint_dir,
+    #     gguf_path=gguf_path,
+    #     binary_path = "/workspace/LGHVAC_2ndyear/llama.cpp/build/bin/llama-cli",
+    #     max_new_tokens = 500,
+    # )
     
     # Setup output file
     output_file = f"r-{tr_config.replace('/', '-')}.json"
