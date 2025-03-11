@@ -370,7 +370,7 @@ class DBInstance:
             temporal = temporal.replace("CURRENT_YEAR", f"{year}")
             temporal = temporal.replace("CURRENT_MONTH", f"{month}")
             temporal = temporal.replace("CURRENT_TIMESTAMP", f"{current_datetime}")
-            print(temporal, flush=True)
+            # print(temporal, flush=True)
             temporal = [temporal]
         
         if spatials is not None:
