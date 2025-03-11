@@ -428,7 +428,7 @@
         "Response": {
             "Thinking": "공간 정보가 없으므로 우리반으로 추측함. 사용자는 8일 전 우리반의 설정온도를 알고 싶어함. 8일 전 설정온도의 하루 평균값을 반환하면 됨.",
             "Expectations": [
-                "8일전 우리반의 설정온도는 24℃였습니다."
+                "8일전 우리반의 평균 설정온도는 24℃였습니다."
             ],
             "Instructions": [
                 {
@@ -438,7 +438,8 @@
                         "columns": [
                             "settemp"
                         ],
-                        "temporal": "[DATE 'CURRENT_DATE' - INTERVAL '8 day', DATE 'CURRENT_DATE' - INTERVAL '7 day')",
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '8 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '7 day'))",
+                        
                         "spatials": [
                             "01_IB5"
                         ]
@@ -463,7 +464,7 @@
                         "columns": [
                             "roomtemp"
                         ],
-                        "temporal": "[DATE 'CURRENT_DATE' - INTERVAL '10 year', DATE 'CURRENT_DATE' - INTERVAL '10 year' + INTERVAL '1 day')",
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '10 year'), DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '10 year' + INTERVAL '1 day'))",
                         "spatials": [
                             "01_IB5"
                         ]
