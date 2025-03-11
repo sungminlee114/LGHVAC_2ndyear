@@ -18,7 +18,7 @@ if torch.cuda.get_device_capability()[0] >= 8:
 else:
     attn_implementation = "eager"
     torch_dtype = torch.float16
-
+print(f"attn_implementation: {attn_implementation}, torch_dtype: {torch_dtype}")
 class DistributedInference:
     def __init__(
         self,
@@ -167,13 +167,14 @@ class DistributedInference:
             
             # 배치 텐서 생성
             batch_tensor = torch.cat(padded_inputs, dim=0)
+            print(batch_tensor.size())
             attention_mask = torch.cat(attention_masks, dim=0)
             
             # 배치 추론 실행
             outputs = model.generate(
                 input_ids=batch_tensor,
                 attention_mask=attention_mask,
-                max_new_tokens=self.max_seq_length,
+                max_new_tokens=batch_tensor.size(1) + 100,
                 use_cache=True,
                 pad_token_id=tokenizer.pad_token_id,
                 do_sample=False  # 결정론적 생성
@@ -367,11 +368,15 @@ def main():
         model_name, tr_config = \
             "sh2orc-Llama-3.1-Korean-8B-Instruct", \
             "v7_r256_a512_ours/checkpoint-100"
+        
+        model_name, tr_config = \
+            "Bllossom-llama-3-Korean-Bllossom-70B", \
+            "v7_r8_a16_ours_70B/checkpoint-100"
 
     print(f"Model: {model_name}, Config: {tr_config}")
 
-    checkpoint_dir = Path(f"/model/{model_name}/chkpts/{tr_config}")
-    cache_dir = Path(f"/model/{model_name}/cache")
+    checkpoint_dir = Path(f"../model/{model_name}/chkpts/{tr_config}")
+    cache_dir = Path(f"../model/{model_name}/cache")
     
     # Verify paths exist
     if not checkpoint_dir.exists():
@@ -409,7 +414,7 @@ def main():
     common_prompt = re.sub(r"<\|.*?\|>", "", common_prompt)
     
     # Initialize distributed inference
-    batch_size = 30  # 배치 크기 설정
+    batch_size = 1  # 배치 크기 설정
     inference = DistributedInference(
         checkpoint_dir=str(checkpoint_dir),
         cache_dir=str(cache_dir),
