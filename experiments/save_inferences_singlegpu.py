@@ -76,16 +76,16 @@ class UnslothInference:
                 model, tokenizer = FastLanguageModel.from_pretrained(
                     self.checkpoint_dir.as_posix(),
                     dtype = self.torch_dtype,
-                    load_in_4bit = True,
+                    # load_in_4bit = True,
                     # load_in_8bit = True,
-                    # quantization_config=BitsAndBytesConfig(
-                    #     # load_in_4bit=True,
-                    #     # bnb_4bit_use_double_quant=True,
-                    #     # bnb_4bit_quant_type="nf4",
-                    #     # bnb_4bit_compute_dtype=torch_dtype
-                    #     load_in_8bit=True,
-                    #     llm_int8_enable_fp32_cpu_offload=True
-                    # ),
+                    quantization_config=BitsAndBytesConfig(
+                        load_in_4bit=True,
+                        bnb_4bit_use_double_quant=True,
+                        bnb_4bit_quant_type="nf4",
+                        bnb_4bit_compute_dtype=torch_dtype,
+                        # load_in_8bit=True,
+                        # llm_int8_enable_fp32_cpu_offload=True
+                    ),
                     attn_implementation=self.attn_implementation,
                     cache_dir=self.cache_dir.as_posix(),
                     local_files_only=True,
@@ -456,6 +456,7 @@ def main():
         model_name, tr_config = \
             "sh2orc-Llama-3.1-Korean-8B-Instruct", \
             "v6_r64_a128_woall_shorten/checkpoint-53"
+    
     elif train_type == "FI":
         # model_name, tr_config = \
         #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
@@ -511,6 +512,16 @@ def main():
         model_name, tr_config = \
             "Bllossom-llama-3-Korean-Bllossom-70B", \
             "v7_r8_a16_ours/checkpoint-40"
+        
+        model_name, tr_config = \
+            "Bllossom-llama-3-Korean-Bllossom-70B", \
+            "v7_r8_a16_woall/checkpoint-46"
+            
+        model_name, tr_config = \
+            "Bllossom-llama-3-Korean-Bllossom-70B", \
+            "v7_r8_a16_ours_4bit/checkpoint-24"
+        
+        
 
     print(f"Model: {model_name}, Config: {tr_config}")
 
@@ -554,7 +565,7 @@ def main():
     common_prompt = re.sub(r"<\|.*?\|>", "", common_prompt)
     
     # Initialize distributed inference
-    batch_size = 1  # 배치 크기 설정
+    batch_size = 12  # 배치 크기 설정
     inference = UnslothInference(
         checkpoint_dir=str(checkpoint_dir),
         cache_dir=str(cache_dir),
