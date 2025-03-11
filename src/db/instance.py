@@ -378,6 +378,10 @@ class DBInstance:
             # spatials = 
             # print(spatials, flush=True)
         
+        if "idu_name" in columns:
+            columns.remove("idu_name")
+            columns.append("raw:(SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name")
+
         result = {}
         for spatial in spatials:
             r = self.structured_query(

@@ -1,4 +1,4 @@
-from unsloth import FastLanguageModel
+# from unsloth import FastLanguageModel
 import os
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
@@ -9,6 +9,7 @@ from pathlib import Path
 import re
 import time
 from typing import List, Dict, Any
+import subprocess
 
 print(torch.cuda.device_count())
 
@@ -19,7 +20,7 @@ else:
     attn_implementation = "eager"
     torch_dtype = torch.float16
 print(f"attn_implementation: {attn_implementation}, torch_dtype: {torch_dtype}")
-class DistributedInference:
+class UnslothInference:
     def __init__(
         self,
         checkpoint_dir: str,
@@ -89,6 +90,8 @@ class DistributedInference:
                     device_map="cuda",
                 )
                 FastLanguageModel.for_inference(model)
+            
+            tokenizer.padding_side = "left"
             return model, tokenizer
             
         except Exception as e:
@@ -208,7 +211,7 @@ class DistributedInference:
             
         # Setup model and tokenizer
         model, tokenizer = self.setup_model()
-        tokenizer.padding_side = "left"
+        
         
         # 토크나이저에 패딩 토큰 설정
         # if tokenizer.pad_token is None:
@@ -248,6 +251,112 @@ class DistributedInference:
                         print(f"Error in response for sample {batch_start + i}")
                 
                 pbar.update(batch_end - batch_start)
+
+class LLamaInference(UnslothInference):
+    def __init__(
+        self,
+        gguf_path: str,
+        binary_path: str = "/workspace/llama-cpp/build/bin/main",
+        max_new_tokens: int = 100,
+        temperature: float = 0.0,
+        top_p: float = 1.0,
+        seed: int = 42
+    ):
+        """
+        Instead of loading a model via Hugging Face, this version sets up llama.cpp inference.
+        It assumes that the GGUF model file is named 'model.gguf' and is located inside checkpoint_dir.
+        """
+        self.gguf_path = gguf_path
+        self.binary_path = binary_path
+        self.max_new_tokens = max_new_tokens
+        self.temperature = temperature
+        self.top_p = top_p
+        self.seed = seed
+
+        # Assume the GGUF model file is named "model.gguf" inside checkpoint_dir
+        if not os.path.exists(self.gguf_path):
+            raise ValueError(f"GGUF model file {self.model_path} does not exist")
+
+    def infer(self, common_prompt:str, data: str) -> str:
+        """
+        Run inference by invoking the llama.cpp binary.
+        Constructs a command line with the given prompt and generation parameters,
+        and returns the generated text.
+        """
+
+        # if "llama" in str(self.gguf_path).lower():
+        #     chat = [
+        #         {"role": "system", "content": common_prompt},
+        #         {"role": "user", "content": f"Metadata:{data['Metadata']};Input:{data['Input']};"},
+        #     ]
+        # else:
+        #     raise ValueError(f"Unsupported model architecture: {self.gguf_path}")
+        
+        prompt = f"Metadata:{data['Metadata']};Input:{data['Input']};"
+        command = [
+            str(self.binary_path),
+            "-m", str(self.gguf_path),
+            "-sys", str(common_prompt),
+            "-p", prompt,
+            "--chat-template", "llama3",
+
+            "-n", str(self.max_new_tokens),
+            "-c", str(len(prompt)),
+            "--threads", str(os.cpu_count()),
+
+            "--temp", str(self.temperature),
+            "--top_p", str(self.top_p),
+            "--no-warmup",
+            "--seed", str(self.seed)
+        ]
+        # Run the command and capture stdout
+        try:
+            print(" ".join(command))
+            result = subprocess.run(
+                command, 
+                capture_output=True, 
+                text=True, 
+                check=True
+            )
+            return result.stdout.strip()
+        except subprocess.CalledProcessError as e:
+            print("Error during inference:")
+            print("STDOUT:", e.stdout)
+            print("STDERR:", e.stderr)
+            return ""
+
+    def run(
+        self,
+        dataset: List[Dict],
+        common_prompt: str, 
+        output_file: str
+    ):
+        # 배치 처리
+        with tqdm(total=len(dataset)) as pbar:
+            for data in dataset:
+
+                response = self.infer(common_prompt, data)
+                    
+                if response is not None:
+                    try:
+                        response = eval(response)
+                    except Exception as e:
+                        print(f"Error in eval: {str(e)}")
+                    
+                    result = {
+                        "Input": data["Input"],
+                        "Scenario": data["Scenario"],
+                        "Metadata": data["Metadata"],
+                        "Candidate": response,
+                    }
+                    
+                    with open(output_file, "a", encoding="utf-8") as f:
+                        f.write(json.dumps(result, ensure_ascii=False) + "\n")
+                else:
+                    print(f"Error in response for sample {batch_start + i}")
+            
+            pbar.update(1)
+
 
 def read_dataset(train_type, dir, path):
     # the file is originally json-list format
@@ -375,8 +484,9 @@ def main():
 
     print(f"Model: {model_name}, Config: {tr_config}")
 
-    checkpoint_dir = Path(f"../model/{model_name}/chkpts/{tr_config}")
-    cache_dir = Path(f"../model/{model_name}/cache")
+    model_dir = Path(f"../model/{model_name}")
+    checkpoint_dir = Path(f"{model_dir}/chkpts/{tr_config}")
+    cache_dir = Path(f"{model_dir}/cache")
     
     # Verify paths exist
     if not checkpoint_dir.exists():
@@ -414,11 +524,20 @@ def main():
     common_prompt = re.sub(r"<\|.*?\|>", "", common_prompt)
     
     # Initialize distributed inference
-    batch_size = 1  # 배치 크기 설정
-    inference = DistributedInference(
-        checkpoint_dir=str(checkpoint_dir),
-        cache_dir=str(cache_dir),
-        batch_size=batch_size
+    # batch_size = 1  # 배치 크기 설정
+    # inference = UnslothInference(
+    #     checkpoint_dir=str(checkpoint_dir),
+    #     cache_dir=str(cache_dir),
+    #     batch_size=batch_size
+    # )
+
+    gguf_path = model_dir / f"gguf/{tr_config.replace('/', '-')}.gguf"
+    if not gguf_path.exists():
+        raise ValueError(f"GGUF model file {gguf_path} does not exist")
+    inference = LLamaInference(
+        gguf_path=gguf_path,
+        binary_path = "/workspace/LGHVAC_2ndyear/llama.cpp/build/bin/llama-cli",
+        max_new_tokens = 2000,
     )
     
     # Setup output file

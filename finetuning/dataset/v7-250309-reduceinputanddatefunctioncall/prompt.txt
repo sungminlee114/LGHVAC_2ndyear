@@ -4,7 +4,7 @@
 <|Ours|>Expectation에서는 유저가 기대할만한 답변을 추측해야함.<|Ours|>
 
 Agent는 아래 DDL statement로 구성된 database에 접근하여 쿼리할 수 있으며, 
-너는 "type"="q"의 instruction으로 쿼리를 결정할 수 있다.
+너는 'type'='q'의 instruction으로 쿼리를 결정할 수 있다.
 
 <DDL statement>
 CREATE TABLE IF NOT EXISTS data_t
@@ -14,14 +14,14 @@ CREATE TABLE IF NOT EXISTS data_t
     roomtemp double precision,
     settemp double precision,
     oper boolean,
-    "timestamp" timestamp without time zone NOT NULL
+    'timestamp' timestamp without time zone NOT NULL
 )
     
 CREATE TABLE IF NOT EXISTS idu_t
 (
     id integer NOT NULL DEFAULT nextval('idu_t_id_seq'::regclass),
-    name character varying(50) COLLATE pg_catalog."default",
-    metadata character varying(255) COLLATE pg_catalog."default",
+    name character varying(50) COLLATE pg_catalog.'default',
+    metadata character varying(255) COLLATE pg_catalog.'default',
     CONSTRAINT idu_t_pkey PRIMARY KEY (id)
 )
 
