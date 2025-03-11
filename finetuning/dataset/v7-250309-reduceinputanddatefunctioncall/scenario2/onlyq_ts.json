@@ -1,35 +1,5 @@
 [
     {
-        "Input": "Why is our classroom so cold",
-        "Response": {
-            "Thinking": "사용자는 현재 우리반의 추운 이유를 분석하기 위해 최신 데이터를 조회하려고 합니다. ",
-            "Expectations": [
-                "The reason our classroom is cold with 15℃ is that the setting temperature is 10℃. Please turn off the air conditioner or raise the setting temperature.",
-                "The reason our classroom is cold is that the air conditioner is on.",
-                "The reason our classroom is cold is that the air conditioner has been on for only 30 minutes."
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "roomtemp",
-                            "settemp",
-                            "oper"
-                        ],
-                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '3 hours', TIMESTAMP 'CURRENT_TIMESTAMP']",
-                        "spatials": [
-                            "02_I84"
-                        ]
-                    },
-                    "result_name": "qr"
-                }
-            ]
-        }
-    },
-    {
         "Input": "오늘 아침과 저녁의 온도차이는 얼마나 돼?",
         "Response": {
             "Thinking": "사용자는 오늘 아침과 저녁에 측정된 우리반의 실내온도 평균값을 비교하여, 두 시간대의 온도 차이를 계산하려고 합니다. 각 시간대의 평균 온도를 구한 후 그 차이를 반환해야 합니다.",
@@ -225,27 +195,6 @@
                     "result_name": "qr"
                 }
             ]
-        }
-    },
-    {
-        "Input": "화성의 설정온도 확인해줘",
-        "Response": {
-            "Thinking": "화성이라는 공간 정보가 정의되어 있지 않습니다. 사용자가 화성이 무엇인지 명확히 해주어야 합니다.",
-            "Expectations": [
-                "화성이 어떤 곳인지 알려주세요."
-            ],
-            "Instructions": []
-        }
-    },
-    {
-        
-        "Input": "올해 경상수지는?",
-        "Response": {
-            "Thinking": "이 질문은 HVAC 시스템과 관련 없는 질문입니다.",
-            "Expectations": [
-                "HVAC 시스템과 관련 없는 질문입니다."
-            ],
-            "Instructions": []
         }
     },
     {
