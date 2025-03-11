@@ -427,10 +427,10 @@
         "Input": "8일전 설정온도는?",
         "Response": {
             "Thinking": "공간 정보가 없으므로 우리반으로 추측함. 사용자는 8일 전 우리반의 설정온도를 알고 싶어함. 8일 전 설정온도의 하루 평균값을 반환하면 됨.",
-            "Expected Outputs": [
+            "Expectations": [
                 "8일전 우리반의 설정온도는 24℃였습니다."
             ],
-            "Instruction Set": [
+            "Instructions": [
                 {
                     "type": "q",
                     "args": {
@@ -452,10 +452,10 @@
         "Input": "10년 전 오늘 우리반 온도는?",
         "Response": {
             "Thinking": "사용자는 10년 전 오늘 우리반의 실내온도를 알고 싶어함. 10년 전 오늘 우리반의 실내온도의 하루 평균값을 반환하면 됨.",
-            "Expected Outputs": [
+            "Expectations": [
                 "10년 전 오늘 우리반의 실내온도는 24℃였습니다."
             ],
-            "Instruction Set": [
+            "Instructions": [
                 {
                     "type": "q",
                     "args": {
@@ -477,30 +477,30 @@
         "Input": "롯데캐슬의 현재 온도 알려줘",
         "Response": {
             "Thinking": "질문의 맥락 상 공간정보는 롯데캐슬인데, metadata에는 없음. 사용자에게 롯데캐슬이 어떤 곳인지 물어보고, 해당 정보를 변수에 저장해야 함.",
-            "Expected Outputs": [
+            "Expectations": [
                 "롯데캐슬이 어떤 곳인지 알려주세요."
             ],
-            "Instruction Set": []
+            "Instructions": []
         }
     },
     {
         "Input": "다음 대통령 선거는 언제인가요?",
         "Response": {
             "Thinking": "질문의 맥락 상 HVAC 시스템과 관련 없는 질문임. HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
-            "Expected Outputs": [
+            "Expectations": [
                 "HVAC 시스템과 관련 없는 질문입니다."
             ],
-            "Instruction Set": []
+            "Instructions": []
         }
     },
     {
         "Input": "1층 평균 실내온도 알려줘",
         "Response": {
             "Thinking": "질문의 맥락 상 공간정보는 1층인데, metadata에는 없음. 사용자에게 1층이 어떤 곳인지 물어보고, 해당 정보를 변수에 저장해야 함.",
-            "Expected Outputs": [
+            "Expectations": [
                 "1층이 어떤 곳인지 알려주세요."
             ],
-            "Instruction Set": []
+            "Instructions": []
         }
     }
 ]

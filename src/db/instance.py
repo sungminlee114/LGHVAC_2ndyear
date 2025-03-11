@@ -334,7 +334,7 @@ class DBInstance:
             
             
             logger.debug(f"Select query as string: {select_query.as_string(self.connection)}")
-            print(select_query.as_string(self.connection), flush=True)
+            # print(select_query.as_string(self.connection), flush=True)
             # Execute the query
             self.cursor.execute(select_query)
             rows = self.cursor.fetchall()

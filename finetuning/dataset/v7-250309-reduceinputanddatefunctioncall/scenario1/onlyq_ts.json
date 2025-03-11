@@ -44,7 +44,7 @@
                         "columns": [
                             "roomtemp"
                         ],
-                        "temporal": "[DATE_TRUNC('day', CURRENT_DATE) + INTERVAL '6 hours', DATE_TRUNC('day', CURRENT_DATE) + INTERVAL '9 hours')",
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '6 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '9 hours')",
                         "spatials": [
                             "01_IB5"
                         ]
@@ -58,7 +58,7 @@
                         "columns": [
                             "roomtemp"
                         ],
-                        "temporal": "[DATE_TRUNC('day', CURRENT_DATE) + INTERVAL '18 hours', DATE_TRUNC('day', CURRENT_DATE) + INTERVAL '21 hours')",
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '18 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '21 hours')",
                         "spatials": [
                             "01_IB5"
                         ]
@@ -112,7 +112,7 @@
                             "timestamp",
                             "roomtemp"
                         ],
-                        "temporal": "[DATE_TRUNC('week', CURRENT_DATE), DATE_TRUNC('week', CURRENT_DATE) + INTERVAL '1 week')",
+                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE') + INTERVAL '1 week')",
                         "spatials": [
                             "01_IB5",
                             "01_IB7"
@@ -166,7 +166,7 @@
                             "settemp",
                             "roomtemp"
                         ],
-                        "temporal": "[DATE_TRUNC('week', CURRENT_DATE) - INTERVAL '1 week', DATE_TRUNC('week', CURRENT_DATE))",
+                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE') - INTERVAL '1 week', DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
                         "spatials": [
                             "01_IB5"
                         ]
@@ -216,7 +216,7 @@
                         "columns": [
                             "oper"
                         ],
-                        "temporal": "[DATE_TRUNC('day', CURRENT_DATE) - INTERVAL '1 day', DATE_TRUNC('day', CURRENT_DATE))",
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') - INTERVAL '1 day', DATE_TRUNC('day', DATE 'CURRENT_DATE'))",
                         "spatials": [
                             "01_IB5"
                         ]
@@ -242,7 +242,7 @@
                             "timestamp",
                             "settemp"
                         ],
-                        "temporal": "[DATE_TRUNC('day', CURRENT_DATE) - INTERVAL '1 week', DATE_TRUNC('day', CURRENT_DATE) + INTERVAL '1 day')",
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') - INTERVAL '1 week', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '1 day')",
                         "spatials": [
                             "01_IB5"
                         ]
@@ -288,7 +288,7 @@
                         "columns": [
                             "roomtemp"
                         ],
-                        "temporal": "[DATE_TRUNC('day', CURRENT_DATE) - INTERVAL '3 days', DATE_TRUNC('day', CURRENT_DATE) + INTERVAL '1 day')",
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') - INTERVAL '3 days', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '1 day')",
                         "spatials": [
                             "01_IB5"
                         ]
