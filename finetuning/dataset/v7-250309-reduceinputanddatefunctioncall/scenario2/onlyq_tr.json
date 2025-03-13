@@ -49,7 +49,7 @@
                         "table_name": "data_t",
                         "columns": [
                             "timestamp",
-                            "roomtemp"
+                            "settemp"
                         ],
                         "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '2 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week'))",
                         "spatials": [
@@ -118,8 +118,7 @@
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "02_I84",
-                            "02_I85",
-                            "02_I81"
+                            "02_I85"
                         ]
                     },
                     "result_name": "qr"
@@ -172,8 +171,7 @@
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "02_I84",
-                            "02_I85",
-                            "02_I81"
+                            "02_I85"
                         ]
                     },
                     "result_name": "qr_ours"

@@ -204,7 +204,7 @@
     {
         "Input": "2주전 우리반과 옆반 합쳐서 설정온도가 가장 낮은날이 언제야?",
         "Response": {
-            "Thinking": "2주전은 정확히 말하면 2주전 한주 (월~일)동안임. 사용자는 2주전 월요일부터 일요일까지 우리반과 앞반의 일평균 설정온도가 가장 낮았던 날짜를 알고 싶어함. 답변시 해당 날짜 뿐만 아니라 그 때의 설정온도도 제공해야 함. 2주전 우리반과 옆반의 timestamp와 설정온도를 쿼리한 후 일평균 설정온도가 가장 낮은 날을 찾아 그 날짜와 온도를 반환하면 됨.",
+            "Thinking": "2주전은 정확히 말하면 2주전 한주 (월~일)동안임. 사용자는 2주전 월요일부터 일요일까지 우리반과 옆반의 일평균 설정온도가 가장 낮았던 날짜를 알고 싶어함. 답변시 해당 날짜 뿐만 아니라 그 때의 설정온도도 제공해야 함. 2주전 우리반과 옆반의 timestamp와 설정온도를 쿼리한 후 일평균 설정온도가 가장 낮은 날을 찾아 그 날짜와 온도를 반환하면 됨.",
             "Expectations": [
                 "2주전 우리반과 옆반 합쳐서 설정온도가 가장 낮은 날은 2월 15일로 24℃였습니다."
             ],
@@ -677,7 +677,7 @@
     },{
         "Input": "에어켠 제일 세게 킨 방 3개 알려줘",
         "Response": {
-            "Thinking": "사용자는 현재 Metadata에 존재하는 모든 idu중 oper=true면서 설정온도가 제일 낮은 곳 3개를 알려달라고 하고 있음. 최근 5분간 Metadata에 존재하는 모든 idu의 oper와 설정온도를 쿼리한 후 oper=true인 방만 필터링하고 설정온도가 가장 낮은 방 3개의 이름과 설정온도를 반환하면 됨. Human readable한 방 이름을 반환하기 위해 idu_name도 쿼리해야 함.",
+            "Thinking": "사용자는 현재 Metadata에 존재하는 모든 idu중 에어컨 전원이 켜져있으면서 설정온도가 제일 낮은 곳 3개를 알려달라고 하고 있음. 최근 5분간 Metadata에 존재하는 모든 idu의 oper와 설정온도를 쿼리한 후 oper=true인 방만 필터링하고 설정온도가 가장 낮은 방 3개의 이름과 설정온도를 반환하면 됨. Human readable한 방 이름을 반환하기 위해 idu_name도 쿼리해야 함.",
             "Expectations": [
                 "에어컨을 제일 세게 킨 방은 순서대로 01_IB5(27℃), 01_IB7(26℃), 01_IB6(25℃)입니다.",
                 "에어컨을 제일 세게 킨 방은 순서대로 우리반(27℃), 옆반(26℃), 뒷반(25℃)입니다."
@@ -915,7 +915,7 @@
                         "columns": [
                             "settemp"
                         ],
-                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '6 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '9 hours')",
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day') + INTERVAL '6 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day') + INTERVAL '9 hours')",
                         "spatials": ["01_IB7"]
                     },
                     "result_name": "qr_morning"
@@ -927,7 +927,7 @@
                         "columns": [
                             "settemp"
                         ],
-                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '18 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '21 hours')",
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day') + INTERVAL '18 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day') + INTERVAL '21 hours')",
                         "spatials": ["01_IB7"]
                     },
                     "result_name": "qr_evening"
