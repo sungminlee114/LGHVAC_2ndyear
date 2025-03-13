@@ -1152,32 +1152,6 @@
         }
     },
     {
-        "Input": "3달전 한달동안 우리반 에어컨 작동 시간 총합 알려줘",
-        "Response": {
-            "Thinking": "사용자는 3달전 한 달 동안 우리반 에어컨의 총 작동 시간을 알고 싶어합니다. 해당 기간의 oper 데이터를 쿼리하여 oper=true인 상태의 시간을 집계하면 됩니다.",
-            "Expectations": [
-                "3달전 우리반은 총 50시간 동안 에어컨이 작동했습니다."
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "oper"
-                        ],
-                        "temporal": "[DATE_TRUNC('month', DATE 'CURRENT_DATE' - INTERVAL '3 month'), DATE_TRUNC('month', DATE 'CURRENT_DATE' - INTERVAL '2 month'))",
-                        "spatials": [
-                            "01_IB5"
-                        ]
-                    },
-                    "result_name": "qr"
-                }
-            ]
-        }
-    },
-    {
         "Input": "오늘 오후 4시부터 6시까지 실내온도 평균 알려줘",
         "Response": {
             "Thinking": "사용자는 오늘 오후 4시부터 6시까지의 시간 동안 우리반의 실내온도 평균을 알고 싶어합니다. 해당 시간 범위의 실내온도 데이터를 쿼리하여 평균값을 계산하면 됩니다.",
