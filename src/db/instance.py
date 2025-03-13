@@ -15,47 +15,47 @@ def parse_temporal(temporal):
 
     temporal = temporal.strip()
     if temporal[0] not in "[(" or temporal[-1] not in "])":
-        raise ValueError(f"Invalid temporal format: {temporal}")
+        return f"timestamp = {temporal}"
+    else:
+        # 외부 괄호 제거
+        left_bracket = temporal[0]
+        right_bracket = temporal[-1]
+        inner = temporal[1:-1]
 
-    # 외부 괄호 제거
-    left_bracket = temporal[0]
-    right_bracket = temporal[-1]
-    inner = temporal[1:-1]
+        # 중첩된 괄호를 고려하여 외부 콤마 위치 찾기
+        paren_count = 0
+        split_index = None
+        for i, ch in enumerate(inner):
+            if ch == '(':
+                paren_count += 1
+            elif ch == ')':
+                paren_count -= 1
+            elif ch == ',' and paren_count == 0:
+                split_index = i
+                break
 
-    # 중첩된 괄호를 고려하여 외부 콤마 위치 찾기
-    paren_count = 0
-    split_index = None
-    for i, ch in enumerate(inner):
-        if ch == '(':
-            paren_count += 1
-        elif ch == ')':
-            paren_count -= 1
-        elif ch == ',' and paren_count == 0:
-            split_index = i
-            break
+        if split_index is None:
+            raise ValueError(f"Invalid temporal format: {temporal}")
 
-    if split_index is None:
-        raise ValueError(f"Invalid temporal format: {temporal}")
+        start = inner[:split_index].strip()
+        end = inner[split_index+1:].strip()
 
-    start = inner[:split_index].strip()
-    end = inner[split_index+1:].strip()
+        conditions = []
 
-    conditions = []
+        # 시작 시간 처리
+        if start != '~':
+            operator = ">=" if left_bracket == "[" else ">"
+            conditions.append(f"timestamp {operator} {start}")
 
-    # 시작 시간 처리
-    if start != '~':
-        operator = ">=" if left_bracket == "[" else ">"
-        conditions.append(f"timestamp {operator} {start}")
+        # 종료 시간 처리
+        if end != '~':
+            operator = "<=" if right_bracket == "]" else "<"
+            conditions.append(f"timestamp {operator} {end}")
 
-    # 종료 시간 처리
-    if end != '~':
-        operator = "<=" if right_bracket == "]" else "<"
-        conditions.append(f"timestamp {operator} {end}")
+        if not conditions:
+            return None
 
-    if not conditions:
-        return None
-
-    return " AND ".join(conditions)
+        return " AND ".join(conditions)
 
 class DBInstance:
     """

@@ -1101,5 +1101,180 @@
                 }
             ]
         }
+    }, {
+        "Input": "3주전 우리반 평균 실내온도 알려줘",
+        "Response": {
+            "Thinking": "사용자는 3주전 하루 동안 우리반의 평균 실내온도를 알고 싶어합니다. 해당 기간의 실내온도 데이터를 쿼리하여 평균값을 계산하면 됩니다.",
+            "Expectations": [
+                "3주전 우리반의 평균 실내온도는 23℃였습니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '21 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '20 day'))",
+                        "spatials": [
+                            "01_IB5"
+                        ]
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "지난달 오늘 오후 2시에 옆반의 설정온도는 어땠어?",
+        "Response": {
+            "Thinking": "사용자는 지난달 오늘 특정 시각(오후 2시)에 옆반의 설정온도를 알고 싶어합니다. 해당 시간대의 설정온도 데이터를 쿼리하여 평균을 반환하면 됩니다.",
+            "Expectations": [
+                "지난달 오늘 오후 2시 옆반의 설정온도는 25℃였습니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "settemp"
+                        ],
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 month') + INTERVAL '14 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 month') + INTERVAL '15 hours')",
+                        "spatials": [
+                            "01_IB7"
+                        ]
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "3달전 한달동안 우리반 에어컨 작동 시간 총합 알려줘",
+        "Response": {
+            "Thinking": "사용자는 3달전 한 달 동안 우리반 에어컨의 총 작동 시간을 알고 싶어합니다. 해당 기간의 oper 데이터를 쿼리하여 oper=true인 상태의 시간을 집계하면 됩니다.",
+            "Expectations": [
+                "3달전 우리반은 총 50시간 동안 에어컨이 작동했습니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "oper"
+                        ],
+                        "temporal": "[DATE_TRUNC('month', DATE 'CURRENT_DATE' - INTERVAL '3 month'), DATE_TRUNC('month', DATE 'CURRENT_DATE' - INTERVAL '2 month'))",
+                        "spatials": [
+                            "01_IB5"
+                        ]
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "오늘 오후 4시부터 6시까지 실내온도 평균 알려줘",
+        "Response": {
+            "Thinking": "사용자는 오늘 오후 4시부터 6시까지의 시간 동안 우리반의 실내온도 평균을 알고 싶어합니다. 해당 시간 범위의 실내온도 데이터를 쿼리하여 평균값을 계산하면 됩니다.",
+            "Expectations": [
+                "오늘 오후 4시부터 6시까지 우리반의 평균 실내온도는 24.5℃였습니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '16 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '18 hours')",
+                        "spatials": [
+                            "01_IB5"
+                        ]
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "지난주 수요일 실내온도 최고값 알려줘",
+        "Response": {
+            "Thinking": "사용자는 지난주 수요일 하루 동안 우리반의 최고 실내온도를 알고 싶어합니다. 해당 날짜의 실내온도 데이터를 쿼리하여 최고값을 반환하면 됩니다.",
+            "Expectations": [
+                "지난주 수요일 우리반의 최고 실내온도는 27℃였습니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week') + INTERVAL '2 days', DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week') + INTERVAL '3 days')",
+                        "spatials": [
+                            "01_IB5"
+                        ]
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "오늘 오전 11시에 옆반의 실내온도는 어땠어?",
+        "Response": {
+            "Thinking": "사용자는 오늘 오전 11시의 옆반 실내온도 값을 알고 싶어합니다. 해당 시간의 실내온도 데이터를 쿼리하여 값을 반환하면 됩니다.",
+            "Expectations": [
+                "오늘 오전 11시 옆반의 실내온도는 22℃였습니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "temporal": "DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '11 hours'",
+                        "spatials": [
+                            "01_IB7"
+                        ]
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "오늘 오후 2시에 옆반의 설정온도는 어땠어?",
+        "Response": {
+            "Thinking": "사용자는 오늘 오후 2시의 옆반 설정온도 값을 알고 싶어합니다. 해당 시간의 설정온도 데이터를 쿼리하여 값을 반환하면 됩니다.",
+            "Expectations": [
+                "오늘 오후 2시 옆반의 설정온도는 25℃였습니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "settemp"
+                        ],
+                        "temporal": "DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '14 hours'",
+                        "spatials": [
+                            "01_IB7"
+                        ]
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
     }
 ]

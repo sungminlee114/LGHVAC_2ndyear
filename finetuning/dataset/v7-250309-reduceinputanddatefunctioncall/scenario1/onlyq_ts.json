@@ -281,5 +281,29 @@
             ],
             "Instructions": []
         }
+    },{
+        "Input": "오늘 오후 5시에 옆반의 설정온도는 어땠어?",
+        "Response": {
+            "Thinking": "사용자는 오늘 오후 5시의 옆반 설정온도 값을 알고 싶어합니다. 해당 시간의 설정온도 데이터를 쿼리하여 값을 반환하면 됩니다.",
+            "Expectations": [
+                "오늘 오후 5시 옆반의 설정온도는 25℃였습니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "settemp"
+                        ],
+                        "temporal": "DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '17 hours'",
+                        "spatials": [
+                            "01_IB7"
+                        ]
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
     }
 ]
