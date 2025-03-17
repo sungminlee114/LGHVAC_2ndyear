@@ -1,0 +1,7 @@
+{
+    "site_name": "YongDongIllHighSchool",
+    "user_name": "홍길동", "user_role": "customer", "idu_name": "02_I84",
+    "idu_mapping": {"02_I84": ["우리반"], "02_I85": ["옆반"]},
+    "modality_mapping": {"roomtemp": ["실내온도"], "settemp": ["설정온도"], "oper": ["전원"]},
+    "current_datetime": "2021-08-05 14:30:00"
+}

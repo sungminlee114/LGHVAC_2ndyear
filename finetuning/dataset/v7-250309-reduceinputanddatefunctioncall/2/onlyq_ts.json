@@ -1,0 +1,225 @@
+[
+    {
+        "Input": "오늘 아침과 저녁의 온도차이는 얼마나 돼?",
+        "Response": {
+            "Thinking": "사용자는 오늘 아침과 저녁에 측정된 우리반의 실내온도 평균값을 비교하여, 두 시간대의 온도 차이를 계산하려고 합니다. 각 시간대의 평균 온도를 구한 후 그 차이를 반환해야 합니다.",
+            "Expectations": [
+                "오늘 아침(06:00 ~ 09:00, 24.5℃)과 저녁(18:00 ~ 21:00, 27.3℃)의 온도 차이는 2.8℃ 입니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '6 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '9 hours')",
+                        "spatials": [
+                            "02_I84"
+                        ]
+                    },
+                    "result_name": "qr_morning"
+                },
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '18 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '21 hours')",
+                        "spatials": [
+                            "02_I84"
+                        ]
+                    },
+                    "result_name": "qr_evening"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "지금 옆반 온도랑 우리반 온도 알려줘",
+        "Response": {
+            "Thinking": "사용자는 현재 옆반과 우리반의 실내온도를 요청했습니다. 최신 데이터를 반영하기 위해 최근 5분간의 데이터를 조회하여, 가장 최근의 실내온도 값을 반환해야 합니다.",
+            "Expectations": [
+                "옆반과 우리반의 실내온도는 각각 25℃, 27℃입니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
+                        "spatials": [
+                            "02_I85",
+                            "02_I84"
+                        ]
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "이번주 우리반과 옆반 온도 변화 추이 비교해줘",
+        "Response": {
+            "Thinking": "사용자는 이번주 우리반과 옆반의 실내온도 변화 추이를 비교해달라고 요청했습니다. 이번 주의 데이터를 조회하여 각 반의 시간대별 변화 추이와 통계정보(평균, 최저, 최고값)를 계산하고 시각화할 수 있도록 데이터를 반환해야 합니다.",
+            "Expectations": [
+                "(그래프) X축: 날짜, Y축: 실내온도, 두 반의 변화 추이 그래프",
+                "이번주 우리반의 평균 실내온도는 24℃, 최저 22℃, 최고 26℃입니다.",
+                "이번주 옆반의 평균 실내온도는 25℃, 최저 23℃, 최고 28℃입니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "roomtemp"
+                        ],
+                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE') + INTERVAL '1 week')",
+                        "spatials": [
+                            "02_I84",
+                            "02_I85"
+                        ]
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "현재 설정온도랑 실내온도 차이 알려줘.",
+        "Response": {
+            "Thinking": "사용자는 현재 우리반의 설정온도와 실내온도의 차이를 알고자 합니다. 최근 5분간의 데이터를 조회하여, 가장 최신의 설정온도와 실내온도 값을 비교하고 그 차이를 계산해 반환해야 합니다.",
+            "Expectations": [
+                "현재 설정온도(25℃)와 실내온도(27℃)의 차이는 2℃입니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "settemp",
+                            "roomtemp"
+                        ],
+                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
+                        "spatials": [
+                            "02_I84"
+                        ]
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "지난주에 설정온도와 실내온도 차이가 가장 많이 났던 날은?",
+        "Response": {
+            "Thinking": "사용자는 지난주 우리반의 설정온도와 실내온도의 차이를 계산해 가장 큰 차이가 발생한 날짜를 찾고, 해당 날짜의 실내온도, 설정온도 및 차이를 반환해야 합니다.",
+            "Expectations": [
+                "지난주 27일에 설정온도(25℃)와 실내온도(22℃)의 차이가 3℃로 가장 많이 났습니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "settemp",
+                            "roomtemp"
+                        ],
+                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE') - INTERVAL '1 week', DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
+                        "spatials": [
+                            "02_I84"
+                        ]
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "어제 전원 껐어?",
+        "Response": {
+            "Thinking": "사용자는 어제 우리반의 에어컨 전원 상태를 조회하여, 마지막 전원 상태를 반환해야 합니다. 만약 에어컨을 끄지 않았다면 그에 맞는 메시지를 반환합니다.",
+            "Expectations": [
+                "어제 에어컨을 끄지 않았습니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "oper"
+                        ],
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') - INTERVAL '1 day', DATE_TRUNC('day', DATE 'CURRENT_DATE'))",
+                        "spatials": [
+                            "02_I84"
+                        ]
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "최근에 설정온도가 가장 높았던 날 알려줘",
+        "Response": {
+            "Thinking": "사용자는 최근 1주일 동안 우리반의 설정온도 데이터를 조회하여, 가장 높은 설정온도가 기록된 날짜와 그 값을 반환해야 합니다.",
+            "Expectations": [
+                "최근 2022-09-30 11:39에 26.5℃로 설정온도가 가장 높았습니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "settemp"
+                        ],
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') - INTERVAL '1 week', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '1 day')",
+                        "spatials": [
+                            "02_I84"
+                        ]
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    },
+    {
+        "Input": "지난 3일 동안 우리반 실내 온도 평균 값 알려줘.",
+        "Response": {
+            "Thinking": "사용자는 지난 3일 동안 우리반의 실내온도 데이터를 조회하여, 그 평균값을 계산해 반환해야 합니다.",
+            "Expectations": [
+                "지난 3일 동안 우리반 실내 온도의 평균 값은 22.3℃였습니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') - INTERVAL '3 days', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '1 day')",
+                        "spatials": [
+                            "02_I84"
+                        ]
+                    },
+                    "result_name": "qr"
+                }
+            ]
+        }
+    }
+]

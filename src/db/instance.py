@@ -282,8 +282,8 @@ class DBInstance:
                 else:
                     columns = ["id"]
             
-                # if "timestamp" not in columns:
-                #     columns.append("timestamp")
+            if "timestamp" not in columns:
+                columns.append("timestamp")
             
             if columns:
                 formatted_columns = []
@@ -394,11 +394,12 @@ class DBInstance:
             if r is None:
                 continue
 
-            r["idu"] = spatial
+            r["idu"] = spatial.replace("'", "")
             result[spatial] = r
         if len(result) == 0:
             return None
         df_result = pd.concat(result.values(), ignore_index=True)
+        
         return df_result
     
     def create_continuous_aggregate(self, agg_name, select_query):
