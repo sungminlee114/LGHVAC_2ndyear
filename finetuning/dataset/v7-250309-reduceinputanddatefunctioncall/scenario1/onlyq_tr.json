@@ -356,8 +356,8 @@
             "Thinking": "사용자는 지난주 월요일부터 일요일까지 설정온도 값의 변화, 트렌드, 통계정보를 궁금해함. 설정온도의 평균, 최저, 최고값등의 통계적 정보와 그래프를 통한 시각화를 제공해야함. 지난주 우리반의 설정온도를 쿼리한 후 통계적 정보와 그래프를 반환하면 됨.",
             "Expectations": [
                 "(그래프) X축: 날짜, Y축: 설정온도, 변화 추이 그래프",
-      "지난주 우리반의 설정온도는 {{settemp_min}}℃에서 {{settemp_max}}℃로 {{settemp_diff}}℃ 증가했습니다.",
-      "지난주 우리반의 설정온도는 평균 {{settemp_avg}}℃, 최저 {{settemp_min}}℃, 최고 {{settemp_max}}℃였습니다."
+                "지난주 우리반의 설정온도는 {{settemp_min}}℃에서 {{settemp_max}}℃로 {{settemp_diff}}℃ 증가했습니다.",
+                "지난주 우리반의 설정온도는 평균 {{settemp_avg}}℃, 최저 {{settemp_min}}℃, 최고 {{settemp_max}}℃였습니다."
             ],
             "Instructions": [
                 {
@@ -384,6 +384,26 @@
                         "settemp_diff",
                         "settemp_rawtimeseries"
                     ]
+                }, {
+                    "type": "g",
+                    "args": {
+                        "graph_type": "original",
+                        "axis": {
+                            "xlabel": "날짜",
+                            "ylabel": "설정온도",
+                            "title": "지난주 우리반 설정온도 변화 추이"
+                        },
+                        "plots": [
+                            {
+                                "type": "line",
+                                "data": {
+                                    "x": "settemp_rawtimeseries['timestamp']",
+                                    "y": "settemp_rawtimeseries['settemp']"
+                                },
+                                "label": "우리집 설정온도"
+                            }
+                        ]
+                    }
                 }
             ]
         }
