@@ -39,8 +39,8 @@ services:
   #     - db_s
   #   ports:
   #     - "9913:80"
-  main_sm_s:
-    container_name: main_sm_c
+  main_mj_s:
+    container_name: main_mj_c
     build: .
     privileged: true
     command: /bin/bash
@@ -51,7 +51,7 @@ services:
     volumes:
       - ./:/workspace
       # - .//hdisk/Dataset/LGHVAC/:/dataset/
-      - ./modelweights:/model/
+      - /hdisk/ModelWeights/LGHVAC/:/model/
     deploy:
       resources:
         reservations:

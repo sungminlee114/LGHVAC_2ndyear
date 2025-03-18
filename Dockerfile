@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.8.0-cudnn-devel-ubuntu22.04
+FROM nvidia/cuda:12.2.2-cudnn8-devel-ubuntu22.04
 # FROM nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04
 LABEL maintainer="Sungmin Lee <i.am.sungmin.lee@yonsei.ac.kr>"
 
@@ -79,6 +79,8 @@ RUN python get-pip.py
 RUN rm *.py
 
 RUN pip install torch
+RUN pip install packaging
+
 # RUN pip install --no-cache-dir --extra-index-url https://pypi.nvidia.com cuml-cu12
 
 # RUN \
