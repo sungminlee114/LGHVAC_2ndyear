@@ -2,8 +2,7 @@
     {
         "Input": "어제 우리반과 옆반의 설정온도 차이 알려줘",
         "Tags": {
-            "Type": "Normal",
-            "Operation": "Diff",
+            "Style": ["Avg/Diff/Get"],
             "Returns": ["Temp"]
         },
         "Response": {
@@ -41,8 +40,7 @@
     {
         "Input": "오늘 우리반과 옆반의 평균 온도차이 알려줘",
         "Tags": {
-            "Type": "Normal",
-            "Operation": "Diff",
+            "Style": ["Avg/Diff/Get", "Implicit modality"],
             "Returns": ["Temp"]
         },
         "Response": {
@@ -80,8 +78,7 @@
     {
         "Input": "작년 겨울 우리반 평균온도 알려줘",
         "Tags": {
-            "Type": "Normal",
-            "Operation": "Average",
+            "Style": ["Weather", "Avg/Diff/Get", "Implicit modality"],
             "Returns": ["Temp"]
         },
         "Response": {
@@ -116,8 +113,7 @@
     {
         "Input": "올해 여름 앞반 평균온도 알려줘",
         "Tags": {
-            "Type": "Normal",
-            "Operation": "Average",
+            "Style": ["Weather", "Avg/Diff/Get", "Implicit modality"],
             "Returns": ["Temp"]
         },
         "Response": {
@@ -150,8 +146,7 @@
     {
         "Input": "올여름 제일 더웠던 날 알려줘",
         "Tags": {
-            "Type": "Normal",
-            "Operation": "Max",
+            "Style": ["Weather", "ArgMinMax", "Implicit modality"],
             "Returns": ["Temp", "Dates"]
         },
         "Response": {
@@ -187,8 +182,7 @@
     {
         "Input": "올해 봄 옆반 제일 추웠던 날 알려줘",
         "Tags": {
-            "Type": "Normal",
-            "Operation": "Min",
+            "Style": ["Weather", "ArgMinMax", "Implicit modality"],
             "Returns": ["Temp", "Dates"]
         },
         "Response": {
@@ -225,8 +219,7 @@
     {
         "Input": "4월 앞반 평균온도 알려줘",
         "Tags": {
-            "Type": "Normal",
-            "Operation": "Average",
+            "Style": ["Avg/Diff/Get", "Implicit modality"],
             "Returns": ["Temp"]
         },
         "Response": {
@@ -260,8 +253,7 @@
     },{
         "Input": "이번달 중 우리반 온도가 가장 덜 더운날이 언제야?",
         "Tags": {
-            "Type": "Normal",
-            "Operation": "Min",
+            "Style": ["ArgMinMax", "Implicit modality"],
             "Returns": ["Temp", "Dates"]
         },
         "Response": {
@@ -297,8 +289,7 @@
     {
         "Input": "2주전 우리반과 옆반 합쳐서 설정온도가 가장 낮은날이 언제야?",
         "Tags": {
-            "Type": "Normal",
-            "Operation": "Min",
+            "Style": ["ArgMinMax"],
             "Returns": ["Temp", "Dates"]
         },
         "Response": {
@@ -335,7 +326,8 @@
     {
         "Input": "이번달 중 뒷반 온도가 가장 더운날이 언제야?",
         "Tags": {
-            "Type": "Unknown"
+            "Style": ["Unknown", "ArgMinMax"],
+            "Returns": []
         },
         "Response": {
             "Thinking": "뒷반이라는 공간 정보가 Metadata에 없음. 답변하기 전 사용자에게 뒷반이 어떤 곳인지 물어보고 해당 정보를 변수에 저장해야 함.",
@@ -348,8 +340,7 @@
     {
         "Input": "지난주 설정온도 변화 추이 보여줘",
         "Tags": {
-            "Type": "Graph",
-            "Operation": "Trend",
+            "Style": ["Graph", "Implicit spatial"],
             "Returns": ["Graph"]
         },
         "Response": {
@@ -410,7 +401,7 @@
     },{
         "Input": "우리반의 가장 최근 설정 온도 알려줘",
         "Tags": {
-            "Type": "Normal",
+            "Style": ["Avg/Diff/Get"],
             "Returns": ["Temp", "Time"]
         },
         "Response": {
@@ -447,7 +438,7 @@
     {
         "Input": "옆반의 가장 최근 온도랑 설정온도 알려줘",
         "Tags": {
-            "Type": "Normal",
+            "Style": ["Avg/Diff/Get", "Implicit modality"],
             "Returns": ["Temp", "Time"]
         },
         "Response": {
@@ -485,8 +476,7 @@
     }, {
         "Input": "지금 옆반 너무 추워",
         "Tags": {
-            "Type": "Implicit",
-            "Operation": "Reason",
+            "Style": ["Ambiguous question", "Reason", "Implicit modality"],
             "Returns": ["Data"]
         },
         "Response": {
@@ -526,8 +516,7 @@
     {
         "Input": "우리반 왜이리 덥노",
         "Tags": {
-            "Type": "Normal",
-            "Operation": "Reason",
+            "Style": ["Implicit spatial", "Reason", "Implicit modality"],
             "Returns": ["Data"]
         },
         "Response": {
@@ -567,20 +556,31 @@
     {
         "Input": "What time is it now?",
         "Tags": {
-            "Type": "Metadata",
+            "Style": ["Metadata"],
             "Returns": ["Time"]
         },
         "Response": {
             "Thinking": "사용자는 현재 시간을 물어봄. 현재 시간을 Metadata에서 읽어서 반환하면 됨.",
             "Expectations": [
-                "현재 시간은 {{Metadata['current_datetime']}}입니다."
+                "It's {{current_time}} now."
             ],
-            "Instructions": []
+            "Instructions": [
+                {
+                    "type": "o",
+                    "script": "current_time = pd.Timestamp(Metadata['current_datetime']).strftime('%H:%M:%S');",
+                    "returns": [
+                        "current_time"
+                    ]
+                }
+            ]
         }
     },
     {
         "Input": "What is the current temperature in our class?",
-        "Tags": ["DiverseInput"],
+        "Tags": {
+            "Style": ["English", "Avg/Diff/Get", "Implicit modality"],
+            "Returns": ["Temp"]
+        },
         "Response": {
             "Thinking": "사용자는 현재 우리반의 실내온도를 물어봄. 최근 5분간 우리반 실내온도를 쿼리한 후 가장 최근값을 반환하면 됨.",
             "Expectations": [
@@ -612,7 +612,10 @@
     },
     {
         "Input": "내일 실내온도 어떨거 같아?",
-        "Tags": ["NotSupported"],
+        "Tags": {
+            "Style": ["Prediction", "Implicit spatial"],
+            "Returns": []
+        },
         "Response": {
             "Thinking": "사용자는 내일 우리반의 실내온도를 예측하고 싶어함. 현재는 예측 기능을 지원하지 않으므로 예측 기능이 지원되지 않는다는 메시지를 반환해야함.",
             "Expectations": [
@@ -623,7 +626,10 @@
     },
     {
         "Input": "8일전 설정온도는?",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Avg/Diff/Get", "Implicit spatial"],
+            "Returns": ["Temp"]
+        },
         "Response": {
             "Thinking": "공간 정보가 없으므로 우리반으로 추측함. 사용자는 8일 전 우리반의 설정온도를 알고 싶어함. 8일 전 설정온도의 하루 평균값을 반환하면 됨.",
             "Expectations": [
@@ -656,7 +662,10 @@
     },
     {
         "Input": "10년 전 오늘 우리반 온도는?",
-        "Tags": ["NoData"],
+        "Tags": {
+            "Style": ["Avg/Diff/Get", "Implicit modality"],
+            "Returns": ["Temp"]
+        },
         "Response": {
             "Thinking": "사용자는 10년 전 오늘 우리반의 실내온도를 알고 싶어함. 10년 전 오늘 우리반의 실내온도의 하루 평균값을 반환하면 됨.",
             "Expectations": [
@@ -688,7 +697,10 @@
     },
     {
         "Input": "롯데캐슬의 현재 온도 알려줘",
-        "Tags": ["Unknown"],
+        "Tags": {
+            "Style": [""],
+            "Returns": []
+        },
         "Response": {
             "Thinking": "질문의 맥락 상 공간정보는 롯데캐슬인데, metadata에는 없음. 사용자에게 롯데캐슬이 어떤 곳인지 물어보고, 해당 정보를 변수에 저장해야 함.",
             "Expectations": [
@@ -860,7 +872,7 @@
         "Response": {
             "Thinking": "사용자는 어제 하루동안 우리반 에어컨이 작동하는 시간을 알고싶어함. 어제 우리반의 에어컨 작동 상태 데이터를 쿼리한 후 oper=true인 시간을 계산하여 반환하면 됨.",
             "Expectations": [
-                "어제 우리반은 총 5시간 14분 동안 에어컨을 작동했습니다."
+                "어제 우리반은 총 {{total_time_in_hours}}시간동안 에어컨이 작동했습니다."
             ],
             "Instructions": [
                 {
@@ -880,9 +892,9 @@
                     "result_name": "qr"
                 }, {
                     "type": "o",
-                    "script": "oper_on = qr[qr['oper'] == True];oper_on['time_diff'] = oper_on['timestamp'].diff().dt.total_seconds().fillna(0);total_time = oper_on['time_diff'].sum();",
+                    "script": "oper_on = qr[qr['oper'] == True];oper_on['time_diff'] = oper_on['timestamp'].diff().dt.total_seconds().fillna(0);total_time_in_hours = abs(oper_on['time_diff'].sum()) / 3600;",
                     "returns": [
-                        "total_time"
+                        "total_time_in_hours"
                     ]
                 }
             ]
