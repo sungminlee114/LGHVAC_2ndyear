@@ -121,6 +121,7 @@ class UnslothInference:
             batch_data = Dataset.from_list(batch_data)
             
             convos = []
+            start_time = time.time()
             for metadata, input in zip(batch_data["Metadata"], batch_data["Input"]):
                 if "llama" in model.config.architectures[0].lower():
                     chat = [
@@ -195,7 +196,8 @@ class UnslothInference:
                     parsed_responses.append(None)
                 else:
                     parsed_responses.append(parsed)
-            
+            end_time = time.time()
+            print(f"Elapsed time: {end_time - start_time:.2f}s")
             return parsed_responses
             
         except Exception as e:
@@ -521,11 +523,14 @@ def main():
             "Bllossom-llama-3-Korean-Bllossom-70B", \
             "v7_r8_a16_ours_4bit/checkpoint-24"
         
+        model_name, tr_config = \
+            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+            "v7_r256_a512_ours_4bit/checkpoint-88"
         
 
     print(f"Model: {model_name}, Config: {tr_config}")
 
-    model_dir = Path(f"../model/{model_name}")
+    model_dir = Path(f"/model/{model_name}")
     checkpoint_dir = Path(f"{model_dir}/chkpts/{tr_config}")
     cache_dir = Path(f"{model_dir}/cache")
     
@@ -537,7 +542,7 @@ def main():
     
     dataset = []
     for scenario_dir in [d for d in BASE_DIR.iterdir() if d.is_dir() and "scenario" in d.name and "metadata.json" in [f.name for f in d.iterdir()]]:
-        data = read_dataset(train_type, scenario_dir, "onlyq_ts.json")
+        data = read_dataset(train_type, scenario_dir, "onlyq_tr.json")
         for i, d in enumerate(data):
             data[i]["Scenario"] = scenario_dir.name
         dataset.extend(data)
@@ -565,7 +570,7 @@ def main():
     common_prompt = re.sub(r"<\|.*?\|>", "", common_prompt)
     
     # Initialize distributed inference
-    batch_size = 12  # 배치 크기 설정
+    batch_size = 1  # 배치 크기 설정
     inference = UnslothInference(
         checkpoint_dir=str(checkpoint_dir),
         cache_dir=str(cache_dir),
