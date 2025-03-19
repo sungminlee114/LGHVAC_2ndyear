@@ -1,1 +1,472 @@
-[]
+[
+    {
+        "Input": "Why is our classroom so cold",
+        "Tags":{
+            "Style": ["English","Implicit temporal", "Reason", "Implicit modality"],
+            "Returns": ["Data"]
+        },
+        "Response": {
+            "Thinking": "사용자는 현재 우리반의 추운 이유를 분석하기 위해 최신 데이터를 조회하려고 합니다. ",
+            "Expectations": [
+                "The reason our classroom is cold with 15℃ is that the setting temperature is 10℃. Please turn off the air conditioner or raise the setting temperature.",
+                "The reason our classroom is cold is that the air conditioner is on.",
+                "The reason our classroom is cold is that the air conditioner has been on for only 30 minutes."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            
+                            "roomtemp",
+                            "settemp",
+                            "oper"
+                        ],
+                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '3 hours', TIMESTAMP 'CURRENT_TIMESTAMP']",
+                        "spatials": [
+                            "01_IB5"
+                        ]
+                    },
+                    "result_name": "qr"
+                }, {
+                    "type": "o",
+                    "script": "qr",
+                    "returns": [
+                        "qr"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "오늘 아침과 저녁의 온도차이는 얼마나 돼?",
+        "Tags": {
+            "Style": ["Implicit spatial","Implicit modality","Avg/Diff/Get"],
+            "Returns": ["Temp"]
+        },
+        "Response": {
+            "Thinking": "사용자는 오늘 아침과 저녁에 측정된 우리반의 실내온도 평균값을 비교하여, 두 시간대의 온도 차이를 계산하려고 합니다. 각 시간대의 평균 온도를 구한 후 그 차이를 반환해야 합니다.",
+            "Expectations": [
+                "오늘 아침(06:00 ~ 09:00, {{morning_avg}}℃)과 저녁(18:00 ~ 21:00, {{evening_avg}}℃)의 온도 차이는 {{time_diff}}℃ 입니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '6 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '9 hours')",
+                        "spatials": [
+                            "01_IB5"
+                        ]
+                    },
+                    "result_name": "qr_morning"
+                },
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '18 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '21 hours')",
+                        "spatials": [
+                            "01_IB5"
+                        ]
+                    },
+                    "result_name": "qr_evening"
+                }, {
+                    "type": "o",
+                    "script": "morning_avg = qr_morning['roomtemp'].mean();evening_avg = qr_evening['roomtemp'].mean();temp_diff = evening_avg - morning_avg;",
+                    "returns": [
+                        "morning_avg",
+                        "evening_avg",
+                        "temp_diff"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "지금 옆반 온도랑 우리반 온도 알려줘",
+        "Tags": {
+            "Style": ["Implicit modality","Avg/Diff/Get"],
+            "Returns": ["Temp"]
+        },
+        "Response": {
+            "Thinking": "사용자는 현재 옆반과 우리반의 실내온도를 요청했습니다. 최신 데이터를 반영하기 위해 최근 5분간의 데이터를 조회하여, 가장 최근의 실내온도 값을 반환해야 합니다.",
+            "Expectations": [
+                "옆반과 우리반의 실내온도는 각각 {{roomtemp_beside}}℃, {{roomtemp_ours}}℃입니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
+                        "spatials": [
+                            "01_IB7",
+                            "01_IB5"
+                        ]
+                    },
+                    "result_name": "qr"
+                }, {
+                    "type": "o",
+                    "script": "qr_recent = qr[qr['timestamp'] == qr['timestamp'].max()];roomtemp_ours = qr_recent[qr_recent['idu'] == '01_IB5']['roomtemp'].values[0];roomtemp_beside = qr_recent[qr_recent['idu'] == '01_IB7']['roomtemp'].values[0];",
+                    "returns": [
+                        "roomtemp_ours",
+                        "roomtemp_beside"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "이번주 우리반과 옆반 온도 변화 추이 비교해줘",
+        "Tags": {
+            "Style": ["Graph","Implicit modality"],
+            "Returns": ["Graph"]
+        },
+        "Response": {
+            "Thinking": "사용자는 이번주 우리반과 옆반의 실내온도 값의 변화, 트렌드, 통계정보를 궁금해함. 실내온도의 평균, 최저, 최고값등의 통계적 정보와 그래프를 통한 시각화를 제공해야함. 지난주 우리반과 옆반의 설정온도를 쿼리한 후 통계적 정보와 그래프를 반환하면 됨.",
+            "Expectations": [
+                "(그래프) X축: 날짜, Y축: 실내온도, 두 반의 변화 추이 그래프",
+                "이번주 우리반의 평균 실내온도는 {{roomtemp_avg_ours}}℃, 최저 {{roomtemp_min_ours}}℃, 최고 {{roomtemp_max_ours}}℃입니다.",
+                "이번주 옆반의 평균 실내온도는 {{roomtemp_avg_beside}}℃, 최저 {{roomtemp_min_beside}}℃, 최고 {{roomtemp_max_beside}}℃입니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            
+                            "roomtemp"
+                        ],
+                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE') + INTERVAL '1 week')",
+                        "spatials": [
+                            "01_IB5",
+                            "01_IB7"
+                        ]
+                    },
+                    "result_name": "qr"
+                }, {
+                    "type": "o",
+                    "script": "ours_roomtemp_raw = qr[qr['idu'] == '01_IB5'];beside_roomtemp_raw = qr[qr['idu'] == '01_IB7'];roomtemp_avg_ours = ours_roomtemp_raw['roomtemp'].mean();roomtemp_min = ours_roomtemp_raw['roomtemp'].min();roomtemp_max = ours_roomtemp_raw['roomtemp'].max();roomtemp_avg_beside = beside_roomtemp_raw['roomtemp'].mean();roomtemp_min_beside = beside_roomtemp_raw['roomtemp'].min();roomtemp_max_beside = beside_roomtemp_raw['roomtemp'].max();",
+                    "returns": [
+                        "ours_roomtemp_raw",
+                        "roomtemp_avg_ours",
+                        "roomtemp_min_ours",
+                        "roomtemp_max_ours",
+                        "beside_roomtemp_raw",
+			            "roomtemp_avg_beside",
+                        "roomtemp_min_beside",
+                        "roomtemp_max_beside"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "현재 설정온도랑 실내온도 차이 알려줘.",
+        "Tags": {
+            "Style": ["Implicit spatial","Avg/Diff/Get"],
+            "Returns": ["Temp"]
+        },
+        "Response": {
+            "Thinking": "사용자는 현재 우리반의 설정온도와 실내온도의 차이를 알고자 합니다. 최근 5분간의 데이터를 조회하여, 가장 최신의 설정온도와 실내온도 값을 비교하고 그 차이를 계산해 반환해야 합니다.",
+            "Expectations": [
+                "현재 설정온도({{settemp}}℃)와 실내온도({{roomtemp}}℃)의 차이는 {{temp_diff}}℃입니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "settemp",
+                            "roomtemp"
+                        ],
+                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
+                        "spatials": [
+                            "01_IB5"
+                        ]
+                    },
+                    "result_name": "qr"
+                }, {
+                    "type": "o",
+                    "script": "qr_recent = qr[qr['timestamp'] == qr['timestamp'].max()];settemp = qr_recent['settemp'].values[0];roomtemp = qr_recent['roomtemp'].values[0];temp_diff = roomtemp - settemp;",
+                    "returns": [
+                        "settemp",
+                        "roomtemp",
+                        "temp_diff"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "지난주에 설정온도와 실내온도 차이가 가장 많이 났던 날은?",
+        "Tags": {
+            "Style": ["Implicit spatial","Avg/Diff/Get"],
+            "Returns": ["Temp","Dates"]
+        },
+        "Response": {
+            "Thinking": "사용자는 지난주 우리반의 설정온도와 실내온도의 차이를 계산해 가장 큰 차이가 발생한 날짜를 찾고, 해당 날짜의 실내온도, 설정온도 및 차이를 반환해야 합니다.",
+            "Expectations": [
+                "지난주 {{max_diff_dates}}일에 설정온도({{max_diff_settemps}}℃)와 실내온도({{max_diff_roomtemps}}℃)의 차이가 {{max_diff}}℃로 가장 많이 났습니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            
+                            "settemp",
+                            "roomtemp"
+                        ],
+                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE') - INTERVAL '1 week', DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
+                        "spatials": [
+                            "01_IB5"
+                        ]
+                    },
+                    "result_name": "qr"
+                }, {
+                    "type": "o",
+                    "script": "qr['temp_diff'] = qr['roomtemp'] - qr['settemp'];max_diff = qr['temp_diff'].max();max_diff_dates = qr[qr['temp_diff'] == max_diff]['timestamp'].values;max_diff_settemps = qr[qr['temp_diff'] == max_diff]['settemp'].values;max_diff_roomtemps = qr[qr['temp_diff'] == max_diff]['roomtemp'].values;",
+                    "returns": [
+                        "max_diff_dates",
+                        "max_diff_roomtemps",
+                        "max_diff_settemps",
+                        "max_diff"
+                    ]
+                }
+            ]
+        }
+    },{
+        "Input": "이번주 설정온도가 실내온도보다 더 낮았던 날은?",
+        "Tags": {
+            "Style": ["Implicit spatial","Avg/Diff/Get"],
+            "Returns": ["Dates"]
+        },
+        "Response": {
+            "Thinking": "사용자는 이번주 우리반의 설정온도가 실내온도보다 낮았던 날짜를 알고 싶어함. 이번주 우리반의 설정온도와 실내온도의 데이터를 쿼리한 후 설정온도가 실내온도보다 낮은 날짜와 그 값을 반환하면 됨.",
+            "Expectations": [
+                "이번주 우리반은 {{dates}}에 설정온도가 실내온도보다 낮았습니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp",
+                            "settemp"
+                        ],
+                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE' + INTERVAL '1 week'))",
+                        "spatials": [
+                            "01_IB5"
+                        ]
+                    },
+                    "result_name": "qr"
+                }, {
+                    "type": "o",
+                    "script": "qr['date'] = qr['timestamp'].dt.date;daily_avg_temp = qr.groupby('date')[['roomtemp', 'settemp']].mean();dates = daily_avg_temp[daily_avg_temp['settemp'] < daily_avg_temp['roomtemp']].index;",
+                    "returns": [
+                        "dates"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "어제 전원 껐어?",
+        "Tags": {
+            "Style": ["Implicit spatial","Avg/Diff/Get"],
+            "Returns": ["Oper"]
+        },
+        "Response": {
+            "Thinking": "사용자는 어제 우리반의 에어컨 전원 상태를 조회하여, 마지막 전원 상태를 반환해야 합니다. 만약 에어컨을 끄지 않았다면 그에 맞는 메시지를 반환합니다.",
+            "Expectations": [
+              "우리반 전원은 {{oper}}입니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "oper"
+                        ],
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') - INTERVAL '1 day', DATE_TRUNC('day', DATE 'CURRENT_DATE'))",
+                        "spatials": [
+                            "01_IB5"
+                        ]
+                    },
+                    "result_name": "qr"
+                }, {
+                    "type": "o",
+                    "script": "qr_recent = qr[qr['timestamp'] == qr['timestamp'].max()];oper = qr_recent['oper'].values[0];",
+                    "returns": [
+                        "oper"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "최근에 설정온도가 가장 높았던 날 알려줘",
+        "Tags": {
+            "Style": ["Implicit spatial","ArgMinMax"],
+            "Returns": ["Temp","Dates"]
+        },
+        "Response": {
+            "Thinking": "사용자는 최근 1주일 동안 우리반의 설정온도 데이터를 조회하여, 가장 높은 설정온도가 기록된 날짜와 그 값을 반환해야 합니다.",
+            "Expectations": [
+                "최근 {{max_settemp_dates}}에 {{max_settemp}}℃로 설정온도가 가장 높았습니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            
+                            "settemp"
+                        ],
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') - INTERVAL '1 week', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '1 day')",
+                        "spatials": [
+                            "01_IB5"
+                        ]
+                    },
+                    "result_name": "qr"
+                }, {
+                    "type": "o",
+                    "script": "max_settemp = qr['settemp'].max();max_settemp_dates = qr[qr['settemp'] == max_settemp]['timestamp'].dt.strftime('%Y-%m-%d');",
+                    "returns": [
+                        "max_settemp_dates",
+                        "max_settemp"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "화성의 설정온도 확인해줘",
+        "Tags": {
+            "Style": ["Unknown"],
+            "Returns": []
+        },
+        "Response": {
+            "Thinking": "화성이라는 공간 정보가 정의되어 있지 않습니다. 사용자가 화성이 무엇인지 명확히 해주어야 합니다.",
+            "Expectations": [
+                "화성이 어떤 곳인지 알려주세요."
+            ],
+            "Instructions": []
+        }
+    },
+    {
+        
+        "Input": "올해 경상수지는?",
+        "Tags": {
+            "Style": ["Unrelated"],
+            "Returns": []
+        },
+        "Response": {
+            "Thinking": "이 질문은 HVAC 시스템과 관련 없는 질문입니다.",
+            "Expectations": [
+                "HVAC 시스템과 관련 없는 질문입니다."
+            ],
+            "Instructions": []
+        }
+    },
+    {
+        "Input": "지난 3일 동안 우리반 실내 온도 평균 값 알려줘.",
+        "Tags": {
+            "Style": ["Avg/Diff/Get"],
+            "Returns": ["Temp"]
+        },
+        "Response": {
+            "Thinking": "사용자는 지난 3일 동안 우리반의 실내온도 데이터를 조회하여, 그 평균값을 계산해 반환해야 합니다.",
+            "Expectations": [
+                "지난 3일 동안 우리반 실내 온도의 평균 값은 {{roomtemp_avg}}℃였습니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp"
+                        ],
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') - INTERVAL '3 days', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '1 day')",
+                        "spatials": [
+                            "01_IB5"
+                        ]
+                    },
+                    "result_name": "qr"
+                }, {
+                    "type": "o",
+                    "script": "roomtemp_avg = qr['roomtemp'].mean();",
+                    "returns": [
+                        "roomtemp_avg"
+                    ]
+                }
+            ]
+        }
+    },{
+        "Input": "3층 평균 실내온도는?",
+        "Tags": {
+            "Style": ["Unknown"],
+            "Returns": []
+        },
+        "Response": {
+            "Thinking": "질문의 맥락 상 공간정보는 3층인데, metadata에는 없음. 사용자에게 3층이 어떤 곳인지 물어보고, 해당 정보를 변수에 저장해야 함.",
+            "Expectations": [
+                "3층이 어떤 곳인지 알려주세요."
+            ],
+            "Instructions": []
+        }
+    },{
+        "Input": "오늘 오후 5시에 옆반의 설정온도는 어땠어?",
+        "Tags": {
+            "Style": ["Avg/Diff/Get"],
+            "Returns": ["Temp"]
+        },
+        "Response": {
+            "Thinking": "사용자는 오늘 오후 5시의 옆반 설정온도 값을 알고 싶어합니다. 해당 시간의 설정온도 데이터를 쿼리하여 값을 반환하면 됩니다.",
+            "Expectations": [
+                "오늘 오후 5시 옆반의 설정온도는 {{settemp}}℃였습니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "settemp"
+                        ],
+                        "temporal": "DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '17 hours'",
+                        "spatials": [
+                            "01_IB7"
+                        ]
+                    },
+                    "result_name": "qr"
+                }, {
+                    "type": "o",
+                    "script": "settemp = qr['settemp'].mean();",
+                    "returns": [
+                        "settemp"
+                    ]
+                }
+            ]
+        }
+    }
+]

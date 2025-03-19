@@ -516,7 +516,7 @@
     {
         "Input": "우리반 왜이리 덥노",
         "Tags": {
-            "Style": ["Implicit spatial", "Reason", "Implicit modality"],
+            "Style": ["Implicit temporal", "Reason", "Implicit modality"],
             "Returns": ["Data"]
         },
         "Response": {
@@ -698,7 +698,7 @@
     {
         "Input": "롯데캐슬의 현재 온도 알려줘",
         "Tags": {
-            "Style": [""],
+            "Style": ["Unknown","Avg/Diff/Get"],
             "Returns": []
         },
         "Response": {
@@ -711,7 +711,10 @@
     },
     {
         "Input": "다음 대통령 선거는 언제인가요?",
-        "Tags": ["Unrelated"],
+        "Tags":{
+            "Style": ["Unrelated"],
+            "Returns": []
+        },
         "Response": {
             "Thinking": "질문의 맥락 상 HVAC 시스템과 관련 없는 질문임. HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
             "Expectations": [
@@ -722,7 +725,10 @@
     },
     {
         "Input": "1층 평균 실내온도 알려줘",
-        "Tags": ["Unknown"],
+        "Tags": {
+            "Style": ["Unknown","Avg/Diff/Get"],
+            "Returns": ["Temp"]
+        },
         "Response": {
             "Thinking": "질문의 맥락 상 공간정보는 1층인데, metadata에는 없음. 사용자에게 1층이 어떤 곳인지 물어보고, 해당 정보를 변수에 저장해야 함.",
             "Expectations": [
@@ -732,7 +738,10 @@
         }
     },{
         "Input": "에어컨 꺼진 방들 알려줘",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Implicit temporal","Avg/Diff/Get"],
+            "Returns": ["Spatial"]
+        },
         "Response": {
             "Thinking": "사용자는 현재 에어컨이 꺼져있는 방들을 알고 싶어함. 최근 5분간 metadata에 있는 idu들의 에어컨 작동 상태를 쿼리한 후 가장 최근 데이터가 false인 방들을 반환하면 됨.",
             "Expectations": [
@@ -766,7 +775,10 @@
     },
     {
         "Input": "지난주 설정온도가 실내온도보다 더 높았던 날은?",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Implicit spatial","Avg/Diff/Get"],
+            "Returns": ["Temp","Dates"]
+        },
         "Response": {
             "Thinking": "사용자는 지난주 우리반의 일평균 설정온도가 일평균 실내온도보다 높았던 날짜를 알고 싶어함. 지난주 우리반의 설정온도와 실내온도의 데이터를 쿼리한 후 일평균 설정온도가 실내온도보다 높은 날짜와 그 값을 반환하면 됨.",
             "Expectations": [
@@ -800,7 +812,10 @@
     },
     {
         "Input": "우리반 이번달 제일 추웠던 날은 언제냐?",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Implicit modality","ArgMinMax"],
+            "Returns": ["Temp","Dates"]
+        },
         "Response": {
             "Thinking": "사용자는 이번달 우리반의 실내온도값이 가장 낮았던 날을 알고싶어함. 답변시 해당 날짜 뿐만 아니라 그 때의 실내온도도 제공해야 함.",
             "Expectations": [
@@ -833,7 +848,10 @@
         }
     },{
         "Input": "우리반과 옆반 이번주 설정온도 차이 보여줘",
-        "Tags": ["Graph"],
+        "Tags": {
+            "Style": ["Graph"],
+            "Returns": ["Graph"]
+        },
         "Response": {
             "Thinking": "사용자는 이번주 우리반과 옆반의 설정온도 차이를 시각화해서 보고싶어함. 이번주 우리반과 옆반의 설정온도 데이터를 쿼리한 후 시간에 따른 설정온도 차이를 시각화하면 됨. 또한 이번주 우리반과 옆반의 설정온도 평균값을 계산하여 반환해야 함.",
             "Expectations": [
@@ -868,7 +886,10 @@
     },
     {
         "Input": "어제 우리반 에어컨 작동 시간 알려줘",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Avg/Diff/Get"],
+            "Returns": ["Time"]
+        },
         "Response": {
             "Thinking": "사용자는 어제 하루동안 우리반 에어컨이 작동하는 시간을 알고싶어함. 어제 우리반의 에어컨 작동 상태 데이터를 쿼리한 후 oper=true인 시간을 계산하여 반환하면 됨.",
             "Expectations": [
@@ -902,7 +923,10 @@
     },
     {
         "Input": "우리반, 옆반, 앞반 중 가장 추운 방은?",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Implicit temporal","ArgMinMax"],
+            "Returns": ["Temp","Spatial"]
+        },
         "Response": {
             "Thinking": "사용자는 현재 우리반, 옆반, 앞반 중 가장 추운 방을 알고싶어함. 최근 5분간 세 방의 실내온도를 쿼리한 후 가장 최근 가장 낮은 실내온도를 가진 방과 그 온도를 반환하면 됨.",
             "Expectations": [
@@ -936,7 +960,10 @@
         }
     },{
         "Input": "농담 좀 해줘",
-        "Tags": ["Unrelated"],
+        "Tags": {
+            "Style": ["Unrelated"],
+            "Returns": []
+        },
         "Response": {
             "Thinking": "질문의 맥락 상 HVAC 시스템과 관련 없는 질문임. HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
             "Expectations": [
@@ -946,7 +973,10 @@
         }
     },{
         "Input": "에어켠 제일 세게 킨 방 3개 알려줘",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Implicit temporal","ArgMinMax"],
+            "Returns": ["Spatial","Temp"]
+        },
         "Response": {
             "Thinking": "사용자는 현재 Metadata에 존재하는 모든 idu중 에어컨 전원이 켜져있으면서 설정온도가 제일 낮은 곳 3개를 알려달라고 하고 있음. 최근 5분간 Metadata에 존재하는 모든 idu의 oper와 설정온도를 쿼리한 후 oper=true인 방만 필터링하고 설정온도가 가장 낮은 방 3개의 이름과 설정온도를 반환하면 됨.",
             "Expectations": [
@@ -983,7 +1013,10 @@
     },
     {
         "Input": "작년 옆반 가장 더웠던 달은?",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Implicit modality","ArgMinMax"],
+            "Returns": ["Temp","Dates"]
+        },
         "Response": {
             "Thinking": "사용자는 작년 옆반 실내온도가 최고였던 날과 그때의 실내온도를 알고싶어함. 해당 기간의 실내온도 데이터를 쿼리한 후 가장 높은 실내온도를 기록한 달과 그때의 실내온도를 반환하면 됨.",
             "Expectations": [
@@ -1015,7 +1048,10 @@
         }
     },{
         "Input": "지난달에 설정온도랑 현재온도 차이가 제일 많이 났던 때는 언제야?",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Implicit spatial","ArgMinMax"],
+            "Returns": ["Temp","Date"]
+        },
         "Response": {
             "Thinking": "사용자는 지난달 우리반의 설정온도와 실내온도의 차이가 가장 많이 나는 일시와 그때의 실내온도, 설정온도를 알고싶어함. 해당 기간의 설정온도, 실내온도 데이터를 쿼리한 후 설정온도와 실내온도의 차이를 계산하여 가장 많이 나는 일시와 그때의 실내온도, 설정온도를 반환하면 됨.",
             "Expectations": [
@@ -1051,7 +1087,10 @@
     },
     {
         "Input": "지난 한달간 설정온도 평균을 알려줘.",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Implicit spatial","Avg/Diff/Get"],
+            "Returns": ["Temp"]
+        },
         "Response": {
             "Thinking": "사용자는 지난 한달 동안 우리반의 설정온도 평균을 알고싶어함. 해당 기간의 설정온도 데이터를 쿼리한 후 설정온도의 평균값을 반환하면 됨.",
             "Expectations": [
@@ -1082,7 +1121,10 @@
         }
     },{
         "Input": "What is the temperature difference between our class and the adjacent class right now?",
-        "Tags": ["DiverseInput"],
+        "Tags": {
+            "Style": ["English","Avg/Diff/Get"],
+            "Returns": ["Temp"]
+        },
         "Response": {
             "Thinking": "사용자는 현재 우리반과 옆반의 실내온도 차이를 알고 싶어함. 최근 5분간 우리반과 옆반의 실내온도를 쿼리한 후 가장 최근 값들과 차이를 계산해 반환하면 됨.",
             "Expectations": [
@@ -1117,7 +1159,10 @@
     },
     {
         "Input": "지금 에너지 사용량 알려줘",
-        "Tags": ["Unknown"],
+        "Tags": {
+            "Style": ["Unknown"],
+            "Returns": []
+        },
         "Response": {
             "Thinking": "에너지 사용량은 Metadata에 없는 modality임. 사용자에게 에너지 사용량이 무엇인지 물어보고, 해당 정보를 변수에 저장해야 함.",
             "Expectations": [
@@ -1127,7 +1172,10 @@
         }
     },{
         "Input": "앞반 전원 켜져있어?",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Implicit temporal","Avg/Diff/Get"],
+            "Returns": ["Oper"]
+        },
         "Response": {
             "Thinking": "사용자는 현재 앞반의 에어컨 전원 상태를 조회하여 반환해야 합니다.",
             "Expectations": [
@@ -1158,7 +1206,10 @@
         }
     },{
         "Input": "오늘 우리반 에어컨 전원이 처음 켜진 시각 알려줘.",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Avg/Diff/Get"],
+            "Returns": ["Time"]
+        },
         "Response": {
             "Thinking": "사용자는 오늘 우리반 에어컨 전원이 처음 켜진 시간을 알고싶어함. 오늘 하루 우리반의 oper를 쿼리한 후 oper=true인 첫 번째 시각을 반환하면 됨.",
             "Expectations": [
@@ -1192,7 +1243,10 @@
     },
     {
         "Input": "이번주 경제 소식 알려줘.",
-        "Tags": ["Unrelated"],
+        "Tags": {
+            "Style": ["Unrelated"],
+            "Returns": []
+        },
         "Response": {
             "Thinking": "질문의 맥락 상 HVAC 시스템과 관련 없는 질문임. HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
             "Expectations": [
@@ -1202,7 +1256,10 @@
         }
     },{
         "Input": "지난주 우리반은 대체로 몇 도로 설정되어 있었나요?",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Avg/Diff/Get"],
+            "Returns": ["Temp"]
+        },
         "Response": {
             "Thinking": "사용자는 지난주 우리반 설정온도의 빈도, 평균 등 통계를 알고싶어함. 지난주 우리반의 설정온도 데이터를 쿼리한 후 빈도, 평균 등을 계산하여 반환하면 됨.",
             "Expectations": [
@@ -1235,7 +1292,10 @@
     },
     {
         "Input": "옆반 어제 아침과 저녁의 설정온도 차이는 얼마나 돼?",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Avg/Diff/Get"],
+            "Returns": ["Temp"]
+        },
         "Response": {
             "Thinking": "사용자는 옆반의 어제 아침(06 ~ 09시)과 저녁(18 ~ 21시)의 평균 설정온도의 차이를 알고싶어함. 옆반 어제 아침과 저녁의 설정온도를 쿼리한 후 평균값을 계산해 차이를 반환하면 됨.",
             "Expectations": [
@@ -1278,7 +1338,10 @@
         }
     },{
         "Input": "지금 옆반 에어컨 상태 알려줘",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Avg/Diff/Get"],
+            "Returns": ["Oper"]
+        },
         "Response": {
             "Thinking": "사용자는 현재 옆반의 에어컨 전원 상태를 알고싶어함. 최근 5분간 옆반의 에어컨 전원 상태를 쿼리한 후 가장 최근값을 반환하면 됨.",
             "Expectations": [
@@ -1308,7 +1371,10 @@
     },
     {
         "Input": "이번주 우리반 평균 온도 알려줘",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Implicit modality","Avg/Diff/Get"],
+            "Returns": ["Temp"]
+        },
         "Response": {
             "Thinking": "사용자는 이번주 우리반의 평균 실내온도를 알고싶어함. 이번주 우리반의 실내온도 데이터를 쿼리한 후 평균값을 계산하여 반환하면 됨.",
             "Expectations": [
@@ -1337,7 +1403,10 @@
         }
     },{
         "Input": "이번달 우리반 설정온도 최대값과 최소값 알려줘",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["ArgMinMax"],
+            "Returns": ["Temp"]
+        },
         "Response": {
             "Thinking": "사용자는 이번달 우리반의 설정온도 최대값과 최소값을 알고싶어함. 이번달 우리반의 설정온도 데이터를 쿼리한 후 최대값과 최소값을 계산하여 반환하면 됨.",
             "Expectations": [
@@ -1367,7 +1436,10 @@
         }
     },{
         "Input": "우리반과 옆반중 더 추운곳은 어디야?",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Implicit temporal","ArgMinMax"],
+            "Returns": ["Temp","Spatial"]
+        },
         "Response": {
             "Thinking": "사용자는 현재 우리반과 옆반 중 실내온도가 더 낮은 곳을 알고싶어함. 최근 5분간 우리반과 옆반의 실내온도를 쿼리한 후 가장 최근 값들을 비교해 더 낮은 곳의 이름과 각 반의 실내온도를 반환하면 됨.",
             "Expectations": [
@@ -1400,7 +1472,10 @@
     },
     {
         "Input": "에어컨 켜져있어?",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Implicit spatial","Implicit temporal"],
+            "Returns": ["Oper"]
+        },
         "Response": {
             "Thinking": "사용자는 현재 에어컨이 켜져있는지 물어봄. 최근 5분간 우리반의 에어컨 작동 상태를 쿼리한 후 가장 최근값을 반환하면 됨.",
             "Expectations": [
@@ -1429,7 +1504,10 @@
         }
     },{
         "Input": "내일 우리반과 앞반 온도 차이 알려줘",
-        "Tags": ["Unknown"],
+        "Tags": {
+            "Style": ["Implicit modality","Avg/Diff/Get"],
+            "Returns": ["Temp"]
+        },
         "Response": {
             "Thinking": "사용자는 내일 우리반과 앞반의 실내온도 차이를 알고싶어함. 현재는 예측 기능을 지원하지 않으므로 예측 기능이 지원되지 않는다는 메시지를 반환해야 함.",
             "Expectations": [
@@ -1439,7 +1517,10 @@
         }
     },{
         "Input": "How hot was our class over the last month?",
-        "Tags": ["DiverseInput"],
+        "Tags": {
+            "Style": ["English","Implicit modality","Avg/Diff/Get"],
+            "Returns": ["Temp"]
+        },
         "Response": {
             "Thinking": "사용자는 우리반의 지난달 실내온도 평균값을 알고싶어함. 해당 기간의 실내온도 데이터를 쿼리한 후 평균값을 계산하여 반환하면 됨.",
             "Expectations": [
@@ -1469,7 +1550,10 @@
     },
     {
         "Input": "우리 반 에어컨이 가장 오래 작동했던 날은 언제야?",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["ArgMinMax"],
+            "Returns": ["Dates","Time"]
+        },
         "Response": {
             "Thinking": "사용자는 우리반의 에어컨의 하루동안 작동시간이 가장 긴 날짜를 알고싶어함. 따로 명시된 시간 범위가 없으므로 지난 1주일 동안의 oper 데이터를 쿼리한 후 하루동안 oper=true인 시간이 가장 긴 날짜를 반환하면 됨. 단 추측한 시간 범위를 사용자에게 알려주어야 함.",
             "Expectations": [
@@ -1500,7 +1584,10 @@
         }
     }, {
         "Input": "3주전 우리반 평균 실내온도 알려줘",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["ArgMinMax"],
+            "Returns": ["Temp"]
+        },
         "Response": {
             "Thinking": "사용자는 3주전 하루 동안 우리반의 평균 실내온도를 알고 싶어합니다. 해당 기간의 실내온도 데이터를 쿼리하여 평균값을 계산하면 됩니다.",
             "Expectations": [
@@ -1532,7 +1619,10 @@
     },
     {
         "Input": "지난달 오늘 오후 2시에 옆반의 설정온도는 어땠어?",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Avg/Diff/Get"],
+            "Returns": ["Temp"]
+        },
         "Response": {
             "Thinking": "사용자는 지난달 오늘 특정 시각(오후 2시)에 옆반의 설정온도를 알고 싶어합니다. 해당 시간대의 설정온도 데이터를 쿼리하여 평균을 반환하면 됩니다.",
             "Expectations": [
@@ -1564,7 +1654,10 @@
     },
     {
         "Input": "오늘 오후 4시부터 6시까지 실내온도 평균 알려줘",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Implicit spatial","Avg/Diff/Get"],
+            "Returns": ["Temp"]
+        },
         "Response": {
             "Thinking": "사용자는 오늘 오후 4시부터 6시까지의 시간 동안 우리반의 실내온도 평균을 알고 싶어합니다. 해당 시간 범위의 실내온도 데이터를 쿼리하여 평균값을 계산하면 됩니다.",
             "Expectations": [
@@ -1596,7 +1689,10 @@
     },
     {
         "Input": "지난주 수요일 실내온도 최고값 알려줘",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Implicit spatial","ArgMinMax"],
+            "Returns": ["Temp"]
+        },
         "Response": {
             "Thinking": "사용자는 지난주 수요일 하루 동안 우리반의 최고 실내온도를 알고 싶어합니다. 해당 날짜의 실내온도 데이터를 쿼리하여 최고값을 반환하면 됩니다.",
             "Expectations": [
@@ -1628,7 +1724,10 @@
     },
     {
         "Input": "오늘 오전 11시에 옆반의 실내온도는 어땠어?",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Avg/Diff/Get"],
+            "Returns": ["Temp"]
+        },
         "Response": {
             "Thinking": "사용자는 오늘 오전 11시의 옆반 실내온도 값을 알고 싶어합니다. 해당 시간의 실내온도 데이터를 쿼리하여 값을 반환하면 됩니다.",
             "Expectations": [
@@ -1660,7 +1759,10 @@
     },
     {
         "Input": "오늘 오후 2시에 옆반의 설정온도는 어땠어?",
-        "Tags": ["Normal"],
+        "Tags": {
+            "Style": ["Avg/Diff/Get"],
+            "Returns": ["Temp"]
+        },
         "Response": {
             "Thinking": "사용자는 오늘 오후 2시의 옆반 설정온도 값을 알고 싶어합니다. 해당 시간의 설정온도 데이터를 쿼리하여 값을 반환하면 됩니다.",
             "Expectations": [
