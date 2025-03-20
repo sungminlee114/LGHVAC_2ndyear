@@ -116,6 +116,10 @@ RUN sudo apt install -y \
     curl \
     git
 
+# RUN sudo apt install -y fonts-nanum* fontconfig &&\
+#     sudo fc-cache -fv &&\
+#     sudo fc-list | grep Nanum &&\
+#     rm -rf ~/.cache/matplotlib/*
     
 WORKDIR /workspace
 COPY requirements.txt /workspace

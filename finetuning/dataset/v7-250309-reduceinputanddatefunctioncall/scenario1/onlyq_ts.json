@@ -130,11 +130,11 @@
     {
         "Input": "이번주 우리반과 옆반 온도 변화 추이 비교해줘",
         "Tags": {
-            "Style": ["Graph","Implicit modality"],
+            "Style": ["Graph", "Implicit modality"],
             "Returns": ["Graph"]
         },
         "Response": {
-            "Thinking": "사용자는 이번주 우리반과 옆반의 실내온도 값의 변화, 트렌드, 통계정보를 궁금해함. 실내온도의 평균, 최저, 최고값등의 통계적 정보와 그래프를 통한 시각화를 제공해야함. 지난주 우리반과 옆반의 설정온도를 쿼리한 후 통계적 정보와 그래프를 반환하면 됨.",
+            "Thinking": "사용자는 이번주 우리반과 옆반의 실내온도 값의 변화, 트렌드, 통계정보를 궁금해합니다. 실내온도의 평균, 최저, 최고값 등의 통계적 정보와 그래프를 통한 시각화를 제공해야 합니다. 이번주 우리반과 옆반의 실내온도를 쿼리한 후 통계적 정보와 그래프를 반환하면 됩니다.",
             "Expectations": [
                 "(그래프) X축: 날짜, Y축: 실내온도, 두 반의 변화 추이 그래프",
                 "이번주 우리반의 평균 실내온도는 {{roomtemp_avg_ours}}℃, 최저 {{roomtemp_min_ours}}℃, 최고 {{roomtemp_max_ours}}℃입니다.",
@@ -146,7 +146,6 @@
                     "args": {
                         "table_name": "data_t",
                         "columns": [
-                            
                             "roomtemp"
                         ],
                         "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE') + INTERVAL '1 week')",
@@ -156,19 +155,51 @@
                         ]
                     },
                     "result_name": "qr"
-                }, {
+                },
+                {
                     "type": "o",
-                    "script": "ours_roomtemp_raw = qr[qr['idu'] == '01_IB5'];beside_roomtemp_raw = qr[qr['idu'] == '01_IB7'];roomtemp_avg_ours = ours_roomtemp_raw['roomtemp'].mean();roomtemp_min = ours_roomtemp_raw['roomtemp'].min();roomtemp_max = ours_roomtemp_raw['roomtemp'].max();roomtemp_avg_beside = beside_roomtemp_raw['roomtemp'].mean();roomtemp_min_beside = beside_roomtemp_raw['roomtemp'].min();roomtemp_max_beside = beside_roomtemp_raw['roomtemp'].max();",
+                    "script": "ours_roomtemp_raw = qr[qr['idu'] == '01_IB5'];beside_roomtemp_raw = qr[qr['idu'] == '01_IB7'];roomtemp_avg_ours = ours_roomtemp_raw['roomtemp'].mean();roomtemp_min_ours = ours_roomtemp_raw['roomtemp'].min();roomtemp_max_ours = ours_roomtemp_raw['roomtemp'].max();roomtemp_avg_beside = beside_roomtemp_raw['roomtemp'].mean();roomtemp_min_beside = beside_roomtemp_raw['roomtemp'].min();roomtemp_max_beside = beside_roomtemp_raw['roomtemp'].max();ours_roomtemp_rawtimeseries = ours_roomtemp_raw[['timestamp', 'roomtemp']];beside_roomtemp_rawtimeseries = beside_roomtemp_raw[['timestamp', 'roomtemp']];",
                     "returns": [
                         "ours_roomtemp_raw",
                         "roomtemp_avg_ours",
                         "roomtemp_min_ours",
                         "roomtemp_max_ours",
                         "beside_roomtemp_raw",
-			            "roomtemp_avg_beside",
+                        "roomtemp_avg_beside",
                         "roomtemp_min_beside",
-                        "roomtemp_max_beside"
+                        "roomtemp_max_beside",
+                        "ours_roomtemp_rawtimeseries",
+                        "beside_roomtemp_rawtimeseries"
                     ]
+                },
+                {
+                    "type": "g",
+                    "args": {
+                        "graph_type": "original",
+                        "axis": {
+                            "xlabel": "날짜",
+                            "ylabel": "실내온도",
+                            "title": "이번주 우리반과 옆반 실내온도 변화 추이 비교"
+                        },
+                        "plots": [
+                            {
+                                "type": "line",
+                                "data": {
+                                    "x": "ours_roomtemp_rawtimeseries['timestamp']",
+                                    "y": "ours_roomtemp_rawtimeseries['roomtemp']"
+                                },
+                                "label": "우리반 실내온도"
+                            },
+                            {
+                                "type": "line",
+                                "data": {
+                                    "x": "beside_roomtemp_rawtimeseries['timestamp']",
+                                    "y": "beside_roomtemp_rawtimeseries['roomtemp']"
+                                },
+                                "label": "옆반 실내온도"
+                            }
+                        ]
+                    }
                 }
             ]
         }
@@ -214,7 +245,7 @@
     {
         "Input": "지난주에 설정온도와 실내온도 차이가 가장 많이 났던 날은?",
         "Tags": {
-            "Style": ["Implicit spatial","Avg/Diff/Get"],
+            "Style": ["Implicit spatial", "ArgMinMax/Compare"],
             "Returns": ["Temp","Dates"]
         },
         "Response": {
@@ -253,7 +284,7 @@
     },{
         "Input": "이번주 설정온도가 실내온도보다 더 낮았던 날은?",
         "Tags": {
-            "Style": ["Implicit spatial","Avg/Diff/Get"],
+            "Style": ["Implicit spatial", "ArgMinMax/Compare"],
             "Returns": ["Dates"]
         },
         "Response": {
@@ -324,7 +355,7 @@
     {
         "Input": "최근에 설정온도가 가장 높았던 날 알려줘",
         "Tags": {
-            "Style": ["Implicit spatial","ArgMinMax"],
+            "Style": ["Implicit spatial", "ArgMinMax/Compare"],
             "Returns": ["Temp","Dates"]
         },
         "Response": {
@@ -464,6 +495,112 @@
                     "script": "settemp = qr['settemp'].mean();",
                     "returns": [
                         "settemp"
+                    ]
+                }
+            ]
+        }
+    }, {
+        "Input": "올해 여름 우리반 실내온도 최대값과 최소값 알려줘",
+        "Tags": {
+            "Style": ["MinMax", "Weather"],
+            "Returns": ["Temp"]
+        },
+        "Response": {
+            "Thinking": "사용자는 올해 6월 ~ 8월 우리반의 설정온도 최대값과 최소값을 알고싶어함. 올해 여름(6월 ~ 8월) 우리반의 설정온도 데이터를 쿼리한 후 최대값과 최소값을 계산하여 반환하면 됨.",
+            "Expectations": [
+                "올해 여름(6월 ~ 8월) 우리반의 설정온도는 최대 {{settemp_max}}℃, 최소 {{settemp_min}}℃입니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "settemp"
+                        ],
+                        "temporal": "[DATE 'CURRENT_YEAR-06-01', DATE 'CURRENT_YEAR-09-01')",
+                        "spatials": ["01_IB5"]
+                    },
+                    "result_name": "qr"
+                }, {
+                    "type": "o",
+                    "script": "settemp_max = qr['settemp'].max();settemp_min = qr['settemp'].min();",
+                    "returns": [
+                        "settemp_max",
+                        "settemp_min"
+                    ]
+                }
+            ]
+        }
+    }, {
+        "Input": "다음주 우리반 실내온도 어떨거 같아?",
+        "Tags": {
+            "Style": ["Prediction"],
+            "Returns": []
+        },
+        "Response": {
+            "Thinking": "사용자는 다음주 우리반의 실내온도를 예측하고 싶어함. 현재는 예측 기능을 지원하지 않으므로 예측 기능이 지원되지 않는다는 메시지를 반환해야함.",
+            "Expectations": [
+                "예측하기는 아직 지원되지 않는 기능입니다."
+            ],
+            "Instructions": []
+        }
+    }, {
+        "Input": "지금 우리반 너무 더워",
+        "Tags": {
+            "Style": ["Ambiguous question", "Reason", "Implicit modality"],
+            "Returns": ["Data"]
+        },
+        "Response": {
+            "Thinking": "사용자는 특정 질문을 하진 않았지만, 의도를 추측해보면 우리반이 너무 더워 불편함을 느끼고 있는 것 같습니다. 현재 우리반의 더운 원인과 해결 방법을 제시하기 위해, 최근 3시간 동안의 시간별 실내온도, 설정온도, 에어컨 작동 상태 데이터를 쿼리하여 분석해야 합니다.",
+            "Expectations": [
+                "지금 에어컨 설정온도가 30℃로 너무 높아서 우리반의 실내온도가 35℃로 더워요. 에어컨을 켜거나 설정온도를 낮춰보세요.",
+                "지금 우리반이 더운 이유는 에어컨이 꺼져 있기 때문입니다.",
+                "우리반이 더운 이유는 에어컨이 꺼진지 30분밖에 안 되었기 때문입니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "roomtemp",
+                            "settemp",
+                            "oper"
+                        ],
+                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '3 hours', TIMESTAMP 'CURRENT_TIMESTAMP']",
+                        "spatials": [
+                            "01_IB5"
+                        ]
+                    },
+                    "result_name": "qr"
+                },
+                {
+                    "type": "o",
+                    "script": "qr",
+                    "returns": [
+                        "qr"
+                    ]
+                }
+            ]
+        }
+    }, {
+        "Input": "지금 몇시야?",
+        "Tags": {
+            "Style": ["Metadata"],
+            "Returns": ["Time"]
+        },
+        "Response": {
+            "Thinking": "사용자는 현재 시간을 물어봄. 현재 시간을 Metadata에서 읽어서 반환하면 됨.",
+            "Expectations": [
+                "지금은 {{current_time}} 입니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "o",
+                    "script": "current_time = pd.Timestamp(Metadata['current_datetime']).strftime('%H:%M:%S');",
+                    "returns": [
+                        "current_time"
                     ]
                 }
             ]

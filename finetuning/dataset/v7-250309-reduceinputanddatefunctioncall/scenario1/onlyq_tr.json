@@ -144,45 +144,9 @@
         }
     },
     {
-        "Input": "올여름 제일 더웠던 날 알려줘",
-        "Tags": {
-            "Style": ["Weather", "ArgMinMax", "Implicit modality"],
-            "Returns": ["Temp", "Dates"]
-        },
-        "Response": {
-            "Thinking": "사용자는 올해 6월 ~ 8월 우리반의 실내온도가 가장 높았던 날을 알고 싶어함. 양질의 답변을 위해 추측한 올 여름이 언제인지, 공간 및 모달리티가 무엇인지, 제일 더웠던 날의 날짜와 온도를 제공해야 함. 올해 6월 ~ 8월 우리반의 실내온도를 쿼리한 후 실내온도가 가장 높은 날을 찾아 그 날짜와 온도를 반환하면 됨.",
-            "Expectations": [
-                "올여름 우리반은 {{hottest_dates}}에 실내온도 {{hottest_temp}}℃로 가장 더웠습니다."
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE 'CURRENT_YEAR-06-01', DATE 'CURRENT_YEAR-09-01')",
-                        "spatials": [
-                            "01_IB5"
-                        ]
-                    },
-                    "result_name": "qr"
-                }, {
-                    "type": "o",
-                    "script": "hottest_temp = qr['roomtemp'].max();hottest_dates = qr[qr['roomtemp'] == hottest_temp]['timestamp'].dt.strftime('%Y-%m-%d');",
-                    "returns": [
-                        "hottest_dates",
-                        "hottest_temp"
-                    ]
-                }
-            ]
-        }
-    },
-    {
         "Input": "올해 봄 옆반 제일 추웠던 날 알려줘",
         "Tags": {
-            "Style": ["Weather", "ArgMinMax", "Implicit modality"],
+            "Style": ["Weather", "ArgMinMax/Compare", "Implicit modality"],
             "Returns": ["Temp", "Dates"]
         },
         "Response": {
@@ -253,7 +217,7 @@
     },{
         "Input": "이번달 중 우리반 온도가 가장 덜 더운날이 언제야?",
         "Tags": {
-            "Style": ["ArgMinMax", "Implicit modality"],
+            "Style": ["ArgMinMax/Compare", "Implicit modality"],
             "Returns": ["Temp", "Dates"]
         },
         "Response": {
@@ -289,7 +253,7 @@
     {
         "Input": "2주전 우리반과 옆반 합쳐서 설정온도가 가장 낮은날이 언제야?",
         "Tags": {
-            "Style": ["ArgMinMax"],
+            "Style": ["ArgMinMax/Compare"],
             "Returns": ["Temp", "Dates"]
         },
         "Response": {
@@ -326,7 +290,7 @@
     {
         "Input": "이번달 중 뒷반 온도가 가장 더운날이 언제야?",
         "Tags": {
-            "Style": ["Unknown", "ArgMinMax"],
+            "Style": ["Unknown", "ArgMinMax/Compare"],
             "Returns": []
         },
         "Response": {
@@ -556,7 +520,7 @@
     {
         "Input": "What time is it now?",
         "Tags": {
-            "Style": ["Metadata"],
+            "Style": ["English", "Metadata"],
             "Returns": ["Time"]
         },
         "Response": {
@@ -813,7 +777,7 @@
     {
         "Input": "우리반 이번달 제일 추웠던 날은 언제냐?",
         "Tags": {
-            "Style": ["Implicit modality","ArgMinMax"],
+            "Style": ["Implicit modality","ArgMinMax/Compare"],
             "Returns": ["Temp","Dates"]
         },
         "Response": {
@@ -876,10 +840,30 @@
                     "result_name": "qr"
                 }, {
                     "type": "o",
-                    "script": "settemp_ours = qr[qr['idu'] == '01_IB5'];settemp_theirs = qr[qr['idu'] == '01_IB7'];settemp_timealign = pd.merge(settemp_ours, settemp_theirs, on='timestamp', suffixes=('_ours', '_theirs'));settemp_timealign['temp_diff'] = settemp_timealign['settemp_ours'] - settemp_timealign['settemp_theirs'];",
+                    "script": "settemp_ours = qr[qr['idu'] == '01_IB5'];settemp_theirs = qr[qr['idu'] == '01_IB7'];settemp_rawtimeseries = pd.merge(settemp_ours, settemp_theirs, on='timestamp', suffixes=('_ours', '_theirs'));settemp_rawtimeseries['temp_diff'] = settemp_rawtimeseries['settemp_ours'] - settemp_rawtimeseries['settemp_theirs'];",
                     "returns": [
-                        "settemp_timealign"
+                        "settemp_rawtimeseries"
                     ]
+                }, {
+                    "type": "g",
+                    "args": {
+                        "graph_type": "original",
+                        "axis": {
+                            "xlabel": "날짜",
+                            "ylabel": "설정온도 차이",
+                            "title": "이번주 우리반과 옆반 설정온도 차이 추이"
+                        },
+                        "plots": [
+                            {
+                                "type": "line",
+                                "data": {
+                                    "x": "settemp_rawtimeseries['timestamp']",
+                                    "y": "settemp_rawtimeseries['temp_diff']"
+                                },
+                                "label": "설정온도 차이"
+                            }
+                        ]
+                    }
                 }
             ]
         }
@@ -924,7 +908,7 @@
     {
         "Input": "우리반, 옆반, 앞반 중 가장 추운 방은?",
         "Tags": {
-            "Style": ["Implicit temporal","ArgMinMax"],
+            "Style": ["Implicit temporal","ArgMinMax/Compare"],
             "Returns": ["Temp","Spatial"]
         },
         "Response": {
@@ -974,7 +958,7 @@
     },{
         "Input": "에어켠 제일 세게 킨 방 3개 알려줘",
         "Tags": {
-            "Style": ["Implicit temporal","ArgMinMax"],
+            "Style": ["Implicit temporal","ArgMinMax/Compare"],
             "Returns": ["Spatial","Temp"]
         },
         "Response": {
@@ -1014,7 +998,7 @@
     {
         "Input": "작년 옆반 가장 더웠던 달은?",
         "Tags": {
-            "Style": ["Implicit modality","ArgMinMax"],
+            "Style": ["Implicit modality","ArgMinMax/Compare"],
             "Returns": ["Temp","Dates"]
         },
         "Response": {
@@ -1049,7 +1033,7 @@
     },{
         "Input": "지난달에 설정온도랑 현재온도 차이가 제일 많이 났던 때는 언제야?",
         "Tags": {
-            "Style": ["Implicit spatial","ArgMinMax"],
+            "Style": ["Implicit spatial","ArgMinMax/Compare"],
             "Returns": ["Temp","Date"]
         },
         "Response": {
@@ -1404,7 +1388,7 @@
     },{
         "Input": "이번달 우리반 설정온도 최대값과 최소값 알려줘",
         "Tags": {
-            "Style": ["ArgMinMax"],
+            "Style": ["MinMax"],
             "Returns": ["Temp"]
         },
         "Response": {
@@ -1437,7 +1421,7 @@
     },{
         "Input": "우리반과 옆반중 더 추운곳은 어디야?",
         "Tags": {
-            "Style": ["Implicit temporal","ArgMinMax"],
+            "Style": ["Implicit temporal", "ArgMinMax/Compare"],
             "Returns": ["Temp","Spatial"]
         },
         "Response": {
@@ -1473,7 +1457,7 @@
     {
         "Input": "에어컨 켜져있어?",
         "Tags": {
-            "Style": ["Implicit spatial","Implicit temporal"],
+            "Style": ["Implicit spatial", "Implicit temporal"],
             "Returns": ["Oper"]
         },
         "Response": {
@@ -1551,7 +1535,7 @@
     {
         "Input": "우리 반 에어컨이 가장 오래 작동했던 날은 언제야?",
         "Tags": {
-            "Style": ["ArgMinMax"],
+            "Style": ["ArgMinMax/Compare"],
             "Returns": ["Dates","Time"]
         },
         "Response": {
@@ -1585,7 +1569,7 @@
     }, {
         "Input": "3주전 우리반 평균 실내온도 알려줘",
         "Tags": {
-            "Style": ["ArgMinMax"],
+            "Style": ["Avg/Diff/Get"],
             "Returns": ["Temp"]
         },
         "Response": {
@@ -1690,7 +1674,7 @@
     {
         "Input": "지난주 수요일 실내온도 최고값 알려줘",
         "Tags": {
-            "Style": ["Implicit spatial","ArgMinMax"],
+            "Style": ["Implicit spatial","ArgMinMax/Compare"],
             "Returns": ["Temp"]
         },
         "Response": {
