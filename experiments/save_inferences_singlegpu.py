@@ -28,14 +28,12 @@ class UnslothInference:
         cache_dir: str,
         max_seq_length: int = 3500,
         attn_implementation: str = attn_implementation,
-        load_in_4bit: bool = False,
         batch_size: int = 8  # 배치 크기 매개변수 추가
     ):
         self.checkpoint_dir = Path(checkpoint_dir)
         self.cache_dir = Path(cache_dir)
         self.max_seq_length = max_seq_length
         self.attn_implementation = attn_implementation
-        self.load_in_4bit = load_in_4bit
         self.batch_size = batch_size
 
         # Verify model files exist
@@ -76,7 +74,7 @@ class UnslothInference:
                 model, tokenizer = FastLanguageModel.from_pretrained(
                     self.checkpoint_dir.as_posix(),
                     dtype = self.torch_dtype,
-                    load_in_4bit = True,
+                    load_in_4bit = False,
                     load_in_8bit = False,
                     # quantization_config=BitsAndBytesConfig(
                     #     load_in_4bit=True,
@@ -504,11 +502,11 @@ def main():
             "v7_r64_a128_ours_4bit_0322/checkpoint-38"
 
         model_name, tr_config = \
-            "Bllossom-llama-3-Korean-Bllossom-70B", \
-            "v7_r64_a128_ours_4bit_adamw16bit_0322/checkpoint-50"
+            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+            "v7_r256_a512_ours_16bit_adamw16bit_0322/checkpoint-56"
     print(f"Model: {model_name}, Config: {tr_config}")
 
-    model_dir = Path(f"/workspace/model/{model_name}")
+    model_dir = Path(f"/model/{model_name}")
     checkpoint_dir = Path(f"{model_dir}/chkpts/{tr_config}")
     cache_dir = Path(f"{model_dir}/cache")
     
