@@ -76,16 +76,16 @@ class UnslothInference:
                 model, tokenizer = FastLanguageModel.from_pretrained(
                     self.checkpoint_dir.as_posix(),
                     dtype = self.torch_dtype,
-                    # load_in_4bit = True,
-                    # load_in_8bit = True,
-                    quantization_config=BitsAndBytesConfig(
-                        load_in_4bit=True,
-                        bnb_4bit_use_double_quant=True,
-                        bnb_4bit_quant_type="nf4",
-                        bnb_4bit_compute_dtype=torch_dtype,
-                        # load_in_8bit=True,
-                        # llm_int8_enable_fp32_cpu_offload=True
-                    ),
+                    load_in_4bit = False,
+                    load_in_8bit = False,
+                    # quantization_config=BitsAndBytesConfig(
+                    #     load_in_4bit=True,
+                    #     bnb_4bit_use_double_quant=True,
+                    #     bnb_4bit_quant_type="nf4",
+                    #     bnb_4bit_compute_dtype=torch_dtype,
+                    #     # load_in_8bit=True,
+                    #     # llm_int8_enable_fp32_cpu_offload=True
+                    # ),
                     attn_implementation=self.attn_implementation,
                     cache_dir=self.cache_dir.as_posix(),
                     local_files_only=True,
@@ -495,6 +495,10 @@ def main():
         model_name, tr_config = \
             "sh2orc-Llama-3.1-Korean-8B-Instruct", \
             "v7_r256_a512_ours_4bit_0322/checkpoint-37"
+        
+        model_name, tr_config = \
+            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+            "v7_r256_a512_ours_16bit_0322/checkpoint-67"
         
 
     print(f"Model: {model_name}, Config: {tr_config}")
