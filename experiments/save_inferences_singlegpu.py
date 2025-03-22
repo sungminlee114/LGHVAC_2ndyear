@@ -415,6 +415,19 @@ def read_dataset(train_type, dir, path):
         elif "v6" in dir.name:
             if train_type in ["woall"]:
                 del d["Response"]["생각"]
+        
+        tags = d["Tags"]["Style"]
+
+        skip_tags = ["Graph", "Reason"]
+
+        skip = False
+        for skip_tag in skip_tags:
+            if skip_tag in tags:
+                skip = True
+                break
+        
+        if skip:
+            continue
 
         result.append({"Metadata": metadata, "Input": d["Input"], "Response": json.dumps(d["Response"], ensure_ascii=False)})
     # result = [{"Input": d["Input"], "Response": json.dumps(d["Response"], ensure_ascii=False)} for d in data]
@@ -478,54 +491,10 @@ def main():
         # model_name, tr_config = \
         #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
         #     "r128_a256_ours/checkpoint-51"
-
-        # model_name, tr_config = \
-        #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-        #     "r256_a512_ours/checkpoint-138"
-
-        model_name, tr_config = \
-            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "v5_r256_a512_ours/checkpoint-54"
         
         model_name, tr_config = \
             "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "v5_r128_a256_ours/checkpoint-52"
-        
-        model_name, tr_config = \
-            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "v5_r128_a256_ours_noexample/checkpoint-50"
-        
-        model_name, tr_config = \
-            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "v6_r128_a256_ours/checkpoint-52"
-        
-        model_name, tr_config = \
-            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "v6_r256_a512_ours/checkpoint-72"
-        
-        model_name, tr_config = \
-            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "v6_r256_a512_ours_shorten/checkpoint-30"
-        
-        model_name, tr_config = \
-            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "v7_r256_a512_ours/checkpoint-37"
-        
-        model_name, tr_config = \
-            "Bllossom-llama-3-Korean-Bllossom-70B", \
-            "v7_r8_a16_ours/checkpoint-40"
-        
-        model_name, tr_config = \
-            "Bllossom-llama-3-Korean-Bllossom-70B", \
-            "v7_r8_a16_woall/checkpoint-46"
-            
-        model_name, tr_config = \
-            "Bllossom-llama-3-Korean-Bllossom-70B", \
-            "v7_r8_a16_ours_4bit/checkpoint-24"
-        
-        model_name, tr_config = \
-            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "v7_r256_a512_ours_4bit/checkpoint-88"
+            "v7_r256_a512_ours_4bit_0322/checkpoint-37"
         
 
     print(f"Model: {model_name}, Config: {tr_config}")
@@ -542,7 +511,7 @@ def main():
     
     dataset = []
     for scenario_dir in [d for d in BASE_DIR.iterdir() if d.is_dir() and "scenario" in d.name and "metadata.json" in [f.name for f in d.iterdir()]]:
-        data = read_dataset(train_type, scenario_dir, "onlyq_tr.json")
+        data = read_dataset(train_type, scenario_dir, "onlyq_ts.json")
         for i, d in enumerate(data):
             data[i]["Scenario"] = scenario_dir.name
         dataset.extend(data)
@@ -570,7 +539,7 @@ def main():
     common_prompt = re.sub(r"<\|.*?\|>", "", common_prompt)
     
     # Initialize distributed inference
-    batch_size = 1  # 배치 크기 설정
+    batch_size = 15  # 배치 크기 설정
     inference = UnslothInference(
         checkpoint_dir=str(checkpoint_dir),
         cache_dir=str(cache_dir),
