@@ -76,7 +76,7 @@ class UnslothInference:
                 model, tokenizer = FastLanguageModel.from_pretrained(
                     self.checkpoint_dir.as_posix(),
                     dtype = self.torch_dtype,
-                    load_in_4bit = False,
+                    load_in_4bit = True,
                     load_in_8bit = False,
                     # quantization_config=BitsAndBytesConfig(
                     #     load_in_4bit=True,
@@ -445,7 +445,6 @@ def main():
     dataset_name = "v6-250306-optimizetoken"
     dataset_name = "v7-250309-reduceinputanddatefunctioncall"
     BASE_DIR = Path(f"../finetuning/dataset/{dataset_name}")
-    # checkpoint_dir = Path("/workspace/model/Bllossom-llama-3.2-Korean-Bllossom-3B/chkpts/r1700_a1500/checkpoint-12")
     
 
     train_type = [
@@ -497,13 +496,19 @@ def main():
             "v7_r256_a512_ours_4bit_0322/checkpoint-37"
         
         model_name, tr_config = \
-            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "v7_r256_a512_ours_16bit_0322/checkpoint-67"
-        
+            "Bllossom-llama-3-Korean-Bllossom-70B", \
+            "v7_r32_a64_ours_4bit_0322/checkpoint-67"
 
+        model_name, tr_config = \
+            "Bllossom-llama-3-Korean-Bllossom-70B", \
+            "v7_r64_a128_ours_4bit_0322/checkpoint-38"
+
+        model_name, tr_config = \
+            "Bllossom-llama-3-Korean-Bllossom-70B", \
+            "v7_r64_a128_ours_4bit_adamw16bit_0322/checkpoint-50"
     print(f"Model: {model_name}, Config: {tr_config}")
 
-    model_dir = Path(f"/model/{model_name}")
+    model_dir = Path(f"/workspace/model/{model_name}")
     checkpoint_dir = Path(f"{model_dir}/chkpts/{tr_config}")
     cache_dir = Path(f"{model_dir}/cache")
     
