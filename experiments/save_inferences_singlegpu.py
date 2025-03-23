@@ -450,7 +450,7 @@ def main():
         "FI", # 1
         "ISP", # 2
         "ours" # 3
-    ][3]
+    ][0]
 
     if train_type == "woall":
         model_name, tr_config = \
@@ -467,7 +467,7 @@ def main():
         
         model_name, tr_config = \
             "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "v6_r64_a128_woall_shorten/checkpoint-53"
+            "v7_r256_a512_woall_16bit_adamw16bit_0322/checkpoint-60"
     
     elif train_type == "FI":
         # model_name, tr_config = \
