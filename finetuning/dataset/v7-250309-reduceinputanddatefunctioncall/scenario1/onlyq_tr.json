@@ -503,7 +503,7 @@
                 },
                 {
                     "type": "o",
-                    "script": "recent_time = qr['timestamp'].max();roomtemp_recent = qr[qr['timestamp'] == recent_time]['roomtemp'].values[0];settemp_recent = qr[qr['timestamp'] == recent_time]['settemp'].values[0];",
+                    "script": "recent_time = qr['timestamp'].max();recent_data = qr[qr['timestamp'] == recent_time];roomtemp_recent = recent_data['roomtemp'].values[0];settemp_recent = recent_data['settemp'].values[0];",
                     "returns": [
                         "roomtemp_recent",
                         "settemp_recent",
@@ -1243,7 +1243,7 @@
                 },
                 {
                     "type": "o",
-                    "script": "qr['temp_diff'] = qr['roomtemp'] - qr['settemp'];max_diff = qr['temp_diff'].max();max_diff_timestamps = qr[qr['temp_diff'] == max_diff]['timestamp'].values;max_diff_settemps = qr[qr['temp_diff'] == max_diff]['settemp'].values;max_diff_roomtemps = qr[qr['temp_diff'] == max_diff]['roomtemp'].values;",
+                    "script": "qr['temp_diff'] = qr['roomtemp'] - qr['settemp'];max_diff = qr['temp_diff'].max();max_diff_data = qr[qr['temp_diff'] == max_diff];max_diff_timestamps = max_diff_data['timestamp'].values;max_diff_settemps = max_diff_data['settemp'].values;max_diff_roomtemps = max_diff_data['roomtemp'].values;",
                     "returns": [
                         "max_diff_timestamps",
                         "max_diff_settemps",

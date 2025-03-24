@@ -506,9 +506,9 @@
             "Returns": ["Temp"]
         },
         "Response": {
-            "Thinking": "사용자는 올해 6월 ~ 8월 우리반의 설정온도 최대값과 최소값을 알고싶어함. 올해 여름(6월 ~ 8월) 우리반의 설정온도 데이터를 쿼리한 후 최대값과 최소값을 계산하여 반환하면 됨.",
+            "Thinking": "사용자는 올해 6월 ~ 8월 우리반의 실내온도 최대값과 최소값을 알고싶어함. 올해 여름(6월 ~ 8월) 우리반의 실내온도 데이터를 쿼리한 후 최대값과 최소값을 계산하여 반환하면 됨.",
             "Expectations": [
-                "올해 여름(6월 ~ 8월) 우리반의 설정온도는 최대 {{settemp_max}}℃, 최소 {{settemp_min}}℃입니다."
+                "올해 여름(6월 ~ 8월) 우리반의 실내온도는 최대 {{roomtemp_max}}℃, 최소 {{roomtemp_min}}℃입니다."
             ],
             "Instructions": [
                 {
@@ -516,7 +516,7 @@
                     "args": {
                         "table_name": "data_t",
                         "columns": [
-                            "settemp"
+                            "roomtemp"
                         ],
                         "temporal": "[DATE 'CURRENT_YEAR-06-01', DATE 'CURRENT_YEAR-09-01')",
                         "spatials": ["01_IB5"]
@@ -524,10 +524,10 @@
                     "result_name": "qr"
                 }, {
                     "type": "o",
-                    "script": "settemp_max = qr['settemp'].max();settemp_min = qr['settemp'].min();",
+                    "script": "roomtemp_max = qr['roomtemp'].max();roomtemp_min = qr['roomtemp'].min();",
                     "returns": [
-                        "settemp_max",
-                        "settemp_min"
+                        "roomtemp_max",
+                        "roomtemp_min"
                     ]
                 }
             ]
