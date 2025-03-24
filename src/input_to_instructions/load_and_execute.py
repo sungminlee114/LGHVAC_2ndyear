@@ -75,6 +75,9 @@ class InputToInstruction:
             # "-fa",
             "--simple-io",
             "--no-display-prompt",
+            # "--sm", "none",
+            # "--main-gpu", "0",
+            "--tensor-split", "1,0", # gpu 0, 1
             # "-no-cnv",
             # "-st",
             # "--no-warmup",

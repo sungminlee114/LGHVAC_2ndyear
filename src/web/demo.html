@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LG전자-연세대 LLM 중간 데모</title>
+    <title>LG전자-연세대 HVAC LLM 1차년도 데모</title>
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css">
     <style>
@@ -26,11 +26,10 @@
 
         .chat-container {
             background-color: #fff;
-            width: 95%;
-            height: 90%;
-            max-width: 1600px;
-            max-height: 90%;
+            height: 95%;
+            margin: 20px;
             padding: 20px;
+            padding-bottom: 5px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             display: flex;
@@ -64,7 +63,8 @@
 
         /* Left column - Metadata */
         .metadata-column {
-            flex: 1;
+            /* flex: 1; */
+            width: 300px;
             display: flex;
             flex-direction: column;
             border: 1px solid #ddd;
@@ -317,7 +317,7 @@
     <div class="chat-container">
         <!-- Header section -->
         <div class="header-container">
-            LG전자-연세대 HVAC LLM 시스템 중간 데모
+            LG전자-연세대 HVAC LLM 1차년도 데모
             <div style="margin-left: auto; display: flex; align-items: center;">
                 <img src="{{ url_for('static', filename='lg_logo.png') }}" alt="LG Logo">
                 <img src="{{ url_for('static', filename='yonsei_logo.png') }}" alt="Yonsei Logo">
@@ -363,13 +363,13 @@
             </div>
 
             <!-- Right column - Debug -->
-            <div class="debug-column">
+            <!-- <div class="debug-column">
                 <div class="debug-title">디버그 메시지</div>
                 <div class="debug-content" id="debugContent">
-                    <!-- Debug messages will appear here -->
+                    Debug messages will appear here 
                     시스템 디버그 메시지가 이곳에 표시됩니다.
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 
@@ -380,7 +380,7 @@
         const chatWindow = document.getElementById('chatWindow');
         const metadataSelect = document.getElementById('metadataSelect');
         const metadataDescription = document.getElementById('metadataDescription');
-        const debugContent = document.getElementById('debugContent');
+        // const debugContent = document.getElementById('debugContent');
         let waitingMessageElement = null;
         let availableMetadatas = {};
 
@@ -435,7 +435,7 @@
                 .catch(error => {
                     console.error('메타데이터 로드 오류:', error);
                     metadataSelect.innerHTML = '<option value="">메타데이터 로드 실패</option>';
-                    logDebug('메타데이터 로드 오류: ' + error);
+                    // logDebug('메타데이터 로드 오류: ' + error);
                 });
         }
 
@@ -532,12 +532,12 @@
             }
         }
 
-        // 디버그 메시지 로깅 함수
-        function logDebug(message) {
-            const timestamp = new Date().toLocaleTimeString();
-            debugContent.innerHTML += `[${timestamp}] ${message}\n`;
-            debugContent.scrollTop = debugContent.scrollHeight;
-        }
+        // // 디버그 메시지 로깅 함수
+        // function logDebug(message) {
+        //     const timestamp = new Date().toLocaleTimeString();
+        //     debugContent.innerHTML += `[${timestamp}] ${message}\n`;
+        //     debugContent.scrollTop = debugContent.scrollHeight;
+        // }
 
         // XSS 공격 방지를 위한 HTML 이스케이프 함수
         const escapeHTML = (str) => {
@@ -576,7 +576,7 @@
                 return;
             }
 
-            logDebug(`요청: "${sentence}", 메타데이터: ${selectedMetadata}`);
+            // logDebug(`요청: "${sentence}", 메타데이터: ${selectedMetadata}`);
 
             // 사용자 메시지를 채팅 창에 추가
             appendMessage('user', sentence);
@@ -624,10 +624,10 @@
 
                     // 채팅 기록 저장
                     saveChatHistory();
-                    logDebug('응답 완료');
+                    // logDebug('응답 완료');
                 } else {
                     // 봇 응답 누적
-                    logDebug(`응답 수신: ${event.data}`);
+                    // logDebug(`응답 수신: ${event.data}`);
                     botResponseBuffer += event.data + '\n';
 
                     // 봇 메시지 요소의 내용을 업데이트
@@ -639,7 +639,7 @@
             };
 
             eventSource.onerror = function (error) {
-                logDebug(`오류 발생: ${error}`);
+                // logDebug(`오류 발생: ${error}`);
 
                 // 대기 메시지 제거
                 removeWaitingMessage();
@@ -669,7 +669,7 @@
             chatWindow.appendChild(waitingMessageElement);
             scrollChatWindow();
 
-            logDebug('응답 대기 중...');
+            // logDebug('응답 대기 중...');
         }
 
         // 대기 메시지를 제거하는 함수
@@ -731,8 +731,8 @@
             chatWindow.innerHTML = '';
 
             // 디버그 창 비우기
-            debugContent.innerHTML = '';
-            logDebug('새 세션이 시작되었습니다.');
+            // debugContent.innerHTML = '';
+            // logDebug('새 세션이 시작되었습니다.');
 
             // 새로운 상태를 로컬 스토리지에 저장
             saveChatHistory();
@@ -774,7 +774,7 @@
                 suggestionContainer.appendChild(button);
             });
 
-            logDebug('추천 질문 버튼이 생성되었습니다.');
+            // logDebug('추천 질문 버튼이 생성되었습니다.');
         }
     </script>
 </body>

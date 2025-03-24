@@ -18,7 +18,6 @@
                     "args": {
                         "table_name": "data_t",
                         "columns": [
-                            
                             "roomtemp",
                             "settemp",
                             "oper"

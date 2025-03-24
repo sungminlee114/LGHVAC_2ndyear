@@ -28,7 +28,7 @@ def load_models():
 
     InputToInstruction.load_model(
         train_type="ours",
-        dtype="Q8_0",
+        dtype=["Q8_0", "F16"][1],
         log_output=False
     )
 

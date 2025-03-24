@@ -633,6 +633,85 @@
         }
     },
     {
+        "Input": "오늘은 무슨 요일이야?",
+        "Tags": {
+            "Style": [
+                "Metadata",
+                "DateQuery"
+            ],
+            "Returns": [
+                "Time"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 오늘의 요일을 물어봄. 오늘의 일시를 Metadata에서 읽은 후 pandas의 datetime 기능을 사용하여 요일을 반환하면 됨.",
+            "Expectations": [
+                "오늘은 {{today_weekday}}요일 입니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "o",
+                    "script": "current_datetime = pd.Timestamp(Metadata['current_datetime']);today_weekday = current_datetime.strftime('%A');",
+                    "returns": [
+                        "today_weekday"
+                    ]
+                }
+            ]
+        }
+    },{
+        "Input": "어제는 몇일이었어?",
+        "Tags": {
+            "Style": [
+                "Metadata",
+                "DateQuery"
+            ],
+            "Returns": [
+                "Time"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 어제의 날짜를 물어봄. 오늘 일시를 Metadata에서 읽은 후 pandas의 datetime 기능을 사용하여 날짜를 반환하면 됨.",
+            "Expectations": [
+                "어제는 {{yesterday_date}}이었습니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "o",
+                    "script": "current_datetime = pd.Timestamp(Metadata['current_datetime']);yesterday_datetime = current_datetime - pd.Timedelta(days=1);yesterday_date = yesterday_datetime.strftime('%Y-%m-%d');",
+                    "returns": [
+                        "yesterday_date"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "Input": "내 이름이 뭐야?",
+        "Tags": {
+            "Style": [
+                "Metadata"
+            ],
+            "Returns": [
+                "String"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 자신의 이름을 물어봄. 이름은 Metadata에서 읽어서 반환하면 됨.",
+            "Expectations": [
+                "사용자의 이름은 {{user_name}}입니다."
+            ],
+            "Instructions": [
+                {
+                    "type": "o",
+                    "script": "user_name = Metadata['user_name'];",
+                    "returns": [
+                        "user_name"
+                    ]
+                }
+            ]
+        }
+    },
+    {
         "Input": "What is the current temperature in our class?",
         "Tags": {
             "Style": [
@@ -860,7 +939,7 @@
                 },
                 {
                     "type": "o",
-                    "script": "qr_recent=qr[qr['timestamp']==qr['timestamp'].max()];off_names = qr_recent[qr_recent['oper'] == False]['idu'].values;",
+                    "script": "qr_recent=qr[qr['timestamp']==qr['timestamp'].max()];off_names = pd.unique(qr_recent[qr_recent['oper'] == False]['idu']);",
                     "returns": [
                         "off_names"
                     ]

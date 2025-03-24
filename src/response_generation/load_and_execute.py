@@ -53,6 +53,9 @@ class ResponseGeneration:
             # "-fa",
             "--simple-io",
             "--no-display-prompt",
+            # "--sm", "none",
+            # "--main-gpu", "1",
+            "--tensor-split", "0,1", # gpu 0, 1
             # "-no-cnv",
             # "-st",
             # "--no-warmup",

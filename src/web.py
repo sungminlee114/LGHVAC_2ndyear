@@ -105,13 +105,13 @@ def get_metadata():
         metadatas[k] = [
             ['Site 정보',
                 [
-                    ["Site 이름", v.get('site_name', None)],
+                    # ["Site 이름", v.get('site_name', None)],
                     ["Modality 매핑", [f"{k}: {v}" for k, v in v.get('modality_mapping', {}).items()]],
                 ]
             ],
             ['유저 정보', [
-                ["User 이름", v.get('user_name', None)],
-                ["User 역할", v.get('user_role', None)],
+                ["이름", v.get('user_name', None)],
+                # ["User 역할", v.get('user_role', None)],
                 ["IDU 이름", v.get('idu_name', None)],
                 ["IDU 매핑", [f"{k}: {v}" for k, v in v.get('idu_mapping', {}).items()]],
             ]],
