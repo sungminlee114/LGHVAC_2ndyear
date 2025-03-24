@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LG전자-연세대 LLM 중간 데모</title>
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css">
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-size: 14px;
+        }
+
+        div {
+            display: inline-block;
+        }
+
+        .chat-container {
+            background-color: #fff;
+            width: 95%;
+            height: 90%;
+            max-width: 1600px;
+            max-height: 90%;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #da0f47;
+            flex-wrap: wrap;
+        }
+
+        .header-container img {
+            height: 40px;
+            margin-left: 10px;
+        }
+
+        /* Main content container - horizontal layout */
+        .main-content {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            height: calc(100% - 70px);
+            /* Adjust based on header height */
+        }
+
+        /* Left column - Metadata */
+        .metadata-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            background-color: #f8f8f8;
+        }
+
+        .metadata-container {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metadata-container label {
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .metadata-container select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            background-color: white;
+            width: 100%;
+        }
+
+        .description-box {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: white;
+            overflow-y: auto;
+        }
+
+        /* Middle column - Chat */
+        .chat-column {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-window {
+            flex: 1;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+
+            /* Flex 컨테이너로 설정 */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            /* 기본적으로 왼쪽 정렬 */
+        }
+
+        .normal {
+            color: #000;
+        }
+
+        .h1 {
+            margin: 5px 0 0 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #da0f47;
+        }
+
+        .h2 {
+            margin: 5px 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: #555;
+            text-decoration: underline;
+        }
+
+        .h3 {
+            color: #003876;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .chat-message {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 15px;
+            border: 1px solid #ddd;
+            max-width: 95%;
+            display: inline-block;
+            word-wrap: break-word;
+            position: relative;
+            font-size: 16px;
+            white-space: pre-wrap;
+            /* Preserve newlines */
+            line-height: 23px;
+            background-color: #ffffff;
+            /* White background */
+            color: #000000;
+            /* Black text */
+        }
+
+        .user-message {
+            text-align: left;
+            /* 텍스트는 왼쪽 정렬 */
+            align-self: flex-end;
+            /* 오른쪽 끝으로 배치 */
+        }
+
+        .bot-message {
+            text-align: left;
+            /* align-self: flex-start; 기본값이므로 생략 가능 */
+        }
+
+        .system-message {
+            background-color: #fff3cd;
+            color: #856404;
+            text-align: center;
+            align-self: center;
+            max-width: 90%;
+            font-style: italic;
+        }
+
+        .suggestion-container {
+            display: flex;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            margin-bottom: 5px;
+        }
+
+        .suggestion-button {
+            background-color: #e0e0e0;
+            /* Gray background */
+            color: #000;
+            /* Black text */
+            border: 1px solid #ddd;
+            padding: 5px 5px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        .suggestion-button:hover {
+            background-color: #cccccc;
+        }
+
+        .input-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            height: max-content;
+            font-size: 16px;
+        }
+
+        .input-container input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        .input-container button {
+            background-color: #da0f47;
+            color: white;
+            border: none;
+            padding: 0 5px;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 10px;
+            min-width: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .input-container button:hover {
+            background-color: #c30e3f;
+        }
+
+        /* Style for the New Session button */
+        .input-container .new-session-button {
+            background-color: #4CAF50;
+            /* Green color */
+        }
+
+        .input-container .new-session-button:hover {
+            background-color: #45a049;
+        }
+
+        /* Disabled button styles */
+        .input-container button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        /* Right column - Debug */
+        .debug-column {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            background-color: #f8f8f8;
+            overflow-y: auto;
+        }
+
+        .debug-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .debug-content {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: white;
+            height: calc(100% - 40px);
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+
+        .metadata-section {
+            /* margin-top: 10px; */
+            margin-bottom: 5px;
+            /* color: #555; */
+        }
+
+        .metadata-sectionitem {
+            margin-bottom: 3px;
+            line-height: 1.4;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="chat-container">
+        <!-- Header section -->
+        <div class="header-container">
+            LG전자-연세대 HVAC LLM 시스템 중간 데모
+            <div style="margin-left: auto; display: flex; align-items: center;">
+                <img src="{{ url_for('static', filename='lg_logo.png') }}" alt="LG Logo">
+                <img src="{{ url_for('static', filename='yonsei_logo.png') }}" alt="Yonsei Logo">
+            </div>
+        </div>
+
+        <!-- Main content - Three column layout -->
+        <div class="main-content">
+            <!-- Left column - Metadata -->
+            <div class="metadata-column">
+                <div class="metadata-container">
+                    <label for="metadataSelect">메타데이터 선택:</label>
+                    <select id="metadataSelect">
+                        <option value="">로딩 중...</option>
+                    </select>
+                </div>
+                <div class="description-box" id="metadataDescription">
+                    <!-- Add title-body vertical boxes -->
+                    <div class="metadata-item">
+                        <!-- <div class="metadata-title">제목</div>
+                        <div class="metadata-content">
+                            정보
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle column - Chat -->
+            <div class="chat-column">
+                <div class="chat-window" id="chatWindow">
+                    <!-- Chat messages will appear here -->
+                </div>
+
+                <div class="suggestion-container">
+                    <!-- Suggested input buttons will be added here -->
+                </div>
+
+                <div class="input-container">
+                    <input type="text" id="sentenceInput" placeholder="Enter a message...">
+                    <button id="sendButton" onclick="sendRequest()">Send</button>
+                    <button class="new-session-button" id="newSessionButton" onclick="newSession()">New Session</button>
+                </div>
+            </div>
+
+            <!-- Right column - Debug -->
+            <div class="debug-column">
+                <div class="debug-title">디버그 메시지</div>
+                <div class="debug-content" id="debugContent">
+                    <!-- Debug messages will appear here -->
+                    시스템 디버그 메시지가 이곳에 표시됩니다.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sendButton = document.getElementById('sendButton');
+        const newSessionButton = document.getElementById('newSessionButton');
+        const sentenceInput = document.getElementById('sentenceInput');
+        const chatWindow = document.getElementById('chatWindow');
+        const metadataSelect = document.getElementById('metadataSelect');
+        const metadataDescription = document.getElementById('metadataDescription');
+        const debugContent = document.getElementById('debugContent');
+        let waitingMessageElement = null;
+        let availableMetadatas = {};
+
+        // 봇 응답을 누적할 변수
+        let botResponseBuffer = '';
+
+        sentenceInput.addEventListener('keyup', function (event) {
+            if (event.key === 'Enter') {
+                sendRequest();
+            }
+        });
+
+        // 페이지 로드 시 채팅 기록 불러오기 및 메타데이터 로드
+        window.onload = function () {
+            const chatHistory = localStorage.getItem('chatHistory');
+            if (chatHistory) {
+                chatWindow.innerHTML = chatHistory;
+                scrollChatWindow();
+            }
+
+            loadMetadatas(); // 메타데이터 로드
+            createSuggestedButtons(); // 제안 버튼 생성 함수 호출
+        };
+
+        // 메타데이터 로드 함수
+        function loadMetadatas() {
+            fetch('http://1.233.219.93:{{ port_number }}/available_metadatas')
+                .then(response => response.json())
+                .then(data => {
+                    availableMetadatas = data;
+
+                    // 드롭다운 옵션 채우기
+                    metadataSelect.innerHTML = '';
+
+                    // 객체의 모든 키(메타데이터 이름) 추출
+                    const metadataNames = Object.keys(availableMetadatas);
+
+                    // 각 메타데이터에 대해 옵션 추가
+                    metadataNames.forEach(name => {
+                        const option = document.createElement('option');
+                        option.value = name;
+                        option.textContent = name;
+                        metadataSelect.appendChild(option);
+                    });
+
+                    // 첫 번째 옵션 선택 및 설명 표시
+                    if (metadataNames.length > 0) {
+                        metadataSelect.value = metadataNames[0];
+                        updateMetadataDescription(metadataNames[0]);
+                    }
+                })
+                .catch(error => {
+                    console.error('메타데이터 로드 오류:', error);
+                    metadataSelect.innerHTML = '<option value="">메타데이터 로드 실패</option>';
+                    logDebug('메타데이터 로드 오류: ' + error);
+                });
+        }
+
+        // 메타데이터 선택 변경 시 설명 업데이트
+        metadataSelect.addEventListener('change', function () {
+            updateMetadataDescription(this.value);
+        });
+
+        function createMetadataDescriptionFromList(data, depth = 0) {
+    // Clear the container at the start of top-level processing
+    if (depth === 0) {
+        metadataDescription.innerHTML = '';
+    }
+    
+    for (const item of data) {
+        if (Array.isArray(item) && item.length === 2) {
+            const [title, content] = item;
+            
+            if (Array.isArray(content)) {
+                // Section header (main category)
+                const sectionEl = document.createElement('div');
+                sectionEl.className = 'metadata-section';
+                sectionEl.style.paddingLeft = `${depth * 16}px`;
+                // sectionEl.style.marginTop = depth === 0 ? '15px' : '10px';
+                sectionEl.style.marginBottom = '5px';
+                sectionEl.style.fontWeight = 'bold';
+                sectionEl.textContent = title;
+                metadataDescription.appendChild(sectionEl);
+                
+                if (content.every(subItem => Array.isArray(subItem))) {
+                    // Process nested arrays
+                    createMetadataDescriptionFromList(content, depth + 1);
+                } else {
+                    // Simple list items
+                    for (const subItem of content) {
+                        const itemEl = document.createElement('div');
+                        itemEl.className = 'metadata-item';
+                        itemEl.style.paddingLeft = `${(depth+1) * 16}px`;
+                        itemEl.style.marginBottom = '4px';
+                        itemEl.textContent = `| ${subItem}`;
+                        metadataDescription.appendChild(itemEl);
+                    }
+                }
+            } else {
+                // Key-value pair (simple property)
+                const itemEl = document.createElement('div');
+                itemEl.className = 'metadata-item';
+                itemEl.style.paddingLeft = `${(depth) * 16}px`;
+                itemEl.style.marginBottom = '4px';
+                // itemEl.textContent = `${title}: ${content}`;
+                // instead, add two text spans and title has bold font weight
+                itemEl.innerHTML = `<span style="font-weight: bold;">${title}:</span> ${content}`;
+                metadataDescription.appendChild(itemEl);
+            }
+        } else if (Array.isArray(item) && item.length >= 2 && typeof item[0] === 'string') {
+            // Special case for current info (일시)
+                // Other array items
+                const keyEl = document.createElement('div');
+                keyEl.className = 'metadata-item';
+                keyEl.style.paddingLeft = `${(depth + 1) * 16}px`;
+                keyEl.style.marginBottom = '4px';
+                keyEl.textContent = item.join(': ');
+                metadataDescription.appendChild(keyEl);
+        } else {
+            // Simple string item
+            const itemEl = document.createElement('div');
+            itemEl.className = 'metadata-item';
+            itemEl.style.paddingLeft = `${(depth + 1) * 16}px`;
+            itemEl.style.marginBottom = '4px';
+            itemEl.textContent = item;
+            metadataDescription.appendChild(itemEl);
+        }
+    }
+}
+
+
+        // 메타데이터 설명 업데이트 함수
+        function updateMetadataDescription(metadataName) {
+            if (availableMetadatas[metadataName]) {
+                // console.log(availableMetadatas[metadataName])
+                // metadataSiteContent.innerHTML = JSON.stringify(availableMetadatas[metadataName]['site'], null, 2);
+                // metadataUserContent.innerHTML = JSON.stringify(availableMetadatas[metadataName]['user'], null, 2);
+                // metadataCurrentContent.innerHTML = JSON.stringify(availableMetadatas[metadataName]['current'], null, 2);
+                
+                metadataDescription.innerHTML = '';
+                // for arbirarty depth of [key, value] pairs where value can be again [key, value] pairs
+
+                
+
+                createMetadataDescriptionFromList(availableMetadatas[metadataName]);
+
+            } else {
+                metadataDescription.innerHTML = '선택된 메타데이터에 대한 정보가 없습니다.';
+            }
+        }
+
+        // 디버그 메시지 로깅 함수
+        function logDebug(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            debugContent.innerHTML += `[${timestamp}] ${message}\n`;
+            debugContent.scrollTop = debugContent.scrollHeight;
+        }
+
+        // XSS 공격 방지를 위한 HTML 이스케이프 함수
+        const escapeHTML = (str) => {
+            return str.replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        };
+
+        // 특수 태그를 HTML 요소로 포맷팅하는 함수
+        const formatText = (str) => {
+            const escapedStr = escapeHTML(str);
+
+            // <h1 TEXT> 및 <h2 TEXT>를 대응하는 HTML 태그로 변환
+            let formattedStr = escapedStr
+                .replace(/&lt;h1 (.*?)&gt;/g, '<div class="h1">$1</div>')
+                .replace(/&lt;h2 (.*?)&gt;/g, '<div class="h2">$1</div>')
+                .replace(/&lt;h3 (.*?)&gt;/g, '<div class="h3">$1</div>')
+                .replace(/^((?!<div class="h[123]">).+)$/gm, '<div class="normal">$1</div>')
+                .replace(/&lt;br&gt;/g, '\n');
+
+            return formattedStr;
+        };
+
+        function sendRequest() {
+            const sentence = sentenceInput.value.trim();
+            const selectedMetadata = metadataSelect.value;
+
+            if (!sentence) {
+                return;
+            }
+
+            if (!selectedMetadata) {
+                alert('메타데이터를 선택해주세요.');
+                return;
+            }
+
+            logDebug(`요청: "${sentence}", 메타데이터: ${selectedMetadata}`);
+
+            // 사용자 메시지를 채팅 창에 추가
+            appendMessage('user', sentence);
+
+            // 로컬 스토리지에 저장
+            saveChatHistory();
+
+            // 입력 필드 초기화
+            sentenceInput.value = '';
+
+            // 채팅 창 아래로 스크롤
+            scrollChatWindow();
+
+            // 응답 대기 중에 버튼과 입력 필드 비활성화
+            sendButton.disabled = true;
+            newSessionButton.disabled = true;
+            sentenceInput.disabled = true;
+            metadataSelect.disabled = true;
+
+            // 대기 메시지 표시
+            showWaitingMessage();
+
+            // 봇 응답 버퍼 초기화
+            botResponseBuffer = '';
+
+            // 봇의 메시지 박스를 생성하고 참조를 저장
+            const botMessageElement = appendMessage('bot', ''); // 초기에는 빈 메시지
+            // Hide the bot message box until the first response is received
+            botMessageElement.style.display = 'none';
+
+            // EventSource 생성하여 스트림 처리 - 메타데이터 파라미터 추가
+            const eventSource = new EventSource(`http://1.233.219.93:{{ port_number }}/process?sentence=${encodeURIComponent(sentence)}&metadata_name=${encodeURIComponent(selectedMetadata)}`);
+
+            eventSource.onmessage = function (event) {
+                // 대기 메시지 제거
+                removeWaitingMessage();
+                botMessageElement.style.display = 'block'; // Show the bot message box
+
+                if (event.data === "finish") {
+                    eventSource.close();
+                    sendButton.disabled = false;
+                    newSessionButton.disabled = false;
+                    sentenceInput.disabled = false;
+                    metadataSelect.disabled = false;
+
+                    // 채팅 기록 저장
+                    saveChatHistory();
+                    logDebug('응답 완료');
+                } else {
+                    // 봇 응답 누적
+                    logDebug(`응답 수신: ${event.data}`);
+                    botResponseBuffer += event.data + '\n';
+
+                    // 봇 메시지 요소의 내용을 업데이트
+                    botMessageElement.innerHTML = formatText(botResponseBuffer);
+
+                    // 채팅 창 아래로 스크롤
+                    scrollChatWindow();
+                }
+            };
+
+            eventSource.onerror = function (error) {
+                logDebug(`오류 발생: ${error}`);
+
+                // 대기 메시지 제거
+                removeWaitingMessage();
+
+                // 에러 메시지를 봇 메시지 요소에 표시
+                botMessageElement.style.display = 'block';
+                botMessageElement.innerText = 'An error occurred while processing your request.';
+
+                // 채팅 기록 저장
+                saveChatHistory();
+
+                eventSource.close();
+                sendButton.disabled = false;
+                newSessionButton.disabled = false;
+                sentenceInput.disabled = false;
+                metadataSelect.disabled = false;
+            };
+        }
+
+        // 대기 메시지를 표시하는 함수
+        function showWaitingMessage() {
+            waitingMessageElement = document.createElement('div');
+            waitingMessageElement.classList.add('chat-message', 'system-message');
+            waitingMessageElement.style.backgroundColor = '#e0e0e0'; // 회색 배경
+            waitingMessageElement.style.color = '#555555'; // 회색 글자색
+            waitingMessageElement.innerText = '응답 대기 중...';
+            chatWindow.appendChild(waitingMessageElement);
+            scrollChatWindow();
+
+            logDebug('응답 대기 중...');
+        }
+
+        // 대기 메시지를 제거하는 함수
+        function removeWaitingMessage() {
+            if (waitingMessageElement) {
+                chatWindow.removeChild(waitingMessageElement);
+                waitingMessageElement = null;
+            }
+        }
+
+        function scrollChatWindow() {
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function saveChatHistory() {
+            localStorage.setItem('chatHistory', chatWindow.innerHTML);
+        }
+
+        // 메시지를 채팅 창에 추가하는 함수
+        function appendMessage(type, text) {
+            const message = document.createElement('div');
+            message.classList.add('chat-message');
+
+            if (type === 'user') {
+                message.classList.add('user-message');
+            } else if (type === 'bot') {
+                message.classList.add('bot-message');
+            } else if (type === 'system') {
+                message.classList.add('system-message');
+            }
+
+            // 포맷팅 적용
+            message.innerHTML = formatText(text);
+
+            chatWindow.appendChild(message);
+            scrollChatWindow(); // 메시지가 추가될 때마다 아래로 스크롤
+
+            // 이후에 메시지 요소를 업데이트할 수 있도록 반환
+            return message;
+        }
+
+        // 새 세션을 시작하는 함수 (확인 후 채팅 기록 삭제)
+        function newSession() {
+            const confirmNewSession = confirm("새 세션을 시작하시겠습니까? 채팅 기록이 삭제됩니다.");
+            if (!confirmNewSession) {
+                return;
+            }
+
+            // 처리 중에 버튼 비활성화
+            sendButton.disabled = true;
+            newSessionButton.disabled = true;
+            sentenceInput.disabled = true;
+            metadataSelect.disabled = true;
+
+            // 로컬 스토리지 지우기
+            localStorage.removeItem('chatHistory');
+
+            // 채팅 창 비우기
+            chatWindow.innerHTML = '';
+
+            // 디버그 창 비우기
+            debugContent.innerHTML = '';
+            logDebug('새 세션이 시작되었습니다.');
+
+            // 새로운 상태를 로컬 스토리지에 저장
+            saveChatHistory();
+
+            // 아래로 스크롤
+            scrollChatWindow();
+
+            // 버튼 활성화
+            sendButton.disabled = false;
+            newSessionButton.disabled = false;
+            sentenceInput.disabled = false;
+            metadataSelect.disabled = false;
+        }
+
+        const suggestedInputs = [
+            '현재 우리반 실내온도 알려줘.',
+            '지금 우리반 에어컨 전원 꺼져있어?',
+            '지금 가장 더운반 알려줘.',
+            '우리반과 옆반의 현재 온도차이 알려줘.',
+            '오늘 우리반 평균온도 알려줘',
+            '이번달 우리반 가장 더웠던 날이 언제야?',
+            '10년전 우리반 온도 알려줘',
+            '요번달에 가장 더웠던 날 갈켜주소',
+            '우리반과 옆반 중 오늘 하루 평균온도가 더 높은곳을 알려줘',
+            '우리ㅣ 반 형ㄴ재온도 알려줘',
+        ];
+
+        // 제안 입력 버튼을 생성하는 함수
+        function createSuggestedButtons() {
+            const suggestionContainer = document.querySelector('.suggestion-container');
+            suggestedInputs.forEach(input => {
+                const button = document.createElement('button');
+                button.classList.add('suggestion-button');
+                button.innerText = input;
+                button.addEventListener('click', () => {
+                    sentenceInput.value = input; // 입력 필드에 버튼 텍스트 설정
+                    sendRequest(); // 자동으로 요청 전송
+                });
+                suggestionContainer.appendChild(button);
+            });
+
+            logDebug('추천 질문 버튼이 생성되었습니다.');
+        }
+    </script>
+</body>
+
+</html>

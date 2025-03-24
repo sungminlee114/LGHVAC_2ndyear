@@ -332,6 +332,8 @@ class DBInstance:
                 where_part = " AND ".join([str(clause) if not isinstance(clause, sql.Composed) else clause.as_string(self.connection) for clause in where_clauses])
                 select_query += sql.SQL(" WHERE {}").format(sql.SQL(where_part))
             
+            # Add sorting by timestamp
+            select_query += sql.SQL(" ORDER BY timestamp")
             
             logger.debug(f"Select query as string: {select_query.as_string(self.connection)}")
             # print(select_query.as_string(self.connection), flush=True)
