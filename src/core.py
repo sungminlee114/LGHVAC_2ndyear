@@ -26,13 +26,13 @@ from src.response_generation.load_and_execute import ResponseGeneration
 
 def load_models():
 
-    InputToInstruction.load_model(
+    InputToInstruction.initialize(
         train_type="ours",
         dtype=["Q8_0", "F16"][1],
-        log_output=False
+        log_output=True
     )
 
-    ResponseGeneration.load_model(
+    ResponseGeneration.initialize(
         log_output=False
     )
 

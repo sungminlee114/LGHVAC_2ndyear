@@ -1,165 +1,78 @@
 __all__ = ["InputToInstruction"]
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-import subprocess
-import os
-import time
 import re
 
 from src import BASE_DIR
-from src.llamacpp_util import wait_for_input_waiting
+from src.llamacpp_util import LlamaCppModel
 from src.input_to_instructions.types import *
 
 MODULE_DIR = BASE_DIR / "input_to_instructions"
 
 class InputToInstruction:
-    @classmethod
-    def parse_arg(self,
-        train_type:str,
-        dtype:str,
-        log_output=False,
-    ):
-        self.train_type = train_type
-        if self.train_type != "ours":
-            raise NotImplementedError("Only 'ours' is currently supported for train_type.")
-
-        self.dtype = dtype
-        self.log_output = log_output
-
-        self.gguf_path  = MODULE_DIR / f"models/i2i-{self.train_type}-{self.dtype}.gguf"
-        if not self.gguf_path.exists():
-            logger.error(f"GGUF file does not exist: {self.gguf_path}")
-            raise Exception("GGUF file does not exist.")
-        self.binary_path = BASE_DIR / "../llama.cpp/build/bin/llama-cli"
-        if not self.binary_path.exists():
-            logger.error(f"Binary file does not exist: {self.binary_path}")
-            raise Exception("Binary file does not exist.")
-        self.prompt_path = MODULE_DIR / "prompt.txt"
-        if not self.prompt_path.exists():
-            logger.error(f"Prompt file does not exist: {self.prompt_path}")
-            raise Exception("Prompt file does not exist.")
-
-        self.temperature: float = 0.0
-        self.top_p: float = 1.0
-        self.seed: int = 42
-
-    @classmethod
-    def load_model(
-            self,
-            train_type,
-            dtype,
-            log_output=False
-        ):
-
-        self.parse_arg(
-            train_type=train_type,
-            dtype=dtype,
-            log_output=log_output
-        )
-
-        command = [
-            str(self.binary_path),
-            "-m", str(self.gguf_path),
-            "--system-prompt-file", str(self.prompt_path),
-            # "-p", str(user_input),
-            "-n", str(4096),
-            "-c", str(1024),
-            "--threads", str(os.cpu_count()),
-            "-ngl", str(33),
-            "--temp",   str(self.temperature),
-            "--top_p",  str(self.top_p),
-            "--seed",   str(self.seed),
-            # "-fa",
-            "--simple-io",
-            "--no-display-prompt",
-            # "--sm", "none",
-            # "--main-gpu", "0",
-            "--tensor-split", "1,0", # gpu 0, 1
-            # "-no-cnv",
-            # "-st",
-            # "--no-warmup",
-        ]
-        # open a new process to run the command
-
-        logger.info(f"Model name: {self.gguf_path.name}")
-        logger.debug(
-            f"Loading llama model with: {' '.join(command)}"
-        )
-
-        self.process = subprocess.Popen(
-            command,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            bufsize=1  # line-buffered
-        )
-
-        response = wait_for_input_waiting(self.process, logger if self.log_output else None)
-
-        if "failed" in response:
-            logger.error(f"Model failed to load with log: {response}")
-            raise Exception("Model failed to load")
+    """Class to convert user input to instructions using a LLaMA model."""
+    
+    instance = None
     
     @classmethod
-    def run_inference(self, input_text:str, metadata:dict):
+    def initialize(cls, train_type="ours", dtype="16bit", log_output=False):
+        """Initialize the InputToInstruction class with the specified model.
         
-        trial = 0
-        while self.process.poll() is not None:
-            logger.error("Model is not loaded or has been closed.")
-            self.load_model(
-                train_type=self.train_type,
-                dtype=self.dtype,
-                log_output=self.log_output
-            )
-            trial += 1
-            if trial > 3:
-                logger.error("Model failed to load.")
-                return None
-        
-        start_time = time.time()
-        
-        try:
-            user_input = f"Metadata:{metadata};Input:{input_text};"
-
-            # send the user input to the process
-            self.process.stdin.write(user_input + "\n")
-            self.process.stdin.flush()
-
-            response = wait_for_input_waiting(self.process, logger if self.log_output else None)
-        except Exception as e:
-            logger.error(f"Error while i2i: {user_input}, {e}")
-            import traceback
-            traceback.print_exc()
-            return None
-
-        end_time = time.time()
-        logger.info(f"Time taken: {end_time - start_time}")
-
-        return response
-
-    @classmethod
-    def execute(self, input_text:str, metadata:dict) -> list[InstructionQ|InstructionO|InstructionR|None]:
-        """ Convert input text to instructions.
-
         Args:
-            input_text (str): Input text from user.
-            metadata (dict): Current metadata.
-
-        Returns:
-            instructions (list[InstructionQ|InstructionO|InstructionR]): List of instructions.
+            train_type: The training type (default: "ours")
+            dtype: The data type for the model (default: "16bit")
+            log_output: Whether to log model output
         """
-
-        response_raw = self.run_inference(input_text, metadata)
-
+        if train_type != "ours":
+            raise NotImplementedError("Only 'ours' is currently supported for train_type.")
+            
+        # Select model path based on train_type and dtype
+        # gguf_path = MODULE_DIR / f"models/i2i-{train_type}-{dtype}.gguf"
+        gguf_path = MODULE_DIR / f"models/v7_r256_a512_ours_16bit_adamw16bit_0324-checkpoint-56.gguf"
+        prompt_path = MODULE_DIR / "prompt.txt"
+        
+        # Create LlamaCppModel instance
+        cls.instance = LlamaCppModel(
+            model_path=gguf_path,
+            prompt_path=prompt_path,
+            gpu_config="1,0",  # GPU 0 primary, GPU 1 secondary
+            logger=logger,
+            log_output=log_output
+        )
+        
+        # Load the model
+        cls.instance.load()
+    
+    @classmethod
+    def is_loaded(cls):
+        """Check if the model is loaded."""
+        return cls.instance is not None and cls.instance.is_loaded()
+    
+    @classmethod
+    def execute(cls, input_text: str, metadata: dict) -> list[InstructionQ|InstructionO|InstructionR|InstructionG|None]:
+        """Convert input text to instructions.
+        
+        Args:
+            input_text: Input text from user.
+            metadata: Current metadata.
+            
+        Returns:
+            list of instructions or None if there was an error
+        """
+        # Prepare the input format
+        formatted_input = f"Metadata:{metadata};Input:{input_text};"
+        
+        # Run inference
+        response_raw = cls.instance.run_inference(formatted_input)
+        
         if response_raw is None:
             logger.error("Model response is None.")
             return None
-
-        # Check if response is a valid json
+            
+        # Parse the response
         try:
             response = eval(response_raw)
             raw_instructions = response["Instructions"]
@@ -173,6 +86,9 @@ class InputToInstruction:
             try:
                 raw_instructions = re.search(r'(?<="Instructions": \[)(.*)(?=\])', response_raw, re.DOTALL).group(0)
                 expectations = re.search(r'(?<="Expectations": \[)(.*)(?=\])', response_raw, re.DOTALL).group(0)
+                if raw_instructions is None or expectations is None:
+                    logger.error(f"Failed to parse response: {response_raw}.")
+                    return None
             except Exception as e:
                 logger.error(f"Failed to parse response: {response_raw}.")
                 return None
@@ -192,7 +108,8 @@ class InputToInstruction:
                 match raw_instruction["type"]:
                     case "q":
                         args = raw_instruction["args"]
-                        del args["table_name"]
+                        if "table_name" in args:
+                            del args["table_name"]
                         args["metadata"] = metadata
 
                         instructions.append(
@@ -241,42 +158,10 @@ class InputToInstruction:
                 logger.error(f"Failed to parse instruction: {raw_instruction}")
                 return None
             
-        
-
         return instructions
-
+    
     @classmethod
-    def observe_closing(self):
-        # change stdout and stderr to default values
-        # self.process.stdout = None
-        # self.process.stderr = NoneInputToInstruction
-
-        # send ^C to the process
-        self.process.send_signal(subprocess.signal.SIGINT)
-        wait_for_input_waiting(self.process, logger)
-        
-        # self.process.terminate()
-        # self.process.wait()
-
-if __name__ == "__main__":
-
-    InputToInstruction.load_model(
-        train_type=["woall", "ours"][1],
-        dtype=["F16", "Q8_0"][1],
-        log_output=False
-    )
-
-    current_metadata = {
-        "site_name": "YongDongIllHighSchool",
-        "user_name": "홍길동", "user_role": "customer", "idu_name": "01_IB5",
-        "idu_mapping": {"01_IB5": ["우리반"], "01_IB7": ["옆반"], "02_I81": ["앞반"]},
-        "modality_mapping": {"roomtemp": ["실내온도"], "settemp": ["설정온도"], "oper": ["전원"]},
-        "current_datetime": "2022-09-30 12:00:00"
-    }
-
-    for _ in range(1):
-        input = "지난 여름 우리반과 옆반의 실내온도 비교해줘"
-        response = InputToInstruction.execute(input, current_metadata)
-        print(response)
-
-    InputToInstruction.observe_closing()
+    def close(cls):
+        """Close the model process gracefully."""
+        if cls.instance:
+            cls.instance.close()

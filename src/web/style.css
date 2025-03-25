@@ -1,0 +1,449 @@
+body {
+    font-family: 'Pretendard', sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-size: 14px;
+}
+
+div {
+    display: inline-block;
+}
+
+.chat-container {
+    background-color: #fff;
+    height: 95%;
+    margin: 20px;
+    padding: 20px;
+    padding-bottom: 5px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #da0f47;
+    flex-wrap: wrap;
+}
+
+.header-container img {
+    height: 40px;
+    margin-left: 10px;
+}
+
+/* Main content container - horizontal layout */
+.main-content {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    height: calc(100% - 70px);
+    /* Adjust based on header height */
+}
+
+.metadata-container {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.metadata-container label {
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #555;
+}
+
+.metadata-container select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: white;
+    width: 100%;
+}
+
+.description-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: white;
+    overflow-y: auto;
+}
+
+/* Middle column - Chat */
+.chat-column {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-window {
+    flex: 1;
+    padding: 10px;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+
+    /* Flex 컨테이너로 설정 */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    /* 기본적으로 왼쪽 정렬 */
+}
+
+.normal {
+    color: #000;
+}
+
+.h1 {
+    margin: 5px 0 0 0;
+    font-size: 18px;
+    font-weight: bold;
+    color: #da0f47;
+}
+
+.h2 {
+    margin: 5px 0;
+    font-size: 16px;
+    font-weight: bold;
+    color: #555;
+    text-decoration: underline;
+}
+
+.h3 {
+    color: #003876;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.chat-message {
+    margin: 5px 0;
+    padding: 10px;
+    border-radius: 15px;
+    border: 1px solid #ddd;
+    max-width: 95%;
+    display: inline-block;
+    word-wrap: break-word;
+    position: relative;
+    font-size: 16px;
+    white-space: pre-wrap;
+    /* Preserve newlines */
+    line-height: 23px;
+    background-color: #ffffff;
+    /* White background */
+    color: #000000;
+    /* Black text */
+}
+
+.user-message {
+    text-align: left;
+    /* 텍스트는 왼쪽 정렬 */
+    align-self: flex-end;
+    /* 오른쪽 끝으로 배치 */
+}
+
+.bot-message {
+    text-align: left;
+    /* align-self: flex-start; 기본값이므로 생략 가능 */
+}
+
+.system-message {
+    background-color: #fff3cd;
+    color: #856404;
+    text-align: center;
+    align-self: center;
+    max-width: 90%;
+    font-style: italic;
+}
+
+.suggestion-container {
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 5px;
+}
+
+.suggestion-button {
+    background-color: #e0e0e0;
+    /* Gray background */
+    color: #000;
+    /* Black text */
+    border: 1px solid #ddd;
+    padding: 5px 5px;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.suggestion-button:hover {
+    background-color: #cccccc;
+}
+
+.input-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    height: max-content;
+    font-size: 16px;
+}
+
+.input-container input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+.input-container button {
+    background-color: #da0f47;
+    color: white;
+    border: none;
+    padding: 0 5px;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-left: 10px;
+    min-width: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.input-container button:hover {
+    background-color: #c30e3f;
+}
+
+/* Style for the New Session button */
+.input-container .new-session-button {
+    background-color: #4CAF50;
+    /* Green color */
+}
+
+.input-container .new-session-button:hover {
+    background-color: #45a049;
+}
+
+/* Disabled button styles */
+.input-container button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Right column - Debug */
+.debug-column {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+    background-color: #f8f8f8;
+    overflow-y: auto;
+}
+
+.debug-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.debug-content {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: white;
+    height: calc(100% - 40px);
+    overflow-y: auto;
+    font-family: monospace;
+    white-space: pre-wrap;
+}
+
+.metadata-section {
+    /* margin-top: 10px; */
+    margin-bottom: 5px;
+    /* color: #555; */
+}
+
+.metadata-sectionitem {
+    margin-bottom: 3px;
+    line-height: 1.4;
+}
+
+/* 왼쪽 컬럼 레이아웃 수정 */
+.left-column {
+    width: 300px; /* 고정 너비 유지 */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    height: 100%; /* 전체 높이 사용 */
+    overflow: hidden; /* 넘치는 내용 숨김 */
+}
+
+/* 기존 metadata 컬럼을 조정 */
+.metadata-column {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+    background-color: #f8f8f8;
+    width: auto; /* width: 100% 대신 auto 사용 */
+    flex: 3; /* 상대적으로 더 많은 공간 할당 */
+    min-height: 0; /* 중요: flex 아이템이 컨테이너 크기를 초과하지 않도록 함 */
+    overflow: hidden; /* 넘치는 내용 숨김 */
+}
+
+.description-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: white;
+    overflow-y: auto; /* 스크롤 가능하도록 설정 */
+    min-height: 0; /* 중요: 스크롤이 작동하기 위함 */
+}
+
+/* 새로운 status 섹션 스타일 */
+.status-section {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+    background-color: #f8f8f8;
+    flex: 1; /* metadata-column보다 적은 공간 할당 */
+    min-height: 0; /* 중요: flex 아이템이 컨테이너 크기를 초과하지 않도록 함 */
+    overflow: hidden; /* 넘치는 내용 숨김 */
+}
+
+.status-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto; /* 내용이 많아지면 스크롤 */
+}
+
+/* 나머지 스타일은 그대로 유지 */
+.status-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.status-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.status-label {
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 2px;
+}
+
+.status-indicators {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-badge {
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    background-color: #e0e0e0;
+}
+
+.status-online {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+.status-offline {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+.gpu-status-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.gpu-status-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.gpu-name {
+    font-size: 12px;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gpu-usage {
+    font-size: 12px;
+    min-width: 50px;
+    text-align: right;
+}
+
+.gpu-bar-container {
+    flex: 1;
+    height: 10px;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+}
+
+.gpu-bar {
+    height: 100%;
+    background-color: #4a86e8;
+    border-radius: 3px;
+}
+
+.gpu-bar.high-usage {
+    background-color: #f1c232;
+}
+
+.gpu-bar.very-high-usage {
+    background-color: #da0f47;
+}
+
+.gpu-status-loading {
+    color: #888;
+    font-style: italic;
+    padding: 5px;
+}
