@@ -1,8 +1,10 @@
+import json
 import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 import pprint
+import time
 import concurrent.futures
 import io
 import base64
@@ -33,8 +35,6 @@ def index():
     html_content = render_template('demo.html', port_number=port_number)
     return html_content
 
-import time  # 맨 위에 import 추가
-
 @app.route('/process', methods=['GET']) 
 def process_request():
     start_time = time.time()  # 시작 시간 기록
@@ -47,39 +47,44 @@ def process_request():
 
     try:
         # Using a timeout to ensure it doesn't hang for too long
-        def response_function(response, response_type=None):
-            # if isinstance(response, matplotlib.figure.Figure):
-            if response_type == "graph":
+        def response_function(response, message_type="debug"):
+            # 메시지 타입을 추가하여 클라이언트에게 전송
+            
+            if message_type == "graph":
                 buf = io.BytesIO()
                 response.savefig(buf, format='png')
                 buf.seek(0)
                 response = base64.b64encode(buf.read()).decode('utf-8')
                 response = f'<img src="data:image/png;base64,{response}"/>'
-            else:
-                response = response.replace("\n", "<br>")
                 
-            logger.debug(f"A response is added: {response}")
-            yield f"data: {response}\n\n"
+            response = response.replace("\n", "<br>")
+            if message_type in ["response", "graph"]:
+                logger.info(f"A response is added: {response}")
+            # 메시지 타입을 포함하여 전송
+            yield f"data: {json.dumps({'type': message_type, 'content': response})}\n\n"
 
         def stream():
-            current_metadata = dict(available_metadatas[metadata_name])
+            current_metadata = dict(available_metadatas[metadata_name]["metadata"])
+            
+            # 디버그 메시지 시작
+            # yield from response_function("디버그 메시지 시작")
             
             instructions = input_to_instruction_set(sentence, current_metadata)
-            
+            yield from response_function(f"Instructions: {pprint.pformat(instructions)}")
+
             yield from execute_instruction_set_web(instructions, sentence, current_metadata, response_function)
             
-            # 처리가 완료된 후 시간 측정 및 로깅
+            # 처리 완료 후 시간 측정 및 로깅
             end_time = time.time()
             processing_time = end_time - start_time
             logger.info(f"Processing completed in {processing_time:.2f} seconds")
             
-            # 사용자에게도 처리 시간을 보여줄 수 있음 (선택사항)
-            yield from response_function(f"Processing time: {processing_time:.2f} seconds")
+            # 최종 응답 후 처리 시간 알림
+            yield from response_function(f"{processing_time:.2f}", "time")
             
-            # Once processing is complete, we put a 'finish' flag
-            yield from response_function("finish")
+            # 처리 완료 신호
+            yield from response_function("", "finish")
             
-        
         # Return results as an event stream
         return Response(
             stream(), 
@@ -105,37 +110,8 @@ def get_metadata():
             {"scenario_name": {"metadata_key": "metadata_value", ...}, ...}
         
     """
-
-    metadatas = {}
-    for k, v in available_metadatas.items():
-        metadatas[k] = [
-            ['Site 정보',
-                [
-                    # ["Site 이름", v.get('site_name', None)],
-                    ["Modality 매핑", [f"{k}: {v}" for k, v in v.get('modality_mapping', {}).items()]],
-                ]
-            ],
-            ['유저 정보', [
-                ["이름", v.get('user_name', None)],
-                # ["User 역할", v.get('user_role', None)],
-                ["IDU 이름", v.get('idu_name', None)],
-                ["IDU 매핑", [f"{k}: {v}" for k, v in v.get('idu_mapping', {}).items()]],
-            ]],
-            ['현재 정보', [
-                ["일시", v.get('current_datetime', None),] 
-            ]],
-        ]
-
-        # for kk, vv in v.items():
-        #     if kk in ['site_name', 'modality_mapping']:
-        #         metadatas[k]['site'][kk] = vv
-        #     elif kk in ['user_name', 'user_role', 'idu_name', 'idu_mapping']:
-        #         metadatas[k]['user'][kk] = vv
-        #     else:
-        #         metadatas[k]['current'][kk] = vv
-
     
-    metadatas = jsonify(metadatas)
+    metadatas = jsonify(available_metadatas)
     return metadatas
 
 @app.route('/status', methods=['GET']) 

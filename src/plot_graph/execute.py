@@ -29,7 +29,6 @@ def plot_graph(instruction:InstructionG, variables):
         if isinstance(x.iloc[0], (datetime.datetime, pd.Timestamp)):
             ax.xaxis.set_major_locator(mdates.AutoDateLocator())  # Automatically space timestamps
             ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M'))  # Format timestamps
-            ax.autofmt_xdate(rotation=90)  # Rotate dates to avoid overlap
         else:
             ax.xaxis.set_major_locator(ticker.MaxNLocator(nbins=10))  # Limit number of x ticks for numeric values
     

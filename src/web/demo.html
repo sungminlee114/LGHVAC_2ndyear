@@ -11,7 +11,6 @@
 </head>
 
 <body>
-
     <div class="chat-container">
         <!-- Header section -->
         <div class="header-container">
@@ -28,7 +27,7 @@
                 <!-- Metadata section -->
                 <div class="metadata-column">
                     <div class="metadata-container">
-                        <label for="metadataSelect">메타데이터 선택:</label>
+                        <label for="metadataSelect" style="font-size: 14px;">메타데이터 선택:</label>
                         <select id="metadataSelect">
                             <option value="">로딩 중...</option>
                         </select>
@@ -45,7 +44,11 @@
                 </div>
 
                 <!-- Status section (vertically below metadata) -->
-                <div class="status-section">
+                <div class="status-section" id="statusSection">
+                    <div class="status-header">
+                        <h3>시스템 상태</h3>
+                        <button id="statusToggleBtn" class="status-toggle-btn active">상태 추적 끄기</button>
+                    </div>
                     <div class="status-content" id="statusContent">
                         <div class="status-item">
                             <span class="status-label">모델 상태:</span>
@@ -66,10 +69,10 @@
                                 <div class="gpu-status-loading">로딩 중...</div>
                             </div>
                         </div>
+                        <div class="status-last-updated" id="statusLastUpdated"></div>
                     </div>
                 </div>
             </div>
-
 
             <!-- Middle column - Chat -->
             <div class="chat-column">
@@ -83,23 +86,15 @@
 
                 <div class="input-container">
                     <input type="text" id="sentenceInput" placeholder="Enter a message...">
-                    <button id="sendButton" onclick="sendRequest()">Send</button>
-                    <button class="new-session-button" id="newSessionButton" onclick="newSession()">New Session</button>
+                    <button id="sendButton">Send</button>
+                    <button class="new-session-button" id="newSessionButton">New Session</button>
                 </div>
             </div>
-
-            <!-- Right column - Debug -->
-            <!-- <div class="debug-column">
-                <div class="debug-title">디버그 메시지</div>
-                <div class="debug-content" id="debugContent">
-                    Debug messages will appear here 
-                    시스템 디버그 메시지가 이곳에 표시됩니다.
-                </div>
-            </div> -->
         </div>
     </div>
 
     <script>
+        const debugStates = {};
         // DOM Elements
         const sendButton = document.getElementById('sendButton');
         const newSessionButton = document.getElementById('newSessionButton');
@@ -107,27 +102,166 @@
         const chatWindow = document.getElementById('chatWindow');
         const metadataSelect = document.getElementById('metadataSelect');
         const metadataDescription = document.getElementById('metadataDescription');
+        const statusSection = document.getElementById('statusSection');
+        const statusToggleBtn = document.getElementById('statusToggleBtn');
+        const statusLastUpdated = document.getElementById('statusLastUpdated');
         let waitingMessageElement = null;
         let availableMetadatas = {};
-        let botResponseBuffer = '';
+        let currentResponseId = null;
+        let currentBotMessage = null;
+        let currentDebugMessages = null;
+        let currentFinalResponse = null;
+        let currentToggleButton = null;
+        let currentDebugContainer = null;
+        let hasReceivedAnyMessage = false;
+        let hasReceivedFinalResponse = false;
+        let statusInterval = null;
+        let isStatusTrackingActive = false;
+        let lastStatusUpdate = null;
+        // Store processing times for each response
+        const processingTimes = {};
 
         // Event Listeners
         sentenceInput.addEventListener('keyup', e => e.key === 'Enter' && sendRequest());
         sendButton.addEventListener('click', sendRequest);
         newSessionButton.addEventListener('click', newSession);
         metadataSelect.addEventListener('change', () => updateMetadataDescription(metadataSelect.value));
+        statusToggleBtn.addEventListener('click', toggleStatusTracking);
+
+        // restoreProcessingTimes 함수 아래에 추가 또는 함수 내에 통합
+        function restoreDebugStates() {
+            const savedStates = localStorage.getItem('debugStates');
+            if (savedStates) {
+                const states = JSON.parse(savedStates);
+
+                // 모든 메시지 열기/닫기 상태 복원
+                document.querySelectorAll('.message-toggle').forEach(button => {
+                    const responseId = button.dataset.targetId;
+                    if (responseId && responseId in states) {
+                        const isShowing = states[responseId]; // true면 표시, false면 숨김
+                        const botMessage = button.closest('.bot-message');
+                        const debugMessages = botMessage.querySelector('.debug-messages');
+
+                        if (isShowing) {
+                            // 디버그 메시지 표시
+                            debugMessages.classList.remove('debug-hidden');
+                            button.textContent = '디버그 메시지 숨기기';
+                        } else {
+                            // 디버그 메시지 숨김
+                            debugMessages.classList.add('debug-hidden');
+                            const time = processingTimes[responseId];
+                            updateToggleButtonText(button, time);
+                        }
+                    }
+                });
+            }
+        }
 
         // Initialize
         window.onload = () => {
             const chatHistory = localStorage.getItem('chatHistory');
             if (chatHistory) {
                 chatWindow.innerHTML = chatHistory;
+                reconnectToggleListeners();
+                restoreProcessingTimes();
+                restoreDebugStates(); // 디버그 상태 복원 추가
                 scrollChatWindow();
             }
+
+            // 상태 추적 상태 복원
+            const trackingActive = localStorage.getItem('statusTrackingActive');
+            if (trackingActive !== null) {
+                isStatusTrackingActive = trackingActive === 'true';
+                updateStatusTrackingUI();
+            }
+
             loadMetadatas();
-            createSuggestedButtons();
-            checkStatus();
+
+            // 상태 추적 시작 여부 결정
+            if (isStatusTrackingActive) {
+                startStatusTracking();
+            } else {
+                // 상태 추적이 꺼진 상태라면 한 번만 상태 확인
+                checkStatus();
+            }
         };
+
+        // 처리 시간 복원 함수
+        function restoreProcessingTimes() {
+            const savedTimes = localStorage.getItem('processingTimes');
+            if (savedTimes) {
+                Object.assign(processingTimes, JSON.parse(savedTimes));
+            }
+
+            // 모든 토글 버튼에 처리 시간 표시 업데이트
+            document.querySelectorAll('.message-toggle').forEach(button => {
+                const responseId = button.dataset.targetId;
+                if (responseId && processingTimes[responseId]) {
+                    updateToggleButtonText(button, processingTimes[responseId]);
+                }
+            });
+        }
+
+        // 토글 버튼 텍스트 업데이트 함수
+        function updateToggleButtonText(button, time, isHidden = true) {
+            if (isHidden) {
+                button.textContent = `디버그 메시지 표시${time ? ` (${time}초)` : ''}`;
+            } else {
+                button.textContent = '디버그 메시지 숨기기';
+            }
+        }
+
+        // 상태 추적 토글 함수
+        function toggleStatusTracking() {
+            isStatusTrackingActive = !isStatusTrackingActive;
+            localStorage.setItem('statusTrackingActive', isStatusTrackingActive);
+
+            if (isStatusTrackingActive) {
+                startStatusTracking();
+            } else {
+                stopStatusTracking();
+            }
+
+            updateStatusTrackingUI();
+        }
+
+        // 상태 추적 UI 업데이트
+        function updateStatusTrackingUI() {
+            if (isStatusTrackingActive) {
+                statusToggleBtn.textContent = '상태 추적 끄기';
+                statusToggleBtn.classList.remove('inactive');
+                statusToggleBtn.classList.add('active');
+            } else {
+                statusToggleBtn.textContent = '상태 추적 켜기';
+                statusToggleBtn.classList.remove('active');
+                statusToggleBtn.classList.add('inactive');
+            }
+        }
+
+        // 상태 추적 시작
+        function startStatusTracking() {
+            if (statusInterval) {
+                clearInterval(statusInterval);
+            }
+            statusInterval = setInterval(checkStatus, 1000);
+            // 즉시 한 번 체크
+            checkStatus();
+        }
+
+        // 상태 추적 중지
+        function stopStatusTracking() {
+            if (statusInterval) {
+                clearInterval(statusInterval);
+                statusInterval = null;
+            }
+        }
+
+        // 토글 이벤트 리스너 재연결 (페이지 로드 후)
+        function reconnectToggleListeners() {
+            document.querySelectorAll('.message-toggle').forEach(button => {
+                button.addEventListener('click', toggleDebugMessages);
+            });
+        }
 
         // Load metadata from server
         function loadMetadatas() {
@@ -220,7 +354,10 @@
         // Update metadata description
         function updateMetadataDescription(metadataName) {
             if (availableMetadatas[metadataName]) {
-                createMetadataDescriptionFromList(availableMetadatas[metadataName]);
+                let description = availableMetadatas[metadataName]['metadata_repr'];
+                let suggestedInputs = availableMetadatas[metadataName]['suggested_inputs'];
+                createMetadataDescriptionFromList(description);
+                updateSuggestedButtons(suggestedInputs);
             } else {
                 metadataDescription.innerHTML = '선택된 메타데이터에 대한 정보가 없습니다.';
             }
@@ -254,6 +391,11 @@
                 return;
             }
 
+            // 고유 응답 ID 생성
+            currentResponseId = 'response-' + Date.now();
+            hasReceivedAnyMessage = false;
+            hasReceivedFinalResponse = false;
+
             // Add user message to chat
             appendMessage('user', sentence);
             saveChatHistory();
@@ -264,12 +406,42 @@
             [sendButton, newSessionButton, sentenceInput, metadataSelect].forEach(el => el.disabled = true);
             // Also disable suggestion buttons
             document.querySelectorAll('.suggestion-button').forEach(button => button.disabled = true);
-            showWaitingMessage();
-            botResponseBuffer = '';
 
-            // Create bot message element
-            const botMessageElement = appendMessage('bot', '');
-            botMessageElement.style.display = 'none';
+            // 대기 메시지 표시
+            showWaitingMessage();
+
+            // 봇 메시지 생성 (초기에는 표시하지 않음)
+            const botMessage = document.createElement('div');
+            botMessage.classList.add('chat-message', 'bot-message');
+            botMessage.style.display = 'none'; // 초기에는 숨김
+            chatWindow.appendChild(botMessage);
+
+            // 디버그 메시지 영역 생성
+            const debugMessagesEl = document.createElement('div');
+            debugMessagesEl.classList.add('debug-messages');
+            botMessage.appendChild(debugMessagesEl);
+
+            // 최종 응답 영역 생성 (초기에는 빈 상태)
+            const finalResponseEl = document.createElement('div');
+            finalResponseEl.classList.add('final-response');
+            finalResponseEl.style.display = 'none';
+            botMessage.appendChild(finalResponseEl);
+
+            // 토글 버튼 생성 (초기에는 숨김)
+            const toggleButton = document.createElement('button');
+            toggleButton.classList.add('message-toggle');
+            toggleButton.textContent = '디버그 메시지 표시';
+            toggleButton.style.display = 'none';
+            toggleButton.dataset.targetId = currentResponseId;
+            toggleButton.addEventListener('click', toggleDebugMessages);
+            botMessage.appendChild(toggleButton);
+
+            // 현재 참조 저장
+            currentBotMessage = botMessage;
+            currentDebugMessages = debugMessagesEl;
+            currentFinalResponse = finalResponseEl;
+            currentToggleButton = toggleButton;
+            currentDebugContainer = debugMessagesEl; // 이전 코드와의 호환성 유지
 
             // Create EventSource for streaming response
             const eventSource = new EventSource(
@@ -277,31 +449,192 @@
             );
 
             eventSource.onmessage = function (event) {
-                removeWaitingMessage();
-                botMessageElement.style.display = 'block';
+                try {
+                    const responseData = JSON.parse(event.data);
+                    const messageType = responseData.type;
+                    const content = responseData.content;
 
-                if (event.data === "finish") {
+                    // 어떤 메시지든 처음 도착하면 대기 메시지 제거 및 봇 메시지 표시
+                    if (!hasReceivedAnyMessage) {
+                        hasReceivedAnyMessage = true;
+                        removeWaitingMessage();
+                        currentBotMessage.style.display = 'block';
+                    }
+
+                    if (messageType === "debug") {
+                        // 디버그 메시지 추가
+                        const debugMessageEl = document.createElement('div');
+                        debugMessageEl.classList.add('debug-message');
+
+                        // 이미지 URL이 포함된 경우 (HTML 태그)
+                        if (content.includes('<img')) {
+                            debugMessageEl.innerHTML = content;
+                        } else {
+                            // 일반 텍스트인 경우
+                            debugMessageEl.innerHTML = formatText(content);
+                        }
+
+                        currentDebugMessages.appendChild(debugMessageEl);
+                        scrollChatWindow();
+                    } else if (messageType === "response") {
+                        // 응답 메시지 처리
+
+                        // 응답 내용 설정 (이미 표시되고 있었다면 추가)
+                        if (!hasReceivedFinalResponse) {
+                            // 처음 응답이 온 경우
+                            hasReceivedFinalResponse = true;
+                            currentFinalResponse.innerHTML = formatText(content);
+                            currentFinalResponse.style.display = 'block';
+
+                            // 디버그 메시지 숨기기
+                            currentDebugMessages.classList.add('debug-hidden');
+
+                            // 토글 버튼 표시
+                            currentToggleButton.style.display = 'block';
+                        } else {
+                            // 이미 응답이 있는 경우(그래프 이후에 텍스트 등), 내용 추가
+                            currentFinalResponse.innerHTML += '<div class="response-divider"></div>' + formatText(content);
+                        }
+                    } else if (messageType === "graph") {
+                        // 그래프 메시지 처리 - response처럼 처리
+
+                        // 최종 응답 영역에 표시
+                        if (!hasReceivedFinalResponse) {
+                            // 첫 응답으로 그래프가 온 경우
+                            hasReceivedFinalResponse = true;
+                            currentFinalResponse.innerHTML = content; // 그래프는 HTML 형태로 전달됨
+                            currentFinalResponse.style.display = 'block';
+
+                            // 디버그 메시지 숨기기
+                            currentDebugMessages.classList.add('debug-hidden');
+
+                            // 토글 버튼 표시
+                            currentToggleButton.style.display = 'block';
+                        } else {
+                            // 이미 다른 응답이 있는 경우, 구분자와 함께 추가
+                            currentFinalResponse.innerHTML += '<div class="response-divider"></div>' + content;
+                        }
+
+                        scrollChatWindow();
+                    } else if (messageType === "time") {
+                        // 처리 시간 저장 (현재 응답 ID로 저장)
+                        processingTimes[currentResponseId] = content;
+
+                        // 처리 시간 적용
+                        updateToggleButtonText(currentToggleButton, content);
+
+                        // 로컬 스토리지에 처리 시간 저장
+                        localStorage.setItem('processingTimes', JSON.stringify(processingTimes));
+                    } else if (messageType === "finish") {
+                        // 처리 완료
+                        eventSource.close();
+
+                        // 최종 응답이 없었다면 디버그 메시지 표시
+                        if (!hasReceivedFinalResponse) {
+                            currentDebugMessages.classList.remove('debug-hidden');
+                            currentToggleButton.style.display = 'none'; // 토글 버튼 필요 없음
+                        }
+
+                        // 입력 폼 다시 활성화
+                        [sendButton, newSessionButton, sentenceInput, metadataSelect].forEach(el => el.disabled = false);
+                        document.querySelectorAll('.suggestion-button').forEach(button => button.disabled = false);
+
+                        saveChatHistory();
+                    }
+                } catch (error) {
+                    console.error('응답 파싱 오류:', error, event.data);
+                    if (waitingMessageElement) {
+                        removeWaitingMessage();
+                    }
+
+                    // 에러 발생 시 이벤트 소스 종료 및 입력 폼 재활성화
                     eventSource.close();
                     [sendButton, newSessionButton, sentenceInput, metadataSelect].forEach(el => el.disabled = false);
                     document.querySelectorAll('.suggestion-button').forEach(button => button.disabled = false);
-                    saveChatHistory();
-                } else {
-                    botResponseBuffer += event.data + '\n';
-                    botMessageElement.innerHTML = formatText(botResponseBuffer);
-                    scrollChatWindow();
                 }
             };
 
             eventSource.onerror = function (error) {
-                removeWaitingMessage();
-                botMessageElement.style.display = 'block';
-                botMessageElement.innerText = 'An error occurred while processing your request.';
-                saveChatHistory();
+                console.error('EventSource 에러:', error);
 
+                // 만약 대기 메시지가 있다면 제거
+                if (waitingMessageElement) {
+                    removeWaitingMessage();
+                }
+
+                // 이미 봇 메시지가 생성되어 있는지 확인
+                if (hasReceivedAnyMessage && currentBotMessage) {
+                    // 이미 메시지를 받았다면 기존 봇 메시지 내에 에러 메시지 추가
+                    const errorMessageEl = document.createElement('div');
+                    errorMessageEl.classList.add('error-message');
+                    errorMessageEl.style.color = '#c62828';
+                    errorMessageEl.style.padding = '10px';
+                    errorMessageEl.style.marginTop = '10px';
+                    errorMessageEl.style.border = '1px solid #ffcdd2';
+                    errorMessageEl.style.borderRadius = '5px';
+                    errorMessageEl.style.backgroundColor = '#ffebee';
+                    errorMessageEl.innerText = '요청 처리 중 오류가 발생했습니다.';
+
+                    // 최종 응답이 표시되어 있지 않으면 디버그 메시지 영역에 추가
+                    if (!hasReceivedFinalResponse) {
+                        currentDebugMessages.appendChild(errorMessageEl);
+                        currentDebugMessages.classList.remove('debug-hidden');
+                        if (currentToggleButton) {
+                            currentToggleButton.style.display = 'none'; // 토글 버튼 숨김
+                        }
+                    } else {
+                        // 최종 응답이 이미 표시되어 있으면 그 아래에 추가
+                        currentFinalResponse.appendChild(errorMessageEl);
+                    }
+                } else {
+                    // 아직 봇 메시지가 생성되지 않았다면 새로운 봇 메시지 생성
+                    const botMessage = document.createElement('div');
+                    botMessage.classList.add('chat-message', 'bot-message');
+
+                    const errorContent = document.createElement('div');
+                    errorContent.classList.add('final-response');
+                    errorContent.style.color = '#c62828';
+                    errorContent.innerText = '요청 처리 중 오류가 발생했습니다.';
+
+                    botMessage.appendChild(errorContent);
+                    chatWindow.appendChild(botMessage);
+                }
+
+                // 이벤트 소스 종료 및 입력 폼 재활성화
                 eventSource.close();
                 [sendButton, newSessionButton, sentenceInput, metadataSelect].forEach(el => el.disabled = false);
                 document.querySelectorAll('.suggestion-button').forEach(button => button.disabled = false);
+
+                saveChatHistory();
             };
+        }
+
+        // 디버그 메시지 토글 함수
+        function toggleDebugMessages(event) {
+            const targetId = event.target.dataset.targetId;
+            const botMessage = event.target.closest('.bot-message');
+            if (!botMessage) return;
+
+            const debugMessages = botMessage.querySelector('.debug-messages');
+            const toggleButton = botMessage.querySelector('.message-toggle');
+
+            // 상태 변경 및 저장
+            const isHidden = debugMessages.classList.contains('debug-hidden');
+            debugStates[targetId] = !isHidden; // true면 표시 중, false면 숨김 중
+
+            if (isHidden) {
+                // 디버그 메시지 표시
+                debugMessages.classList.remove('debug-hidden');
+                toggleButton.textContent = '디버그 메시지 숨기기';
+            } else {
+                // 디버그 메시지 숨기기
+                debugMessages.classList.add('debug-hidden');
+                const time = targetId ? processingTimes[targetId] : null;
+                updateToggleButtonText(toggleButton, time);
+            }
+
+            saveChatHistory(); // 상태 변경 시 저장
+            // scrollChatWindow();
         }
 
         // Waiting message functions
@@ -329,6 +662,8 @@
 
         function saveChatHistory() {
             localStorage.setItem('chatHistory', chatWindow.innerHTML);
+            localStorage.setItem('processingTimes', JSON.stringify(processingTimes));
+            localStorage.setItem('debugStates', JSON.stringify(debugStates)); // 디버그 상태 저장
         }
 
         function appendMessage(type, text) {
@@ -343,31 +678,25 @@
         // Start a new session
         function newSession() {
             if (!confirm("새 세션을 시작하시겠습니까? 채팅 기록이 삭제됩니다.")) return;
-
             [sendButton, newSessionButton, sentenceInput, metadataSelect].forEach(el => el.disabled = true);
             localStorage.removeItem('chatHistory');
+            localStorage.removeItem('processingTimes');
+            localStorage.removeItem('debugStates'); // 디버그 상태도 제거
             chatWindow.innerHTML = '';
+            // 변수 재설정
+            Object.keys(processingTimes).forEach(key => delete processingTimes[key]);
+            Object.keys(debugStates).forEach(key => delete debugStates[key]);
             saveChatHistory();
             scrollChatWindow();
             [sendButton, newSessionButton, sentenceInput, metadataSelect].forEach(el => el.disabled = false);
         }
 
-        // Create suggestion buttons
-        const suggestedInputs = [
-            '현재 우리반 실내온도 알려줘.',
-            '지금 우리반 에어컨 전원 꺼져있어?',
-            '지금 가장 더운반 알려줘.',
-            '우리반과 옆반의 현재 온도차이 알려줘.',
-            '오늘 우리반 평균온도 알려줘',
-            '이번달 우리반 가장 더웠던 날이 언제야?',
-            '10년전 우리반 온도 알려줘',
-            '요번달에 가장 더웠던 날 갈켜주소',
-            '우리반과 옆반 중 오늘 하루 평균온도가 더 높은곳을 알려줘',
-            '우리ㅣ 반 형ㄴ재온도 알려줘',
-        ];
-
-        function createSuggestedButtons() {
+        function updateSuggestedButtons(suggestedInputs) {
             const suggestionContainer = document.querySelector('.suggestion-container');
+
+            // Remove existing buttons
+            suggestionContainer.innerHTML = '';
+
             suggestedInputs.forEach(input => {
                 const button = document.createElement('button');
                 button.classList.add('suggestion-button');
@@ -379,6 +708,7 @@
                 suggestionContainer.appendChild(button);
             });
         }
+
         function updateStatusDisplay(statusData) {
             // Update model status indicators
             const inputStatus = document.getElementById('inputStatus');
@@ -413,7 +743,6 @@
                 // Calculate usage percentage (assuming 24GB VRAM for RTX 3090)
                 const maxVRAM = 24; // GB
                 const usagePercent = (gpuData.used / maxVRAM) * 100;
-
                 // Determine color class based on usage
                 let colorClass = '';
                 if (usagePercent > 90) {
@@ -423,15 +752,19 @@
                 }
 
                 gpuStatusItem.innerHTML = `
-            <div class="gpu-name">${gpuData.name}</div>
-            <div class="gpu-bar-container">
-                <div class="gpu-bar ${colorClass}" style="width: ${usagePercent}%"></div>
-            </div>
-            <div class="gpu-usage">${gpuData.used.toFixed(1)} ${gpuData.unit}</div>
-        `;
+    <div class="gpu-name">${gpuData.name}</div>
+    <div class="gpu-bar-container">
+        <div class="gpu-bar ${colorClass}" style="width: ${usagePercent}%"></div>
+    </div>
+    <div class="gpu-usage">${gpuData.used.toFixed(1)} ${gpuData.unit}</div>
+`;
 
                 gpuStatusContainer.appendChild(gpuStatusItem);
             });
+
+            // 마지막 업데이트 시간 표시
+            lastStatusUpdate = new Date();
+            statusLastUpdated.textContent = `마지막 업데이트: ${lastStatusUpdate.toLocaleTimeString()}`;
         }
 
         // Update the checkStatus function
@@ -444,7 +777,7 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log('서버 상태:', data);
+                    // console.log('서버 상태:', data);
                     updateStatusDisplay(data);
                 })
                 .catch(error => {
@@ -461,18 +794,20 @@
                     if (gpuStatusContainer) {
                         gpuStatusContainer.innerHTML = '<div class="gpu-status-loading">연결 오류</div>';
                     }
+
+                    // 마지막 오류 시간 표시
+                    if (statusLastUpdated) {
+                        statusLastUpdated.textContent = `마지막 오류: ${new Date().toLocaleTimeString()}`;
+                    }
                 });
         }
 
-
-
-        const statusInterval = setInterval(checkStatus, 1000);
-
         // 페이지 언로드 시 인터벌 정리 (메모리 누수 방지)
         window.addEventListener('beforeunload', () => {
-            clearInterval(statusInterval);
+            if (statusInterval) {
+                clearInterval(statusInterval);
+            }
         });
-
     </script>
 </body>
 

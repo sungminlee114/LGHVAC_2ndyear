@@ -13,5 +13,31 @@ def get_available_metadatas():
         metadata_path = scenario_dir / "metadata.json"
         with open(metadata_path, "r") as f:
             metadata = json.load(f)
-        available_metadatas[scenario_dir.name] = metadata
+        suggested_inputs_path = scenario_dir / "suggested_inputs.txt"
+        with open(suggested_inputs_path, "r") as f:
+            suggested_inputs = f.read().splitlines()
+
+        metadata_repr  = [
+            ['Site 정보',
+                [
+                    # ["Site 이름", v.get('site_name', None)],
+                    ["Modality 매핑", [f"{k}: {v}" for k, v in metadata.get('modality_mapping', {}).items()]],
+                ]
+            ],
+            ['유저 정보', [
+                ["이름", metadata.get('user_name', None)],
+                # ["User 역할", v.get('user_role', None)],
+                ["IDU 이름", metadata.get('idu_name', None)],
+                ["IDU 매핑", [f"{k}: {v}" for k, v in metadata.get('idu_mapping', {}).items()]],
+            ]],
+            ['현재 정보', [
+                ["일시", metadata.get('current_datetime', None),] 
+            ]],
+        ]
+
+        available_metadatas[scenario_dir.name] = {
+            "metadata": metadata,
+            "metadata_repr": metadata_repr,
+            "suggested_inputs": suggested_inputs
+        }
     return available_metadatas

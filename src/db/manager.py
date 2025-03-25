@@ -38,7 +38,7 @@ class DBManager:
         return cls.db_instance.structured_query(**args, get_rowids=get_rowids)
     
     @classmethod
-    def structured_query_data_t(cls, args, get_rowids=False):
-        return cls.db_instance.structured_query_data_t(**args, get_rowids=get_rowids)
+    def structured_query_data_t(cls, metadata, args, get_rowids=False):
+        return cls.db_instance.structured_query_data_t(metadata, **args, get_rowids=get_rowids)
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

@@ -9,6 +9,7 @@ __all__ = [
 ]
 
 import logging
+import pprint
 from typing import Callable
 
 logging.basicConfig(level=logging.INFO)
@@ -29,7 +30,7 @@ def load_models():
     InputToInstruction.initialize(
         train_type="ours",
         dtype=["Q8_0", "F16"][1],
-        log_output=True
+        log_output=False
     )
 
     ResponseGeneration.initialize(
@@ -89,29 +90,29 @@ def input_to_instruction_set(user_input, current_metadata):
 #             response = execute_response_generation(instruction, query_mapping, user_input, current_metadata)
 #             response_function(response)
 
-def execute_instruction_set_web(instructions:list[InstructionQ|InstructionO|InstructionR|None], user_input:str, current_metadata:dict, response_function:Callable):
+def execute_instruction_set_web(instructions:list[InstructionQ|InstructionO|InstructionR|None], user_input:str, metadata:dict, response_function:Callable):
     """
     This function is a duplicate of execute_instruction_set, but with additional support for web-based responses.
     """
     variables = {
-        "Metadata": current_metadata,
+        "Metadata": metadata,
     }
     for instruction in instructions:
-        logger.info(f"Executing instruction: {instruction}")
+        logger.debug(f"Executing instruction: {instruction.__class__.__name__}")
+        yield from response_function(f"Executing instruction: {instruction.__class__.__name__}")
         
-        # yield from response_function(f"<h1 Executing instruction: {instruction}>")
         if type(instruction) == InstructionQ:
             # Execute query
-            
-            result_df = DBManager.structured_query_data_t(instruction.args)
+            result_df = DBManager.structured_query_data_t(metadata, instruction.args)
+            if result_df is None:
+                yield from response_function("죄송합니다, 관련 데이터를 찾을 수 없습니다.")
+                return
 
             # For demo, drop rows where any value is -1
             result_df = result_df.loc[(result_df != -1).all(axis=1)]
+            yield from response_function(f"QueryResult: {result_df}")
 
             variables[instruction.result_name] = result_df
-
-            # yield from response_function(f"<h2 Query result:>")
-            # yield from response_function(str(result_df))
         
         elif type(instruction) == InstructionO:
             # Execute operation
@@ -124,12 +125,13 @@ def execute_instruction_set_web(instructions:list[InstructionQ|InstructionO|Inst
             fig = plot_graph(instruction, variables)
             
             # yield from response_function("<h2 Generated graph:>")
-            yield from response_function(fig, response_type="graph")
+            yield from response_function(fig, "graph")
         elif type(instruction) == InstructionR:
             # Execute response generation
+            variables_to_report = {k: v for k, v in variables.items() if k not in ["Metadata"]}
+            yield from response_function(f"Variables: {variables_to_report}")
+            response, required_variables = ResponseGeneration.execute(instruction, variables, user_input, metadata)
+            yield from response_function(f"Required variables: {required_variables}")
             
-            response = ResponseGeneration.execute(instruction, variables, user_input, current_metadata)
-            
-            # yield from response_function("<h2 Generated response:>")
-            yield from response_function(f"{response}")
+            yield from response_function(response, "response")
             

@@ -1,0 +1,197 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "Thinking": {
+            "type": "string"
+        },
+        "Expectations": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "Instructions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "q",
+                            "o",
+                            "g"
+                        ]
+                    },
+                    "args": {
+                        "type": "object"
+                    },
+                    "script": {
+                        "type": "string"
+                    },
+                    "returns": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "result_name": {
+                        "type": "string"
+                    }
+                },
+                "allOf": [
+                    {
+                        "if": {
+                            "properties": {
+                                "type": {
+                                    "const": "q"
+                                }
+                            }
+                        },
+                        "then": {
+                            "required": [
+                                "args",
+                                "result_name"
+                            ],
+                            "properties": {
+                                "args": {
+                                    "type": "object",
+                                    "properties": {
+                                        "table_name": {
+                                            "type": "string"
+                                        },
+                                        "columns": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "temporal": {
+                                            "type": "string"
+                                        },
+                                        "spatials": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "table_name",
+                                        "columns",
+                                        "temporal",
+                                        "spatials"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "if": {
+                            "properties": {
+                                "type": {
+                                    "const": "o"
+                                }
+                            }
+                        },
+                        "then": {
+                            "required": [
+                                "script",
+                                "returns"
+                            ]
+                        }
+                    },
+                    {
+                        "if": {
+                            "properties": {
+                                "type": {
+                                    "const": "g"
+                                }
+                            }
+                        },
+                        "then": {
+                            "required": [
+                                "args"
+                            ],
+                            "properties": {
+                                "args": {
+                                    "type": "object",
+                                    "properties": {
+                                        "graph_type": {
+                                            "type": "string"
+                                        },
+                                        "axis": {
+                                            "type": "object",
+                                            "properties": {
+                                                "xlabel": {
+                                                    "type": "string"
+                                                },
+                                                "ylabel": {
+                                                    "type": "string"
+                                                },
+                                                "title": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "xlabel",
+                                                "ylabel",
+                                                "title"
+                                            ]
+                                        },
+                                        "plots": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string"
+                                                    },
+                                                    "data": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "x": {
+                                                                "type": "string"
+                                                            },
+                                                            "y": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "x",
+                                                            "y"
+                                                        ]
+                                                    },
+                                                    "label": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "type",
+                                                    "data",
+                                                    "label"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "graph_type",
+                                        "axis",
+                                        "plots"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "required": [
+        "Thinking",
+        "Expectations",
+        "Instructions"
+    ],
+    "additionalProperties": false
+}

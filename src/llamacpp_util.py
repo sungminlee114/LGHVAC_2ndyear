@@ -36,6 +36,7 @@ class LlamaCppModel:
                  prompt_path: Path, 
                  gpu_config: str,
                  logger: logging.Logger,
+                 grammar_path: Path = None,
                  log_output: bool = False
                  ):
         """Initialize the LlamaCppModel base class.
@@ -66,6 +67,11 @@ class LlamaCppModel:
             self.logger.error(f"Prompt file does not exist: {self.prompt_path}")
             raise Exception("Prompt file does not exist.")
         
+        self.grammar_path = grammar_path
+        if self.grammar_path and not self.grammar_path.exists():
+            self.logger.error(f"Grammar file does not exist: {self.grammar_path}")
+            raise Exception("Grammar file does not exist.")
+    
         # Model parameters
         self.temperature = 0.0
         self.top_p = 1.0
@@ -81,8 +87,8 @@ class LlamaCppModel:
             str(self.binary_path),
             "-m", str(self.gguf_path),
             "--system-prompt-file", str(self.prompt_path),
-            "-n", str(4096),  # Max tokens to generate
-            "-c", str(2048),  # Context size
+            "-n", str(8000),  # Max tokens to generate
+            "-c", str(4096),  # Context size
             "--threads", str(os.cpu_count()),
             "-ngl", str(33),
             "--temp", str(self.temperature),
@@ -92,6 +98,8 @@ class LlamaCppModel:
             "--no-display-prompt",
             "--tensor-split", self.gpu_config,
         ]
+        if self.grammar_path:
+            command += ["--grammar-file", str(self.grammar_path)]
         
         self.logger.info(f"Model name: {self.gguf_path.name}")
         self.logger.debug(f"Loading llama model with: {' '.join(command)}")
@@ -115,7 +123,10 @@ class LlamaCppModel:
     
     def is_loaded(self):
         """Check if the model is loaded and the process is running."""
-        return self.process is not None and self.process.poll() is None
+        is_loaded = self.process is not None and self.process.poll() is None
+        if not is_loaded:
+            self.ensure_loaded()
+        return is_loaded
     
     def ensure_loaded(self, max_trials=3):
         """Ensure the model is loaded, attempting to reload if necessary."""

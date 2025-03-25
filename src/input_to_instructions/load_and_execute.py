@@ -33,12 +33,14 @@ class InputToInstruction:
         # gguf_path = MODULE_DIR / f"models/i2i-{train_type}-{dtype}.gguf"
         gguf_path = MODULE_DIR / f"models/v7_r256_a512_ours_16bit_adamw16bit_0324-checkpoint-56.gguf"
         prompt_path = MODULE_DIR / "prompt.txt"
+        grammar_path = MODULE_DIR / "structure.gbnf"
         
         # Create LlamaCppModel instance
         cls.instance = LlamaCppModel(
             model_path=gguf_path,
             prompt_path=prompt_path,
             gpu_config="1,0",  # GPU 0 primary, GPU 1 secondary
+            grammar_path=grammar_path,
             logger=logger,
             log_output=log_output
         )
@@ -94,12 +96,14 @@ class InputToInstruction:
                 return None
         
         # Append response generation instruction
-        raw_instructions.append(
-            {
-                "type": "r",
-                "expectations": expectations
-            }
-        )
+        types = [i["type"] for i in raw_instructions]
+        if "g" not in types:
+            raw_instructions.append(
+                {
+                    "type": "r",
+                    "expectations": expectations
+                }
+            )
         
         # Instantiate each instruction
         instructions = []
@@ -110,7 +114,7 @@ class InputToInstruction:
                         args = raw_instruction["args"]
                         if "table_name" in args:
                             del args["table_name"]
-                        args["metadata"] = metadata
+                        # args["metadata"] = metadata
 
                         instructions.append(
                             InstructionQ(
@@ -130,11 +134,21 @@ class InputToInstruction:
                             )
                         )
                     case "g":
+                        args = raw_instruction["args"]
+                        plots = args["plots"]
+                        required_variables = []
+                        for plot in plots:
+                            required_variables += [plot['data']['x']]
+                            required_variables += [plot['data']['y']]
+                        
+                        required_variables = list(set(required_variables))
+
                         instructions.append(
                             InstructionG(
-                                type=raw_instruction["graph_type"],
-                                axis=raw_instruction["axis"],
-                                plots=raw_instruction["plots"]
+                                type=args["graph_type"],
+                                axis=args["axis"],
+                                plots=args["plots"],
+                                required_variables=required_variables
                             )
                         )
                     case "r":

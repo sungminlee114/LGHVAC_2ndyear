@@ -56,13 +56,13 @@ class ResponseGeneration:
         # If no variables are required, return the first expectation directly
         if len(instruction.required_variables) == 0:
             if type(instruction.expectations) == str:
-                return instruction.expectations
-            return instruction.expectations[0]
+                return instruction.expectations, {}
+            return instruction.expectations[0], {}
             
         # Check if all required variables are available
-        if any([required_v not in variables or variables[required_v] in [None] 
+        if any([required_v not in variables or variables[required_v] in [] 
                 for required_v in instruction.required_variables]):
-            return "죄송합니다, 관련 데이터를 찾을 수 없습니다."  # "Sorry, related data couldn't be found"
+            return "죄송합니다, 관련 데이터를 찾을 수 없습니다.", {}  # "Sorry, related data couldn't be found"
             
         # Filter variables to include only required ones
         result = {k: v for k, v in variables.items() if k in instruction.required_variables}
@@ -76,7 +76,7 @@ class ResponseGeneration:
         )
         
         # Run inference
-        return cls.instance.run_inference(formatted_input)
+        return cls.instance.run_inference(formatted_input), result
     
     @classmethod
     def close(cls):

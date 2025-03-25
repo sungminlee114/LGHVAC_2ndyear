@@ -7,7 +7,7 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 div {
@@ -17,8 +17,8 @@ div {
 .chat-container {
     background-color: #fff;
     height: 95%;
-    margin: 20px;
-    padding: 20px;
+    margin: 10px;
+    padding: 10px;
     padding-bottom: 5px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -30,7 +30,7 @@ div {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 28px;
+    font-size: 24px;
     font-weight: bold;
     margin-bottom: 20px;
     color: #da0f47;
@@ -67,7 +67,7 @@ div {
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 5px;
-    font-size: 16px;
+    /* font-size: 16px; */
     background-color: white;
     width: 100%;
 }
@@ -140,7 +140,7 @@ div {
     display: inline-block;
     word-wrap: break-word;
     position: relative;
-    font-size: 16px;
+    font-size: 14px;
     white-space: pre-wrap;
     /* Preserve newlines */
     line-height: 23px;
@@ -186,7 +186,7 @@ div {
     border: 1px solid #ddd;
     padding: 5px 5px;
     border-radius: 5px;
-    font-size: 12px;
+    /* font-size: 12px; */
     cursor: pointer;
     margin-right: 5px;
     margin-bottom: 5px;
@@ -201,7 +201,7 @@ div {
     justify-content: space-between;
     align-items: stretch;
     height: max-content;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .input-container input[type="text"] {
@@ -377,7 +377,7 @@ div {
 .status-badge {
     padding: 3px 8px;
     border-radius: 5px;
-    font-size: 12px;
+    /* font-size: 12px; */
     background-color: #e0e0e0;
 }
 
@@ -406,7 +406,7 @@ div {
 }
 
 .gpu-name {
-    font-size: 12px;
+    /* font-size: 12px; */
     flex: 1;
     white-space: nowrap;
     overflow: hidden;
@@ -414,7 +414,7 @@ div {
 }
 
 .gpu-usage {
-    font-size: 12px;
+    /* font-size: 12px; */
     min-width: 50px;
     text-align: right;
 }
@@ -446,4 +446,128 @@ div {
     color: #888;
     font-style: italic;
     padding: 5px;
+}
+
+.bot-message {
+    max-width: 80%;
+    padding: 12px;
+    position: relative;
+}
+
+.debug-messages {
+    margin-bottom: 5px;
+    max-height: 300px;
+    overflow-y: auto;
+    transition: max-height 0.3s ease;
+}
+
+.debug-message {
+    padding: 4px 4px;
+    margin-bottom: 4px;
+    border-left: 3px solid #ccc;
+    font-size: 10px;
+    color: #555;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    line-height: 1.5;
+}
+
+.final-response {
+    /* padding: 6px 0; */
+    color: #000;
+    line-height: 1.5;
+}
+
+.debug-hidden {
+    display: none;
+}
+
+.processing-time {
+    text-align: right;
+    padding: 5px 0;
+    color: #888;
+    font-size: 10px;
+    font-style: italic;
+    margin-top: 8px;
+    border-top: 1px dashed #eaeaea;
+}
+
+.message-toggle {
+    padding: 2px;
+    width: 100%;
+    text-align: center;
+    background-color: #f0f0f0;
+    border: none;
+    color: #666;
+    font-size: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border-radius: 4px;
+    margin-top: 4px;
+}
+
+.message-toggle:hover {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+/* 그래프 이미지 스타일 */
+.debug-message img {
+    max-width: 100%;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+/* Status Toggle Button Style */
+.status-toggle-btn {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px 8px;
+    /* font-size: 12px; */
+    cursor: pointer;
+    color: #555;
+    margin-left: auto;
+    display: block;
+}
+
+.status-toggle-btn:hover {
+    background-color: #e0e0e0;
+}
+
+/* Status Header Style */
+.status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.status-header h3 {
+    margin: 0;
+    font-size: 14px;
+    color: #555;
+}
+
+/* Status Last Updated */
+.status-last-updated {
+    font-size: 11px;
+    color: #888;
+    text-align: right;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.response-divider {
+    margin: 12px 0;
+    border-top: 1px dashed #ddd;
+    height: 1px;
+}
+
+/* 그래프 이미지 스타일 - 최종 응답 영역에서 적용 */
+.final-response img {
+    max-width: 300px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    margin: 8px 0;
 }

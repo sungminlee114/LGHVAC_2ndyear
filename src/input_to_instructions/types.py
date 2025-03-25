@@ -36,6 +36,7 @@ class InstructionG:
     type: str
     axis: dict
     plots: list[dict]
+    required_variables: list[str]
 
 
 @dataclass
