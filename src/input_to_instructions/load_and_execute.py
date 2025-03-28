@@ -119,22 +119,27 @@ class InputToInstruction:
                         )
                     case "g":
                         args = raw_instruction["args"]
-                        plots = args["plots"]
+                        plots = args["axis"]
                         required_variables = []
                         for plot in plots:
-                            required_variables += [plot['data']['x']]
-                            required_variables += [plot['data']['y']]
+                            # Loop through items in each plot
+                            for item in plot['items']:
+                                required_variables += [item['x']]  # Add x variable
+                                required_variables += [item['y']]  # Add y variable
                         
+                        # Remove duplicates from the required variables list
                         required_variables = list(set(required_variables))
 
                         instructions.append(
                             InstructionG(
-                                type=args["graph_type"],
+                                type=raw_instruction["type"],
                                 axis=args["axis"],
-                                plots=args["plots"],
+                                plots=plots,
                                 required_variables=required_variables
                             )
                         )
+                        print(instructions)
+
                     case "r":
                         expectations = raw_instruction["expectations"]
 
