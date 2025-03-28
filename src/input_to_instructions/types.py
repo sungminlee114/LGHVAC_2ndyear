@@ -33,9 +33,7 @@ class InstructionO:
 
 @dataclass
 class InstructionG:
-    type: str
-    axis: dict
-    plots: list[dict]
+    axes: list[dict]
     required_variables: list[str]
 
 

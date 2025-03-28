@@ -6,8 +6,6 @@ logger = logging.getLogger(__name__)
 import pprint
 import time
 import concurrent.futures
-import io
-import base64
 
 from flask import Flask, request, jsonify, Response, render_template
 from flask_cors import CORS
@@ -49,13 +47,6 @@ def process_request():
         # Using a timeout to ensure it doesn't hang for too long
         def response_function(response, message_type="debug"):
             # 메시지 타입을 추가하여 클라이언트에게 전송
-            
-            if message_type == "graph":
-                buf = io.BytesIO()
-                response.savefig(buf, format='png')
-                buf.seek(0)
-                response = base64.b64encode(buf.read()).decode('utf-8')
-                response = f'<img src="data:image/png;base64,{response}"/>'
                 
             response = response.replace("\n", "<br>")
             if message_type in ["response", "graph"]:

@@ -119,11 +119,11 @@ class InputToInstruction:
                         )
                     case "g":
                         args = raw_instruction["args"]
-                        plots = args["axis"]
+                        axes = args["axes"]
                         required_variables = []
-                        for plot in plots:
+                        for ax in axes:
                             # Loop through items in each plot
-                            for item in plot['items']:
+                            for item in ax['items']:
                                 required_variables += [item['x']]  # Add x variable
                                 required_variables += [item['y']]  # Add y variable
                         
@@ -132,13 +132,10 @@ class InputToInstruction:
 
                         instructions.append(
                             InstructionG(
-                                type=raw_instruction["type"],
-                                axis=args["axis"],
-                                plots=plots,
+                                axes=axes,
                                 required_variables=required_variables
                             )
                         )
-                        print(instructions)
 
                     case "r":
                         expectations = raw_instruction["expectations"]

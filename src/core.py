@@ -122,10 +122,11 @@ def execute_instruction_set_web(instructions:list[InstructionQ|InstructionO|Inst
             pass
         elif type(instruction) == InstructionG:
 
-            fig = plot_graph(instruction, variables)
+            # fig_html = plot_graph(instruction, variables, return_html=True)
+            fig_html = plot_graph_plotly(instruction, variables, return_html=True)
             
             # yield from response_function("<h2 Generated graph:>")
-            yield from response_function(fig, "graph")
+            yield from response_function(fig_html, "graph")
         elif type(instruction) == InstructionR:
             # Execute response generation
             variables_to_report = {k: v for k, v in variables.items() if k not in ["Metadata"]}

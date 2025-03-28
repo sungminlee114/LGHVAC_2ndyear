@@ -196,3 +196,4 @@ zope.event==5.0
 zope.interface==7.2
 flash_attn
 pynvml
+plotly
