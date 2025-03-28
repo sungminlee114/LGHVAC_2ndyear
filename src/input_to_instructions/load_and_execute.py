@@ -54,29 +54,13 @@ class InputToInstruction:
         return cls.instance is not None and cls.instance.is_loaded()
     
     @classmethod
-    def execute(cls, input_text: str, metadata: dict) -> list[InstructionQ|InstructionO|InstructionR|InstructionG|None]:
-        """Convert input text to instructions.
-        
-        Args:
-            input_text: Input text from user.
-            metadata: Current metadata.
-            
-        Returns:
-            list of instructions or None if there was an error
-        """
-        # Prepare the input format
-        formatted_input = f"Metadata:{metadata};Input:{input_text};"
-        
-        # Run inference
-        response_raw = cls.instance.run_inference(formatted_input)
-        
-        if response_raw is None:
-            logger.error("Model response is None.")
-            return None
-            
+    def postprocess(cls, response_raw):
         # Parse the response
         try:
-            response = eval(response_raw)
+            if type(response_raw) != dict:
+                response = eval(response_raw)
+            else:
+                response = response_raw
             raw_instructions = response["Instructions"]
             if "Expectations" in response:
                 expectations = response["Expectations"]
@@ -171,7 +155,31 @@ class InputToInstruction:
                 traceback.print_exc()
                 logger.error(f"Failed to parse instruction: {raw_instruction}")
                 return None
+        
+        return instructions
+
+    @classmethod
+    def execute(cls, input_text: str, metadata: dict) -> list[InstructionQ|InstructionO|InstructionR|InstructionG|None]:
+        """Convert input text to instructions.
+        
+        Args:
+            input_text: Input text from user.
+            metadata: Current metadata.
             
+        Returns:
+            list of instructions or None if there was an error
+        """
+        # Prepare the input format
+        formatted_input = f"Metadata:{metadata};Input:{input_text};"
+        
+        # Run inference
+        response_raw = cls.instance.run_inference(formatted_input)
+        
+        if response_raw is None:
+            logger.error("Model response is None.")
+            return None
+            
+        instructions = cls.postprocess(response_raw)
         return instructions
     
     @classmethod

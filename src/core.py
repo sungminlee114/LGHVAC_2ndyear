@@ -105,7 +105,7 @@ def execute_instruction_set_web(instructions:list[InstructionQ|InstructionO|Inst
             # Execute query
             result_df = DBManager.structured_query_data_t(metadata, instruction.args)
             if result_df is None:
-                yield from response_function("죄송합니다, 관련 데이터를 찾을 수 없습니다.")
+                yield from response_function("죄송합니다, 관련 데이터를 찾을 수 없습니다.", "response")
                 return
 
             # For demo, drop rows where any value is -1
