@@ -1173,11 +1173,11 @@
 },{
     "Input": "이번주 우리반과 옆반 온도 변화 추이 비교해줘",
     "Tags": {
-        "Style": ["Graph", "Implicit modality"],
+        "Style": ["Graph"],
         "Returns": ["Graph"]
     },
     "Response": {
-        "Thinking": ,
+        "Thinking": "사용자는 이번 주 동안 우리반(01_IB5)과 옆반(01_IB7)의 실내 온도 변화 추이를 비교하고 싶어함. 이를 위해 두 반의 이번 주 실내 온도 데이터(roomtemp)를 가져와야 함. 이후 같은 시간대의 데이터를 매칭하여 두 반의 온도 변화를 비교할 수 있도록 정리함. 마지막으로, 시간에 따른 실내 온도 변화를 선 그래프로 시각화하여 비교하기 쉽게함.",
         "Expectations": [""],
         "Instructions": [
             {
@@ -1197,16 +1197,37 @@
             },
             {
                 "type": "o",
-                "script": "ours_roomtemp_raw = qr[qr['idu'] == '01_IB5'];beside_roomtemp_raw = qr[qr['idu'] == '01_IB7'];ours_roomtemp_rawtimeseries = ours_roomtemp_raw[['timestamp', 'roomtemp']];beside_roomtemp_rawtimeseries = beside_roomtemp_raw[['timestamp', 'roomtemp']];",
+                "script": "roomtemp_ours = qr[qr['idu'] == '01_IB5'];roomtemp_theirs = qr[qr['idu'] == '01_IB7'];roomtemp_rawtimeseries = pd.merge(roomtemp_ours, roomtemp_theirs, on='timestamp', suffixes=('_ours', '_theirs'));",
                 "returns": [
-                    "ours_roomtemp_raw",
-                    "beside_roomtemp_raw",
-                    "ours_roomtemp_rawtimeseries",
-                    "beside_roomtemp_rawtimeseries"
+                  "roomtemp_rawtimeseries"
                 ]
             },
             {
                 "type": "g",
+                "args": {
+                    "axes": [
+                        {
+                            "type": "line",
+                            "description": {
+                                "xlabel": "날짜",
+                                "ylabel": "실내 온도 (°C)",
+                                "title": "이번주 우리반과 옆반 실내온도 변화 추이"
+                            },
+                            "items": [
+                                {
+                                    "x": "roomtemp_rawtimeseries['timestamp']",
+                                    "y": "roomtemp_rawtimeseries['roomtemp_ours']",
+                                    "label": "우리반 실내온도"
+                                }, 
+                                {
+                                    "x": "roomtemp_rawtimeseries['timestamp']",
+                                    "y": "roomtemp_rawtimeseries['roomtemp_theirs']",
+                                    "label": "옆반 실내온도"
+                                }
+                            ]
+                        }
+                    ]
+                }
             }
         ]
     }

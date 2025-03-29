@@ -164,6 +164,7 @@ def plot_graph_plotly(instruction, variables, return_html=False):
                           vertical_spacing=0.1,
                           subplot_titles=[ax["description"]["title"] for ax in axes])
     
+    
     # Loop through each axis and plot accordingly
     for i, ax_info in enumerate(axes):
         row = i + 1  # Plotly rows are 1-indexed
@@ -231,10 +232,16 @@ def plot_graph_plotly(instruction, variables, return_html=False):
                 )
             elif plot_type == "bar":
                 fig.add_trace(
-                    go.Bar(
+                    go.Scatter(
                         x=x_resampled, 
                         y=y_resampled, 
-                        name=label
+                        name=label,
+                        mode='markers',
+                        marker=dict(
+                            size=12,  # 점 크기 조절
+                            #color=['red' if v == 0 else 'green' for v in y_resampled],  # off=red, on=green
+                            symbol=['circle-open' if v == 0 else 'circle' for v in y_resampled]  # off=open circle, on=filled
+                        )
                     ),
                     row=row, col=1
                 )
@@ -242,9 +249,9 @@ def plot_graph_plotly(instruction, variables, return_html=False):
             # Format axes for bar charts showing on/off status
             if plot_type == "bar":
                 fig.update_yaxes(
-                    tickvals=[0, 1],
-                    ticktext=["off", "on"],
-                    row=row, col=1
+                tickvals=[0, 1],
+                ticktext=["off", "on"],
+                row=row, col=1
                 )
         
         # Update axis labels
@@ -280,12 +287,14 @@ def plot_graph_plotly(instruction, variables, return_html=False):
     
     # Update layout for better appearance
     height_per_subplot = 400
+
     fig.update_layout(
         height=height_per_subplot * num_axes,
         width=900,
         showlegend=True,
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        margin=dict(t=50, b=50, l=50, r=50)
+        margin=dict(t=50, b=50, l=50, r=50),
+        hovermode="x unified"
     )
     
     if return_html:
