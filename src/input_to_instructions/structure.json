@@ -118,29 +118,7 @@
                                 "args": {
                                     "type": "object",
                                     "properties": {
-                                        "graph_type": {
-                                            "type": "string"
-                                        },
-                                        "axis": {
-                                            "type": "object",
-                                            "properties": {
-                                                "xlabel": {
-                                                    "type": "string"
-                                                },
-                                                "ylabel": {
-                                                    "type": "string"
-                                                },
-                                                "title": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "required": [
-                                                "xlabel",
-                                                "ylabel",
-                                                "title"
-                                            ]
-                                        },
-                                        "plots": {
+                                        "axes": {
                                             "type": "array",
                                             "items": {
                                                 "type": "object",
@@ -148,37 +126,58 @@
                                                     "type": {
                                                         "type": "string"
                                                     },
-                                                    "data": {
+                                                    "description": {
                                                         "type": "object",
                                                         "properties": {
-                                                            "x": {
+                                                            "xlabel": {
                                                                 "type": "string"
                                                             },
-                                                            "y": {
+                                                            "ylabel": {
+                                                                "type": "string"
+                                                            },
+                                                            "title": {
                                                                 "type": "string"
                                                             }
                                                         },
                                                         "required": [
-                                                            "x",
-                                                            "y"
+                                                            "xlabel",
+                                                            "ylabel",
+                                                            "title"
                                                         ]
                                                     },
-                                                    "label": {
-                                                        "type": "string"
+                                                    "items": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "x": {
+                                                                    "type": "string"
+                                                                },
+                                                                "y": {
+                                                                    "type": "string"
+                                                                },
+                                                                "label": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "x",
+                                                                "y",
+                                                                "label"
+                                                            ]
+                                                        }
                                                     }
                                                 },
                                                 "required": [
                                                     "type",
-                                                    "data",
-                                                    "label"
+                                                    "description",
+                                                    "items"
                                                 ]
                                             }
                                         }
                                     },
                                     "required": [
-                                        "graph_type",
-                                        "axis",
-                                        "plots"
+                                        "axes"
                                     ]
                                 }
                             }
