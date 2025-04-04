@@ -188,7 +188,7 @@ def plot_graph_plotly(instruction, variables, return_html=False):
                     )
 
                 fig.update_xaxes(
-                    title_text="IDU",
+                    title_text=xlabel,
                     type='category',
                     row=row, col=1
                 )
