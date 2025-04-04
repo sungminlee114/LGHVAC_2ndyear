@@ -173,33 +173,30 @@ def plot_graph_plotly(instruction, variables, return_html=False):
             y = eval(item["y"])  
 
             if plot_type == "box":
-                df = pd.DataFrame({'x': x, 'y': y})
-                df['x'] = pd.to_datetime(df['x'], errors='coerce')  
-                df = df.dropna(subset=['x', 'y'])
-
-                # 시간 단위 그룹핑
-                df['time_bin'] = df['x'].dt.floor('H')
-                df['time_str'] = df['time_bin'].astype(str)
-
-                for tbin, subdf in df.groupby('time_str'):
-                    fig.add_trace(
+                fig.add_trace(
                         go.Box(
-                            y=subdf['y'],
-                            name=tbin,
+                            x=sum([[idu] * len(values) for idu, values in zip(x, y)], []),
+                            y=pd.concat(y),
+                            name=label,
                             boxmean=True,
                             boxpoints='outliers',
                             marker=dict(opacity=0.6),
                             line=dict(width=1),
-                            showlegend=False
+                            showlegend=True
                         ),
                         row=row, col=1
+                    )
+
+                fig.update_xaxes(
+                    title_text="IDU",
+                    type='category',
+                    row=row, col=1
                 )
 
-                td = True
-                    
-                    
-
-
+                fig.update_yaxes(
+                    title_text=ylabel,
+                    row=row, col=1
+                )
             else:
                 # ✅ Box Plot이 아닐 경우 리샘플링 적용
                 period_unit = ""
