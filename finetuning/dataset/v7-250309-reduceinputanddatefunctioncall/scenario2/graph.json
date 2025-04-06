@@ -1,0 +1,636 @@
+[
+    {
+        "Input": "어제 4층 운영현황 보여줘",
+        "Tags": {
+            "Style": [
+                "Graph","Op Status"
+            ],
+            "Returns": [
+                "Graph","Op Status"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 어제 4층의 IDU 운영현황을 전체적으로 파악하고자 함. 이를 위해 먼저 3개의 IDU(02_I84, 02_I85, 01_IB7)의 실내온도, 설정온도, 전원 상태 데이터를 조회함. 이후, 시간에 따른 실내/설정온도 추이를 선 그래프로 시각화하여 온도 변화 양상을 확인하고, 각 IDU별 전원 켜진 시간을 막대 그래프로 표현하여 운전 시간 비교가 가능하도록 함. 마지막으로, 실내온도 및 설정온도의 분포를 Box plot으로 그려 IDU별 온도 편차나 이상값 등을 시각적으로 쉽게 파악할 수 있도록 구성함.",
+            "Expectations": [""],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "roomtemp",
+                            "settemp",
+                            "oper"
+                        ],
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))",
+                        "spatials": [
+                            "02_I84",
+                            "02_I85",
+                            "01_IB7"
+                        ]
+                    },
+                    "result_name": "qr"
+                },
+                {
+                    "type": "o",
+                    "script": "raw_02_I84 = qr[qr['idu'] == '02_I84']; raw_02_I85 = qr[qr['idu'] == '02_I85']; raw_01_IB7 = qr[qr['idu'] == '01_IB7']; raw_timeseries = pd.merge(raw_02_I84, raw_02_I85, on='timestamp', suffixes=('_02_I84', '_02_I85')); raw_timeseries = pd.merge(raw_timeseries, raw_01_IB7, on='timestamp', suffixes=('', '_01_IB7')); raw_timeseries.rename(columns={'roomtemp': 'roomtemp_01_IB7', 'settemp': 'settemp_01_IB7', 'oper': 'oper_01_IB7'}, inplace=True)",
+                    "returns": [
+                        "raw_timeseries"
+                    ]
+                },
+                {
+                    "type": "g",
+                    "args": {
+                        "axes": [
+                            {
+                                "type": "line",
+                                "description": {
+                                    "xlabel": "시간",
+                                    "ylabel": "온도 (°C)",
+                                    "title": "어제 4층 IDU별 실내온도 및 설정온도 추이"
+                                },
+                                "items": [
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['roomtemp_02_I84']",
+                                        "label": "02_I84 실내온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['settemp_02_I84']",
+                                        "label": "02_I84 설정온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['roomtemp_02_I85']",
+                                        "label": "02_I85 실내온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['settemp_02_I85']",
+                                        "label": "02_I85 설정온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['roomtemp_01_IB7']",
+                                        "label": "01_IB7 실내온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['settemp_01_IB7']",
+                                        "label": "01_IB7 설정온도"
+                                    }
+                                ]
+                            },
+                    {
+                       "type": "bar",
+                       "description": {
+                      "xlabel": "IDU",
+                      "ylabel": "전원 켜진 시간 (분)",
+                      "title": "어제 4층 IDU별 전원 켜진 시간"
+                       },
+                       "items": [
+                      {
+                          "x": "['02_I84', '02_I85', '01_IB7']",
+                           "y": "[raw_timeseries['oper_02_I84'].sum() / 60, raw_timeseries['oper_02_I85'].sum() / 60, raw_timeseries['oper_01_IB7'].sum() / 60]",
+                          "label": "전원 켜진 시간"
+                      }
+                       ]
+                   },
+                    {
+                       "type": "box",
+                      "description": {
+                          "xlabel": "IDU",
+                          "ylabel": "온도 (°C)",
+                          "title": "어제 4층 IDU별 실내온도 및 설정온도 분포"
+                      },
+                      "items": [
+                        {
+                            "x": "['02_I84', '02_I85', '01_IB7']",
+                             "y": "[raw_timeseries['roomtemp_02_I84'], raw_timeseries['roomtemp_02_I85'], raw_timeseries['roomtemp_01_IB7']]",
+                            "label": "실내온도"
+                        },
+                        {
+                            "x": "['02_I84', '02_I85', '01_IB7']",
+                             "y": "[raw_timeseries['settemp_02_I84'], raw_timeseries['settemp_02_I85'], raw_timeseries['settemp_01_IB7']]",
+                            "label": "설정온도"
+                        }
+                         ]
+                
+                    }
+                        ]
+                    }
+                }
+                
+            ]
+        }
+    },
+    {
+        "Input": "이번주 4층 운영현황 보여줘",
+        "Tags": {
+            "Style": [
+                "Graph","Op Status"
+            ],
+            "Returns": [
+                "Graph","Op Status"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 이번주 4층의 IDU 운영현황을 전체적으로 파악하고자 함. 이를 위해 먼저 3개의 IDU(02_I84, 02_I85, 01_IB7)의 실내온도, 설정온도, 전원 상태 데이터를 조회함. 이후, 시간에 따른 실내/설정온도 추이를 선 그래프로 시각화하여 온도 변화 양상을 확인하고, 각 IDU별 전원 켜진 시간을 막대 그래프로 표현하여 운전 시간 비교가 가능하도록 함. 마지막으로, 실내온도 및 설정온도의 분포를 Box plot으로 그려 IDU별 온도 편차나 이상값 등을 시각적으로 쉽게 파악할 수 있도록 구성함.",
+            "Expectations": [""],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "roomtemp",
+                            "settemp",
+                            "oper"
+                        ],
+                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE' + INTERVAL '1 week'))",
+                        "spatials": [
+                            "02_I84",
+                            "02_I85",
+                            "01_IB7"
+                        ]
+                    },
+                    "result_name": "qr"
+                },
+                {
+                    "type": "o",
+                    "script": "raw_02_I84 = qr[qr['idu'] == '02_I84']; raw_02_I85 = qr[qr['idu'] == '02_I85']; raw_01_IB7 = qr[qr['idu'] == '01_IB7']; raw_timeseries = pd.merge(raw_02_I84, raw_02_I85, on='timestamp', suffixes=('_02_I84', '_02_I85')); raw_timeseries = pd.merge(raw_timeseries, raw_01_IB7, on='timestamp', suffixes=('', '_01_IB7')); raw_timeseries.rename(columns={'roomtemp': 'roomtemp_01_IB7', 'settemp': 'settemp_01_IB7', 'oper': 'oper_01_IB7'}, inplace=True)",
+                    "returns": [
+                        "raw_timeseries"
+                    ]
+                },
+                {
+                    "type": "g",
+                    "args": {
+                        "axes": [
+                            {
+                                "type": "line",
+                                "description": {
+                                    "xlabel": "시간",
+                                    "ylabel": "온도 (°C)",
+                                    "title": "이번주 4층 IDU별 실내온도 및 설정온도 추이"
+                                },
+                                "items": [
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['roomtemp_02_I84']",
+                                        "label": "02_I84 실내온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['settemp_02_I84']",
+                                        "label": "02_I84 설정온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['roomtemp_02_I85']",
+                                        "label": "02_I85 실내온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['settemp_02_I85']",
+                                        "label": "02_I85 설정온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['roomtemp_01_IB7']",
+                                        "label": "01_IB7 실내온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['settemp_01_IB7']",
+                                        "label": "01_IB7 설정온도"
+                                    }
+                                ]
+                            },
+                    {
+                       "type": "bar",
+                       "description": {
+                      "xlabel": "IDU",
+                      "ylabel": "전원 켜진 시간 (분)",
+                      "title": "이번주 4층 IDU별 전원 켜진 시간"
+                       },
+                       "items": [
+                      {
+                          "x": "['02_I84', '02_I85', '01_IB7']",
+                           "y": "[raw_timeseries['oper_02_I84'].sum() / 60, raw_timeseries['oper_02_I85'].sum() / 60, raw_timeseries['oper_01_IB7'].sum() / 60]",
+                          "label": "전원 켜진 시간"
+                      }
+                       ]
+                   },
+                    {
+                       "type": "box",
+                      "description": {
+                          "xlabel": "IDU",
+                          "ylabel": "온도 (°C)",
+                          "title": "이번주 4층 IDU별 실내온도 및 설정온도 분포"
+                      },
+                      "items": [
+                        {
+                            "x": "['02_I84', '02_I85', '01_IB7']",
+                             "y": "[raw_timeseries['roomtemp_02_I84'], raw_timeseries['roomtemp_02_I85'], raw_timeseries['roomtemp_01_IB7']]",
+                            "label": "실내온도"
+                        },
+                        {
+                            "x": "['02_I84', '02_I85', '01_IB7']",
+                             "y": "[raw_timeseries['settemp_02_I84'], raw_timeseries['settemp_02_I85'], raw_timeseries['settemp_01_IB7']]",
+                            "label": "설정온도"
+                        }
+                         ]
+                
+                    }
+                        ]
+                    }
+                }
+                
+            ]
+        }
+    },
+    {
+        "Input": "지난 3일간 4층 운영현황 보여줘",
+        "Tags": {
+            "Style": [
+                "Graph","Op Status"
+            ],
+            "Returns": [
+                "Graph","Op Status"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 지난3일간 4층의 IDU 운영현황을 전체적으로 파악하고자 함. 이를 위해 먼저 3개의 IDU(02_I84, 02_I85, 01_IB7)의 실내온도, 설정온도, 전원 상태 데이터를 조회함. 이후, 시간에 따른 실내/설정온도 추이를 선 그래프로 시각화하여 온도 변화 양상을 확인하고, 각 IDU별 전원 켜진 시간을 막대 그래프로 표현하여 운전 시간 비교가 가능하도록 함. 마지막으로, 실내온도 및 설정온도의 분포를 Box plot으로 그려 IDU별 온도 편차나 이상값 등을 시각적으로 쉽게 파악할 수 있도록 구성함.",
+            "Expectations": [""],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "roomtemp",
+                            "settemp",
+                            "oper"
+                        ],
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '3 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))",
+                        "spatials": [
+                            "02_I84",
+                            "02_I85",
+                            "01_IB7"
+                        ]
+                    },
+                    "result_name": "qr"
+                },
+                {
+                    "type": "o",
+                    "script": "raw_02_I84 = qr[qr['idu'] == '02_I84']; raw_02_I85 = qr[qr['idu'] == '02_I85']; raw_01_IB7 = qr[qr['idu'] == '01_IB7']; raw_timeseries = pd.merge(raw_02_I84, raw_02_I85, on='timestamp', suffixes=('_02_I84', '_02_I85')); raw_timeseries = pd.merge(raw_timeseries, raw_01_IB7, on='timestamp', suffixes=('', '_01_IB7')); raw_timeseries.rename(columns={'roomtemp': 'roomtemp_01_IB7', 'settemp': 'settemp_01_IB7', 'oper': 'oper_01_IB7'}, inplace=True)",
+                    "returns": [
+                        "raw_timeseries"
+                    ]
+                },
+                {
+                    "type": "g",
+                    "args": {
+                        "axes": [
+                            {
+                                "type": "line",
+                                "description": {
+                                    "xlabel": "시간",
+                                    "ylabel": "온도 (°C)",
+                                    "title": "지난3일간 4층 IDU별 실내온도 및 설정온도 추이"
+                                },
+                                "items": [
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['roomtemp_02_I84']",
+                                        "label": "02_I84 실내온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['settemp_02_I84']",
+                                        "label": "02_I84 설정온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['roomtemp_02_I85']",
+                                        "label": "02_I85 실내온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['settemp_02_I85']",
+                                        "label": "02_I85 설정온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['roomtemp_01_IB7']",
+                                        "label": "01_IB7 실내온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['settemp_01_IB7']",
+                                        "label": "01_IB7 설정온도"
+                                    }
+                                ]
+                            },
+                    {
+                       "type": "bar",
+                       "description": {
+                      "xlabel": "IDU",
+                      "ylabel": "전원 켜진 시간 (분)",
+                      "title": "지난3일간 4층 IDU별 전원 켜진 시간"
+                       },
+                       "items": [
+                      {
+                          "x": "['02_I84', '02_I85', '01_IB7']",
+                           "y": "[raw_timeseries['oper_02_I84'].sum() / 60, raw_timeseries['oper_02_I85'].sum() / 60, raw_timeseries['oper_01_IB7'].sum() / 60]",
+                          "label": "전원 켜진 시간"
+                      }
+                       ]
+                   },
+                    {
+                       "type": "box",
+                      "description": {
+                          "xlabel": "IDU",
+                          "ylabel": "온도 (°C)",
+                          "title": "지난3일간 4층 IDU별 실내온도 및 설정온도 분포"
+                      },
+                      "items": [
+                        {
+                            "x": "['02_I84', '02_I85', '01_IB7']",
+                             "y": "[raw_timeseries['roomtemp_02_I84'], raw_timeseries['roomtemp_02_I85'], raw_timeseries['roomtemp_01_IB7']]",
+                            "label": "실내온도"
+                        },
+                        {
+                            "x": "['02_I84', '02_I85', '01_IB7']",
+                             "y": "[raw_timeseries['settemp_02_I84'], raw_timeseries['settemp_02_I85'], raw_timeseries['settemp_01_IB7']]",
+                            "label": "설정온도"
+                        }
+                         ]
+                
+                    }
+                        ]
+                    }
+                }
+                
+            ]
+        }
+    },
+    {
+        "Input": "지난달 4층 운영현황 보여줘",
+        "Tags": {
+            "Style": [
+                "Graph","Op Status"
+            ],
+            "Returns": [
+                "Graph","Op Status"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 지난달 4층의 IDU 운영현황을 전체적으로 파악하고자 함. 이를 위해 먼저 3개의 IDU(02_I84, 02_I85, 01_IB7)의 실내온도, 설정온도, 전원 상태 데이터를 조회함. 이후, 시간에 따른 실내/설정온도 추이를 선 그래프로 시각화하여 온도 변화 양상을 확인하고, 각 IDU별 전원 켜진 시간을 막대 그래프로 표현하여 운전 시간 비교가 가능하도록 함. 마지막으로, 실내온도 및 설정온도의 분포를 Box plot으로 그려 IDU별 온도 편차나 이상값 등을 시각적으로 쉽게 파악할 수 있도록 구성함.",
+            "Expectations": [""],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "roomtemp",
+                            "settemp",
+                            "oper"
+                        ],
+                        "temporal": "[DATE_TRUNC('month', DATE 'CURRENT_DATE' - INTERVAL '1 month'), DATE_TRUNC('month', DATE 'CURRENT_DATE'))",
+                        "spatials": [
+                            "02_I84",
+                            "02_I85",
+                            "01_IB7"
+                        ]
+                    },
+                    "result_name": "qr"
+                },
+                {
+                    "type": "o",
+                    "script": "raw_02_I84 = qr[qr['idu'] == '02_I84']; raw_02_I85 = qr[qr['idu'] == '02_I85']; raw_01_IB7 = qr[qr['idu'] == '01_IB7']; raw_timeseries = pd.merge(raw_02_I84, raw_02_I85, on='timestamp', suffixes=('_02_I84', '_02_I85')); raw_timeseries = pd.merge(raw_timeseries, raw_01_IB7, on='timestamp', suffixes=('', '_01_IB7')); raw_timeseries.rename(columns={'roomtemp': 'roomtemp_01_IB7', 'settemp': 'settemp_01_IB7', 'oper': 'oper_01_IB7'}, inplace=True)",
+                    "returns": [
+                        "raw_timeseries"
+                    ]
+                },
+                {
+                    "type": "g",
+                    "args": {
+                        "axes": [
+                            {
+                                "type": "line",
+                                "description": {
+                                    "xlabel": "시간",
+                                    "ylabel": "온도 (°C)",
+                                    "title": "지난달 4층 IDU별 실내온도 및 설정온도 추이"
+                                },
+                                "items": [
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['roomtemp_02_I84']",
+                                        "label": "02_I84 실내온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['settemp_02_I84']",
+                                        "label": "02_I84 설정온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['roomtemp_02_I85']",
+                                        "label": "02_I85 실내온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['settemp_02_I85']",
+                                        "label": "02_I85 설정온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['roomtemp_01_IB7']",
+                                        "label": "01_IB7 실내온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['settemp_01_IB7']",
+                                        "label": "01_IB7 설정온도"
+                                    }
+                                ]
+                            },
+                    {
+                       "type": "bar",
+                       "description": {
+                      "xlabel": "IDU",
+                      "ylabel": "전원 켜진 시간 (분)",
+                      "title": "지난달 4층 IDU별 전원 켜진 시간"
+                       },
+                       "items": [
+                      {
+                          "x": "['02_I84', '02_I85', '01_IB7']",
+                           "y": "[raw_timeseries['oper_02_I84'].sum() / 60, raw_timeseries['oper_02_I85'].sum() / 60, raw_timeseries['oper_01_IB7'].sum() / 60]",
+                          "label": "전원 켜진 시간"
+                      }
+                       ]
+                   },
+                    {
+                       "type": "box",
+                      "description": {
+                          "xlabel": "IDU",
+                          "ylabel": "온도 (°C)",
+                          "title": "지난달 4층 IDU별 실내온도 및 설정온도 분포"
+                      },
+                      "items": [
+                        {
+                            "x": "['02_I84', '02_I85', '01_IB7']",
+                             "y": "[raw_timeseries['roomtemp_02_I84'], raw_timeseries['roomtemp_02_I85'], raw_timeseries['roomtemp_01_IB7']]",
+                            "label": "실내온도"
+                        },
+                        {
+                            "x": "['02_I84', '02_I85', '01_IB7']",
+                             "y": "[raw_timeseries['settemp_02_I84'], raw_timeseries['settemp_02_I85'], raw_timeseries['settemp_01_IB7']]",
+                            "label": "설정온도"
+                        }
+                         ]
+                
+                    }
+                        ]
+                    }
+                }
+                
+            ]
+        }
+    },   {
+        "Input": "지난주 4층 운영현황 보여줘",
+        "Tags": {
+            "Style": [
+                "Graph","Op Status"
+            ],
+            "Returns": [
+                "Graph","Op Status"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 지난주 4층의 IDU 운영현황을 전체적으로 파악하고자 함. 이를 위해 먼저 3개의 IDU(02_I84, 02_I85, 01_IB7)의 실내온도, 설정온도, 전원 상태 데이터를 조회함. 이후, 시간에 따른 실내/설정온도 추이를 선 그래프로 시각화하여 온도 변화 양상을 확인하고, 각 IDU별 전원 켜진 시간을 막대 그래프로 표현하여 운전 시간 비교가 가능하도록 함. 마지막으로, 실내온도 및 설정온도의 분포를 Box plot으로 그려 IDU별 온도 편차나 이상값 등을 시각적으로 쉽게 파악할 수 있도록 구성함.",
+            "Expectations": [""],
+            "Instructions": [
+                {
+                    "type": "q",
+                    "args": {
+                        "table_name": "data_t",
+                        "columns": [
+                            "timestamp",
+                            "roomtemp",
+                            "settemp",
+                            "oper"
+                        ],
+                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
+                        "spatials": [
+                            "02_I84",
+                            "02_I85",
+                            "01_IB7"
+                        ]
+                    },
+                    "result_name": "qr"
+                },
+                {
+                    "type": "o",
+                    "script": "raw_02_I84 = qr[qr['idu'] == '02_I84']; raw_02_I85 = qr[qr['idu'] == '02_I85']; raw_01_IB7 = qr[qr['idu'] == '01_IB7']; raw_timeseries = pd.merge(raw_02_I84, raw_02_I85, on='timestamp', suffixes=('_02_I84', '_02_I85')); raw_timeseries = pd.merge(raw_timeseries, raw_01_IB7, on='timestamp', suffixes=('', '_01_IB7')); raw_timeseries.rename(columns={'roomtemp': 'roomtemp_01_IB7', 'settemp': 'settemp_01_IB7', 'oper': 'oper_01_IB7'}, inplace=True)",
+                    "returns": [
+                        "raw_timeseries"
+                    ]
+                },
+                {
+                    "type": "g",
+                    "args": {
+                        "axes": [
+                            {
+                                "type": "line",
+                                "description": {
+                                    "xlabel": "시간",
+                                    "ylabel": "온도 (°C)",
+                                    "title": "지난주 4층 IDU별 실내온도 및 설정온도 추이"
+                                },
+                                "items": [
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['roomtemp_02_I84']",
+                                        "label": "02_I84 실내온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['settemp_02_I84']",
+                                        "label": "02_I84 설정온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['roomtemp_02_I85']",
+                                        "label": "02_I85 실내온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['settemp_02_I85']",
+                                        "label": "02_I85 설정온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['roomtemp_01_IB7']",
+                                        "label": "01_IB7 실내온도"
+                                    },
+                                    {
+                                        "x": "raw_timeseries['timestamp']",
+                                        "y": "raw_timeseries['settemp_01_IB7']",
+                                        "label": "01_IB7 설정온도"
+                                    }
+                                ]
+                            },
+                    {
+                       "type": "bar",
+                       "description": {
+                      "xlabel": "IDU",
+                      "ylabel": "전원 켜진 시간 (분)",
+                      "title": "지난주 4층 IDU별 전원 켜진 시간"
+                       },
+                       "items": [
+                      {
+                          "x": "['02_I84', '02_I85', '01_IB7']",
+                           "y": "[raw_timeseries['oper_02_I84'].sum() / 60, raw_timeseries['oper_02_I85'].sum() / 60, raw_timeseries['oper_01_IB7'].sum() / 60]",
+                          "label": "전원 켜진 시간"
+                      }
+                       ]
+                   },
+                    {
+                       "type": "box",
+                      "description": {
+                          "xlabel": "IDU",
+                          "ylabel": "온도 (°C)",
+                          "title": "지난주 4층 IDU별 실내온도 및 설정온도 분포"
+                      },
+                      "items": [
+                        {
+                            "x": "['02_I84', '02_I85', '01_IB7']",
+                             "y": "[raw_timeseries['roomtemp_02_I84'], raw_timeseries['roomtemp_02_I85'], raw_timeseries['roomtemp_01_IB7']]",
+                            "label": "실내온도"
+                        },
+                        {
+                            "x": "['02_I84', '02_I85', '01_IB7']",
+                             "y": "[raw_timeseries['settemp_02_I84'], raw_timeseries['settemp_02_I85'], raw_timeseries['settemp_01_IB7']]",
+                            "label": "설정온도"
+                        }
+                         ]
+                
+                    }
+                        ]
+                    }
+                }
+                
+            ]
+        }
+    }
+    ]

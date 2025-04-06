@@ -149,172 +149,158 @@ def matplotlib_to_html(fig):
     html = f'<img src="data:image/png;base64,{html}"/>'
     return html
 
-def plot_graph_plotly(instruction, variables, return_html=False):
-    
-    axes = instruction.axes
-    
-    # Update the local variables with any additional variables
-    locals().update(variables)
 
-    # Create subplots based on the number of axes
+def plot_graph_plotly(instruction, variables, return_html=False):
+    axes = instruction.axes
+    locals().update(variables)  
+    td = False
     num_axes = len(axes)
-    
-    # Create subplot figure
-    fig = sp.make_subplots(rows=num_axes, cols=1, 
-                          vertical_spacing=0.1,
-                          subplot_titles=[ax["description"]["title"] for ax in axes])
-    
-    
-    # Loop through each axis and plot accordingly
+
+    fig = sp.make_subplots(
+        rows=num_axes, cols=1, 
+        vertical_spacing=0.1,
+        subplot_titles=[ax["description"]["title"] for ax in axes]
+    )
+
     for i, ax_info in enumerate(axes):
-        row = i + 1  # Plotly rows are 1-indexed
-        
-        # Extract axis descriptions
+        row = i + 1  
         xlabel, ylabel = ax_info["description"]["xlabel"], ax_info["description"]["ylabel"]
-        
-        # Iterate through the plots for this axis
+
         for item in ax_info["items"]:
             plot_type = ax_info["type"]
             label = item["label"]
-            x = eval(item["x"])  # Evaluate the expression for x-axis data
-            y = eval(item["y"])  # Evaluate the expression for y-axis data
-            
-            period_unit = "D"
-            
-            # Handle datetime conversion
-            if not isinstance(x, pd.Series):
-                x = pd.Series(x)
-            
-            x = pd.to_datetime(x)  # Ensure x is datetime format
-            
-            if isinstance(x.iloc[0], (datetime.datetime, pd.Timestamp)):
-                # Calculate the date range for resampling decision
-                date_range = max(x) - min(x)
-                
-                if date_range.days > 365:
-                    period_unit = "Y"
-                elif date_range.days > 30:
-                    period_unit = "M"
-                elif date_range.days > 7:
-                    period_unit = "W"
-                else:
-                    period_unit = "D"
-                
-                # Resample the data based on daily granularity but display the period unit
-                df = pd.DataFrame({'Date': x, 'Y': y})
-                df.set_index('Date', inplace=True)
-                
-                if plot_type == "line":
-                    df_resampled = df.resample("D").mean()
-                elif plot_type == "bar":
-                    df_resampled = df.resample("D").apply(lambda x: x.mode()[0] if not x.mode().empty else 0)
-                
-                # Drop NaN values resulting from misalignment
-                df_resampled = df_resampled.dropna()
+            x = eval(item["x"])  
+            y = eval(item["y"])  
 
-                # Ensure that x_resampled and y_resampled align
-                x_resampled = df_resampled.index
-                y_resampled = df_resampled['Y']
-            else:
-                x_resampled = x
-                y_resampled = y
-            
-            # Plot the data
-            if plot_type == "line":
+            if plot_type == "box":
                 fig.add_trace(
-                    go.Scatter(
-                        x=x_resampled, 
-                        y=y_resampled, 
-                        name=label,
-                        mode='lines'
-                    ),
+                        go.Box(
+                            x=sum([[idu] * len(values) for idu, values in zip(x, y)], []),
+                            y=pd.concat(y),
+                            name=label,
+                            boxmean=True,
+                            boxpoints='outliers',
+                            marker=dict(opacity=0.6),
+                            line=dict(width=1),
+                            showlegend=True
+                        ),
+                        row=row, col=1
+                    )
+
+                fig.update_xaxes(
+                    title_text=xlabel,
+                    type='category',
                     row=row, col=1
                 )
-            elif plot_type == "bar":
-                fig.add_trace(
-                    go.Scatter(
-                        x=x_resampled, 
-                        y=y_resampled, 
-                        name=label,
-                        mode='markers',
-                        marker=dict(
-                            size=12,  # 점 크기 조절
-                            #color=['red' if v == 0 else 'green' for v in y_resampled],  # off=red, on=green
-                            symbol=['circle-open' if v == 0 else 'circle' for v in y_resampled]  # off=open circle, on=filled
-                        )
-                    ),
-                    row=row, col=1
-                )
-            
-            # Format axes for bar charts showing on/off status
-            if plot_type == "bar":
+
                 fig.update_yaxes(
-                tickvals=[0, 1],
-                ticktext=["off", "on"],
-                row=row, col=1
+                    title_text=ylabel,
+                    row=row, col=1
                 )
-        
-        # Update axis labels
+            else:
+                # ✅ Box Plot이 아닐 경우 리샘플링 적용
+                period_unit = ""
+                if not pd.api.types.is_datetime64_any_dtype(x):
+                    try:
+                        x = pd.to_datetime(x)
+                        if isinstance(x.iloc[0], (datetime.datetime, pd.Timestamp)):
+                            date_range = max(x) - min(x)
+                            if date_range.days > 365:
+                                period_unit = "Y"
+                            elif date_range.days > 30:
+                                period_unit = "M"
+                            elif date_range.days > 7:
+                                period_unit = "W"
+                            elif date_range.days > 0:
+                                period_unit = "D"
+                            else:
+                                period_unit = "H"  
+                            
+                            period_unit_y = "D" if date_range.days > 0 else "H"
+                            
+                            df = pd.DataFrame({'Date': x, 'Y': y}).dropna()
+                            df.set_index('Date', inplace=True)
+                        
+                            if plot_type == "marker":
+                                df_resampled = df.resample(period_unit_y).apply(lambda x: x.mode()[0] if not x.mode().empty else 0)
+                            else:
+                                df_resampled = df.resample(period_unit_y).mean()
+                    
+                            df_resampled = df_resampled.dropna()
+                            x_resampled = df_resampled.index
+                            y_resampled = df_resampled['Y']
+                    except Exception:
+                        x_resampled = x
+                        y_resampled = y
+
+                # ✅ 리샘플링된 데이터로 그래프 추가
+                if plot_type == "line":
+                    fig.add_trace(
+                        go.Scatter(x=x_resampled, y=y_resampled, name=label, mode='lines'),
+                        row=row, col=1
+                    )
+                elif plot_type == "bar":
+                    fig.add_trace(
+                        go.Bar(x=x_resampled, y=y_resampled, name=label, marker=dict(color='blue')),
+                        row=row, col=1
+                    )
+                    fig.update_xaxes(
+                        title_text=xlabel,
+                        type='category',  # 꼭 category로 설정
+                        tickangle=-45,
+                        row=row, col=1
+                    )
+                elif plot_type == "marker":
+                    fig.add_trace(
+                        go.Scatter(
+                            x=x_resampled, 
+                            y=y_resampled, 
+                            name=label,
+                            mode='markers',
+                            marker=dict(
+                                size=12,  # 점 크기 조절
+                                #color=['red' if v == 0 else 'green' for v in y_resampled],  # off=red, on=green
+                                symbol=['circle-open' if v == 0 else 'circle' for v in y_resampled]  # off=open circle, on=filled
+                            )
+                        ),
+                        row=row, col=1
+                    )
+                
+                    fig.update_yaxes(
+                    tickvals=[0, 1],
+                    ticktext=["off", "on"],
+                    row=row, col=1
+                    )
+
+        # ✅ X, Y 축 업데이트
         fig.update_xaxes(title_text=xlabel, row=row, col=1)
         fig.update_yaxes(title_text=ylabel, row=row, col=1)
-        
-        # Format the x-axis ticks based on the period unit (for datetime data)
-        if isinstance(x.iloc[0], (datetime.datetime, pd.Timestamp)):
-            if period_unit == "Y":
-                fig.update_xaxes(
-                    tickformat="%Y",
-                    dtick="M12",
-                    row=row, col=1
-                )
-            elif period_unit == "M":
-                fig.update_xaxes(
-                    tickformat="%Y-%m",
-                    dtick="M1",
-                    row=row, col=1
-                )
-            elif period_unit == "W":
-                fig.update_xaxes(
-                    tickformat="%Y-%m-%d",
-                    dtick="D7",
-                    row=row, col=1
-                )
-            elif period_unit == "D":
-                fig.update_xaxes(
-                    tickformat="%Y-%m-%d",
-                    dtick="D1",
-                    row=row, col=1
-                )
-    
-    # # Update layout for better appearance
-    # height_per_subplot = 100
 
-    # fig.update_layout(
-    #     height=height_per_subplot * num_axes,
-    #     width=300,
-    #     showlegend=True,
-    #     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-    #     margin=dict(t=50, b=50, l=50, r=50),
-    #     hovermode="x unified"
-    # )
+            
+        if pd.api.types.is_datetime64_any_dtype(x):
+            try:
+                if isinstance(x.iloc[0], (datetime.datetime, pd.Timestamp)):
+                    if period_unit == "Y":
+                        fig.update_xaxes(tickformat="%Y", dtick="M12", row=row, col=1)
+                    elif period_unit == "M":
+                        fig.update_xaxes(tickformat="%Y-%m", dtick="M1", row=row, col=1)
+                    elif period_unit == "W":
+                        fig.update_xaxes(tickformat="%Y-%m-%d", dtick="D7", row=row, col=1)
+                    elif period_unit == "D":
+                        fig.update_xaxes(tickformat="%Y-%m-%d", dtick="D1", row=row, col=1)
+                    elif period_unit == "H":
+                        fig.update_xaxes(tickformat="%H:%M", dtick="3600000", row=row, col=1)
+            except Exception:
+                pass
 
-
+    # ✅ 그래프 레이아웃 업데이트
     fig.update_layout(
-        height=400,
-        width=600,  # 기본 너비 설정 (responsive로 오버라이드됨)
+        height=400 * num_axes,
+        width=900,
         showlegend=True,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        margin=dict(t=50, b=50, l=50, r=50),
-        hovermode="x unified",
-        font=dict(
-            family="Pretendard, sans-serif",  # Pretendard 글꼴 설정
-        ),
+        hovermode="x unified"
     )
 
-    # # 반응형 레이아웃 설정
-    # fig.update_layout(
-    #     autosize=True,  # 자동 크기 조정 활성화
-    # )
-    
     if return_html:
         return plotly_to_html_div(fig)
     return fig
