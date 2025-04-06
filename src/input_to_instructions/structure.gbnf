@@ -1,30 +1,53 @@
-Expectations ::= "[" space (string ("," space string)*)? "]" space
-Expectations-kv ::= "\"Expectations\"" space ":" space Expectations
-Instructions ::= "[" space (Instructions-item ("," space Instructions-item)*)? "]" space
-Instructions-item ::= "{" space  (Instructions-item-type-kv Instructions-item-type-rest | Instructions-item-args-kv Instructions-item-args-rest | Instructions-item-script-kv Instructions-item-script-rest | Instructions-item-returns-kv Instructions-item-returns-rest | Instructions-item-result-name-kv )? "}" space
-Instructions-item-args ::= object
-Instructions-item-args-kv ::= "\"args\"" space ":" space Instructions-item-args
-Instructions-item-args-rest ::= ( "," space Instructions-item-script-kv )? Instructions-item-script-rest
-Instructions-item-result-name-kv ::= "\"result_name\"" space ":" space string
-Instructions-item-returns ::= "[" space (string ("," space string)*)? "]" space
-Instructions-item-returns-kv ::= "\"returns\"" space ":" space Instructions-item-returns
-Instructions-item-returns-rest ::= ( "," space Instructions-item-result-name-kv )?
-Instructions-item-script-kv ::= "\"script\"" space ":" space string
-Instructions-item-script-rest ::= ( "," space Instructions-item-returns-kv )? Instructions-item-returns-rest
-Instructions-item-type ::= ("\"q\"" | "\"o\"" | "\"g\"") space
-Instructions-item-type-kv ::= "\"type\"" space ":" space Instructions-item-type
-Instructions-item-type-rest ::= ( "," space Instructions-item-args-kv )? Instructions-item-args-rest
-Instructions-kv ::= "\"Instructions\"" space ":" space Instructions
-Thinking-kv ::= "\"Thinking\"" space ":" space string
-array ::= "[" space ( value ("," space value)* )? "]" space
-boolean ::= ("true" | "false") space
-char ::= [^"\\\x7F\x00-\x1F] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
-decimal-part ::= [0-9]{1,16}
-integral-part ::= [0] | [1-9] [0-9]{0,15}
-null ::= "null" space
-number ::= ("-"? integral-part) ("." decimal-part)? ([eE] [-+]? integral-part)? space
-object ::= "{" space ( string ":" space value ("," space string ":" space value)* )? "}" space
 root ::= "{" space Thinking-kv "," space Expectations-kv "," space Instructions-kv "}" space
-space ::= | " " | "\n"{1,2} [ \t]{0,20}
-string ::= "\"" char* "\"" space
+
+# Top-level keys
+Thinking-kv ::= "\"Thinking\"" space ":" space string
+Expectations-kv ::= "\"Expectations\"" space ":" space Expectations
+Instructions-kv ::= "\"Instructions\"" space ":" space Instructions
+
+# Expectations array
+Expectations ::= "[" space (string ("," space string)*)? "]" space
+
+# Instructions array and items
+Instructions ::= "[" space (Instructions-item ("," space Instructions-item)*)? "]" space
+Instructions-item ::= "{" space Instructions-item-type-kv ("," space Instructions-item-rest)? "}" space
+Instructions-item-type-kv ::= "\"type\"" space ":" space Instructions-item-type
+Instructions-item-type ::= "\"q\"" space | "\"o\"" space | "\"g\"" space
+Instructions-item-rest ::= (Instructions-q-rest | Instructions-o-rest | Instructions-g-rest)
+
+# Type "q" specific fields
+Instructions-q-rest ::= Instructions-item-args-q-kv "," space Instructions-item-result-name-kv
+Instructions-item-args-q-kv ::= "\"args\"" space ":" space Instructions-item-args-q
+Instructions-item-args-q ::= "{" space "\"table_name\"" space ":" space string "," space "\"columns\"" space ":" space q-columns "," space "\"temporal\"" space ":" space string "," space "\"spatials\"" space ":" space q-spatials "}" space
+q-columns ::= "[" space (string ("," space string)*)? "]" space
+q-spatials ::= "[" space (string ("," space string)*)? "]" space
+Instructions-item-result-name-kv ::= "\"result_name\"" space ":" space string
+
+# Type "o" specific fields
+Instructions-o-rest ::= Instructions-item-script-kv "," space Instructions-item-returns-kv
+Instructions-item-script-kv ::= "\"script\"" space ":" space string
+Instructions-item-returns-kv ::= "\"returns\"" space ":" space Instructions-item-returns
+Instructions-item-returns ::= "[" space (string ("," space string)*)? "]" space
+
+# Type "g" specific fields
+Instructions-g-rest ::= Instructions-item-args-g-kv
+Instructions-item-args-g-kv ::= "\"args\"" space ":" space Instructions-item-args-g
+Instructions-item-args-g ::= "{" space "\"axes\"" space ":" space g-axes "}" space
+g-axes ::= "[" space (g-axis ("," space g-axis)*)? "]" space
+g-axis ::= "{" space "\"type\"" space ":" space string "," space "\"description\"" space ":" space g-axis-description "," space "\"items\"" space ":" space g-axis-items "}" space
+g-axis-description ::= "{" space "\"xlabel\"" space ":" space string "," space "\"ylabel\"" space ":" space string "," space "\"title\"" space ":" space string "}" space
+g-axis-items ::= "[" space (g-axis-item ("," space g-axis-item)*)? "]" space
+g-axis-item ::= "{" space "\"x\"" space ":" space string "," space "\"y\"" space ":" space string "," space "\"label\"" space ":" space string "}" space
+
+# Basic JSON types
+object ::= "{" space (string ":" space value ("," space string ":" space value)*)? "}" space
+array ::= "[" space (value ("," space value)*)? "]" space
 value ::= object | array | string | number | boolean | null
+string ::= "\"" char* "\"" space
+char ::= [^"\\\x7F\x00-\x1F] | [\\] (["\\bfnrt] | "u" [0-9a-fA-F]{4})
+number ::= ("-"? integral-part) ("." decimal-part)? ([eE] [-+]? integral-part)? space
+integral-part ::= [0] | [1-9] [0-9]{0,15}
+decimal-part ::= [0-9]{1,16}
+boolean ::= ("true" | "false") space
+null ::= "null" space
+space ::= | " " | "\n"{1,2} [ \t]{0,20}

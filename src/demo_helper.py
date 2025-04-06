@@ -26,7 +26,7 @@ def get_available_metadatas():
             ],
             ['유저 정보', [
                 ["이름", metadata.get('user_name', None)],
-                # ["User 역할", v.get('user_role', None)],
+                ["역할", metadata.get('user_role', None)],
                 ["IDU 이름", metadata.get('idu_name', None)],
                 ["IDU 매핑", [f"{k}: {v}" for k, v in metadata.get('idu_mapping', {}).items()]],
             ]],

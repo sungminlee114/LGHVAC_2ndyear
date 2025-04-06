@@ -37,6 +37,9 @@ from src.input_to_instructions.load_and_execute import InputToInstruction
 from src.response_generation.load_and_execute import ResponseGeneration
 
 def check_model_load_status():
+    InputToInstruction.instance.ensure_loaded()
+    ResponseGeneration.instance.ensure_loaded()
+    
     i2i_status = InputToInstruction.is_loaded()
     rg_status = ResponseGeneration.is_loaded()
     return {

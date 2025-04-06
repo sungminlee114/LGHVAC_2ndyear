@@ -49,7 +49,7 @@ def process_request():
             # 메시지 타입을 추가하여 클라이언트에게 전송
                 
             response = response.replace("\n", "<br>")
-            if message_type in ["response", "graph"]:
+            if message_type in ["response"]:
                 logger.info(f"A response is added: {response}")
             # 메시지 타입을 포함하여 전송
             yield f"data: {json.dumps({'type': message_type, 'content': response})}\n\n"

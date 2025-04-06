@@ -32,6 +32,7 @@ class InputToInstruction:
         # Select model path based on train_type and dtype
         # gguf_path = MODULE_DIR / f"models/i2i-{train_type}-{dtype}.gguf"
         gguf_path = MODULE_DIR / f"models/v7_r256_a512_ours_16bit_adamw16bit_0324-checkpoint-56.gguf"
+        gguf_path = MODULE_DIR / f"models/v7_r256_a512_ours_16bit_adamw16bit_0330-checkpoint-83.gguf"
         prompt_path = MODULE_DIR / "prompt.txt"
         grammar_path = MODULE_DIR / "structure.gbnf"
         

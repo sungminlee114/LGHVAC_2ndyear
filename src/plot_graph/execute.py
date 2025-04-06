@@ -285,17 +285,35 @@ def plot_graph_plotly(instruction, variables, return_html=False):
                     row=row, col=1
                 )
     
-    # Update layout for better appearance
-    height_per_subplot = 400
+    # # Update layout for better appearance
+    # height_per_subplot = 100
+
+    # fig.update_layout(
+    #     height=height_per_subplot * num_axes,
+    #     width=300,
+    #     showlegend=True,
+    #     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+    #     margin=dict(t=50, b=50, l=50, r=50),
+    #     hovermode="x unified"
+    # )
+
 
     fig.update_layout(
-        height=height_per_subplot * num_axes,
-        width=900,
+        height=400,
+        width=600,  # 기본 너비 설정 (responsive로 오버라이드됨)
         showlegend=True,
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         margin=dict(t=50, b=50, l=50, r=50),
-        hovermode="x unified"
+        hovermode="x unified",
+        font=dict(
+            family="Pretendard, sans-serif",  # Pretendard 글꼴 설정
+        ),
     )
+
+    # # 반응형 레이아웃 설정
+    # fig.update_layout(
+    #     autosize=True,  # 자동 크기 조정 활성화
+    # )
     
     if return_html:
         return plotly_to_html_div(fig)
@@ -303,5 +321,17 @@ def plot_graph_plotly(instruction, variables, return_html=False):
 
 import plotly.offline as pyo
 def plotly_to_html_div(fig):
-    div_string = pyo.plot(fig, output_type='div', include_plotlyjs=True)
+    # div_string = pyo.plot(fig, output_type='div', include_plotlyjs=False)
+    config = {
+        'responsive': True,  # 반응형 활성화
+        'displayModeBar': True,  # 모드 바 숨기기 (선택사항)
+    }
+    
+    div_string = pyo.plot(fig, output_type='div', include_plotlyjs=False, config=config)
+    
+    # CSS를 사용하여 부모 컨테이너에 맞추기 위한 스타일 추가
+    # styled_div = div_string.replace('<div ', '<div style="width:100%;height:100%;" ')
+
+    # with open('plotly_div.html', 'w') as f:
+    #     f.write(div_string)
     return div_string

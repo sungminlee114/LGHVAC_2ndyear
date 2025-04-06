@@ -75,7 +75,7 @@ class LlamaCppModel:
         # Model parameters
         self.temperature = 0.0
         self.top_p = 1.0
-        self.seed = 42
+        self.seed = 30
         self.gpu_config = gpu_config
         
         # Process handle
@@ -88,13 +88,16 @@ class LlamaCppModel:
             "-m", str(self.gguf_path),
             "--system-prompt-file", str(self.prompt_path),
             "-n", str(8000),  # Max tokens to generate
-            "-c", str(4096),  # Context size
+            "-c", str(8000),  # Context size
             "--threads", str(os.cpu_count()),
             "-ngl", str(33),
             "--temp", str(self.temperature),
             "--top_p", str(self.top_p),
             "--seed", str(self.seed),
             "--simple-io",
+            # "--single-turn",
+            # "--no-cnv",
+            # "--interactive",
             "--no-display-prompt",
             "--tensor-split", self.gpu_config,
         ]
@@ -124,8 +127,8 @@ class LlamaCppModel:
     def is_loaded(self):
         """Check if the model is loaded and the process is running."""
         is_loaded = self.process is not None and self.process.poll() is None
-        if not is_loaded:
-            self.ensure_loaded()
+        # if not is_loaded:
+        #     self.ensure_loaded()
         return is_loaded
     
     def ensure_loaded(self, max_trials=3):

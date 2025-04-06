@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.plot.ly/plotly-3.0.1.min.js" charset="utf-8"></script>
     <title>LG전자-연세대 HVAC LLM 1차년도 데모</title>
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css">
@@ -498,22 +499,47 @@
                     } else if (messageType === "graph") {
                         // 그래프 메시지 처리 - response처럼 처리
 
-                        // 최종 응답 영역에 표시
                         if (!hasReceivedFinalResponse) {
-                            // 첫 응답으로 그래프가 온 경우
                             hasReceivedFinalResponse = true;
-                            currentFinalResponse.innerHTML = content; // 그래프는 HTML 형태로 전달됨
+                            currentFinalResponse.innerHTML = content;
                             currentFinalResponse.style.display = 'block';
+
+                            // 중요: HTML이 DOM에 추가된 후 스크립트 실행을 보장
+                            setTimeout(() => {
+                                // 추가된 script 태그 내 코드를 재실행
+                                const scripts = currentFinalResponse.querySelectorAll('script');
+                                scripts.forEach(oldScript => {
+                                    const newScript = document.createElement('script');
+                                    newScript.textContent = oldScript.textContent;
+                                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                                });
+                            }, 100);
 
                             // 디버그 메시지 숨기기
                             currentDebugMessages.classList.add('debug-hidden');
-
-                            // 토글 버튼 표시
                             currentToggleButton.style.display = 'block';
                         } else {
-                            // 이미 다른 응답이 있는 경우, 구분자와 함께 추가
-                            currentFinalResponse.innerHTML += '<div class="response-divider"></div>' + content;
+                            // 유사한 방식으로 처리
+                            const divider = document.createElement('div');
+                            divider.className = 'response-divider';
+                            currentFinalResponse.appendChild(divider);
+
+                            const graphContainer = document.createElement('div');
+                            graphContainer.innerHTML = content;
+                            currentFinalResponse.appendChild(graphContainer);
+
+                            // 새로 추가된 그래프의 스크립트 실행
+                            setTimeout(() => {
+                                const scripts = graphContainer.querySelectorAll('script');
+                                scripts.forEach(oldScript => {
+                                    const newScript = document.createElement('script');
+                                    newScript.textContent = oldScript.textContent;
+                                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                                });
+                            }, 100);
                         }
+
+                        scrollChatWindow();
 
                         scrollChatWindow();
                     } else if (messageType === "time") {
@@ -698,6 +724,10 @@
             suggestionContainer.innerHTML = '';
 
             suggestedInputs.forEach(input => {
+                if (input.includes('뒷반')) {
+                    //skip
+                    return;
+                }
                 const button = document.createElement('button');
                 button.classList.add('suggestion-button');
                 button.innerText = input;
