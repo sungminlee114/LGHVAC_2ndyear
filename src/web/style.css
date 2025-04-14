@@ -14,9 +14,14 @@ div {
     display: inline-block;
 }
 
+.bot-message div {
+    display: block;
+}
+
 .chat-container {
     background-color: #fff;
     height: 95%;
+    width: 95%;
     margin: 10px;
     padding: 10px;
     padding-bottom: 5px;
@@ -155,11 +160,7 @@ div {
     /* 텍스트는 왼쪽 정렬 */
     align-self: flex-end;
     /* 오른쪽 끝으로 배치 */
-}
-
-.bot-message {
-    text-align: left;
-    /* align-self: flex-start; 기본값이므로 생략 가능 */
+    background-color: #f9e000;
 }
 
 .system-message {
@@ -449,9 +450,10 @@ div {
 }
 
 .bot-message {
-    max-width: 80%;
+    max-width: 90%;
     padding: 12px;
     position: relative;
+    text-align: left;
 }
 
 .debug-messages {

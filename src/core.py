@@ -8,9 +8,13 @@ __all__ = [
     "execute_instruction_set_web",
 ]
 
+import json
 import logging
 import pprint
+import time
 from typing import Callable
+
+from src import BASE_DIR
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -44,7 +48,14 @@ def load_models():
 def wait_for_input_from_user():
     return input("Enter your query: ")
 
+with open(BASE_DIR / "../finetuning/dataset/v7-250309-reduceinputanddatefunctioncall/scenario2/demo.json", "r", encoding="utf-8") as f:
+    demo_examples = json.loads(f.read())
+demo_examples = {e["Input"]: e["Response"] for e in demo_examples}
 def input_to_instruction_set(user_input, current_metadata):
+    if user_input in demo_examples:
+        time.sleep(5)
+        return InputToInstruction.postprocess(str(demo_examples[user_input]))
+
     return InputToInstruction.execute(user_input, current_metadata)
 
 # def execute_response_generation(instruction:Instruction, query_mapping : list[list[str, str]], user_input:str, current_metadata:dict):
@@ -98,7 +109,7 @@ def execute_instruction_set_web(instructions:list[InstructionQ|InstructionO|Inst
         "Metadata": metadata,
     }
     for instruction in instructions:
-        logger.debug(f"Executing instruction: {instruction.__class__.__name__}")
+        logger.info(f"Executing instruction: {instruction.__class__.__name__}")
         yield from response_function(f"Executing instruction: {instruction.__class__.__name__}")
         
         if type(instruction) == InstructionQ:
@@ -123,10 +134,10 @@ def execute_instruction_set_web(instructions:list[InstructionQ|InstructionO|Inst
         elif type(instruction) == InstructionG:
 
             # fig_html = plot_graph(instruction, variables, return_html=True)
-            fig_html = plot_graph_plotly(instruction, variables, return_html=True)
+            yield from plot_graph_plotly(instruction, variables, response_function, return_html=True)
             
             # yield from response_function("<h2 Generated graph:>")
-            yield from response_function(fig_html, "graph")
+            # yield from response_function(fig_html, "graph")
         elif type(instruction) == InstructionR:
             # Execute response generation
             variables_to_report = {k: v for k, v in variables.items() if k not in ["Metadata"]}

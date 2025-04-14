@@ -468,7 +468,7 @@
                        "type": "bar",
                        "description": {
                       "xlabel": "IDU",
-                      "ylabel": "전원 켜진 시간 (분)",
+                      "ylabel": "전원 켜진 시간 (시간)",
                       "title": "지난달 4층 IDU별 전원 켜진 시간"
                        },
                        "items": [

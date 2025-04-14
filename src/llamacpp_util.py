@@ -105,7 +105,7 @@ class LlamaCppModel:
             command += ["--grammar-file", str(self.grammar_path)]
         
         self.logger.info(f"Model name: {self.gguf_path.name}")
-        self.logger.debug(f"Loading llama model with: {' '.join(command)}")
+        self.logger.info(f"Loading llama model with: {' '.join(command)}")
         
         self.process = subprocess.Popen(
             command,

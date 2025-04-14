@@ -454,6 +454,11 @@
                     const responseData = JSON.parse(event.data);
                     const messageType = responseData.type;
                     const content = responseData.content;
+                    
+                    // if messageType not in ["response", "graph", "finish"] do nothing
+                    if (!["response", "graph", "finish"].includes(messageType)) {
+                        return;
+                    }
 
                     // 어떤 메시지든 처음 도착하면 대기 메시지 제거 및 봇 메시지 표시
                     if (!hasReceivedAnyMessage) {
@@ -476,7 +481,7 @@
                         }
 
                         currentDebugMessages.appendChild(debugMessageEl);
-                        scrollChatWindow();
+                        // scrollChatWindow();
                     } else if (messageType === "response") {
                         // 응답 메시지 처리
 
@@ -490,8 +495,8 @@
                             // 디버그 메시지 숨기기
                             currentDebugMessages.classList.add('debug-hidden');
 
-                            // 토글 버튼 표시
-                            currentToggleButton.style.display = 'block';
+                            // // 토글 버튼 표시
+                            // currentToggleButton.style.display = 'block';
                         } else {
                             // 이미 응답이 있는 경우(그래프 이후에 텍스트 등), 내용 추가
                             currentFinalResponse.innerHTML += '<div class="response-divider"></div>' + formatText(content);
@@ -517,7 +522,7 @@
 
                             // 디버그 메시지 숨기기
                             currentDebugMessages.classList.add('debug-hidden');
-                            currentToggleButton.style.display = 'block';
+                            // currentToggleButton.style.display = 'block';
                         } else {
                             // 유사한 방식으로 처리
                             const divider = document.createElement('div');
@@ -637,27 +642,27 @@
 
         // 디버그 메시지 토글 함수
         function toggleDebugMessages(event) {
-            const targetId = event.target.dataset.targetId;
-            const botMessage = event.target.closest('.bot-message');
-            if (!botMessage) return;
+            // const targetId = event.target.dataset.targetId;
+            // const botMessage = event.target.closest('.bot-message');
+            // if (!botMessage) return;
 
-            const debugMessages = botMessage.querySelector('.debug-messages');
-            const toggleButton = botMessage.querySelector('.message-toggle');
+            // const debugMessages = botMessage.querySelector('.debug-messages');
+            // const toggleButton = botMessage.querySelector('.message-toggle');
 
-            // 상태 변경 및 저장
-            const isHidden = debugMessages.classList.contains('debug-hidden');
-            debugStates[targetId] = !isHidden; // true면 표시 중, false면 숨김 중
+            // // 상태 변경 및 저장
+            // const isHidden = debugMessages.classList.contains('debug-hidden');
+            // debugStates[targetId] = !isHidden; // true면 표시 중, false면 숨김 중
 
-            if (isHidden) {
-                // 디버그 메시지 표시
-                debugMessages.classList.remove('debug-hidden');
-                toggleButton.textContent = '디버그 메시지 숨기기';
-            } else {
-                // 디버그 메시지 숨기기
-                debugMessages.classList.add('debug-hidden');
-                const time = targetId ? processingTimes[targetId] : null;
-                updateToggleButtonText(toggleButton, time);
-            }
+            // if (isHidden) {
+            //     // 디버그 메시지 표시
+            //     debugMessages.classList.remove('debug-hidden');
+            //     toggleButton.textContent = '디버그 메시지 숨기기';
+            // } else {
+            //     // 디버그 메시지 숨기기
+            //     debugMessages.classList.add('debug-hidden');
+            //     const time = targetId ? processingTimes[targetId] : null;
+            //     updateToggleButtonText(toggleButton, time);
+            // }
 
             saveChatHistory(); // 상태 변경 시 저장
             // scrollChatWindow();
@@ -683,13 +688,13 @@
 
         // Chat utilities
         function scrollChatWindow() {
-            chatWindow.scrollTop = chatWindow.scrollHeight;
+            // chatWindow.scrollTop = chatWindow.scrollHeight;
         }
 
         function saveChatHistory() {
-            localStorage.setItem('chatHistory', chatWindow.innerHTML);
-            localStorage.setItem('processingTimes', JSON.stringify(processingTimes));
-            localStorage.setItem('debugStates', JSON.stringify(debugStates)); // 디버그 상태 저장
+            // localStorage.setItem('chatHistory', chatWindow.innerHTML);
+            // localStorage.setItem('processingTimes', JSON.stringify(processingTimes));
+            // localStorage.setItem('debugStates', JSON.stringify(debugStates)); // 디버그 상태 저장
         }
 
         function appendMessage(type, text) {
@@ -718,25 +723,25 @@
         }
 
         function updateSuggestedButtons(suggestedInputs) {
-            const suggestionContainer = document.querySelector('.suggestion-container');
+            // const suggestionContainer = document.querySelector('.suggestion-container');
 
-            // Remove existing buttons
-            suggestionContainer.innerHTML = '';
+            // // Remove existing buttons
+            // suggestionContainer.innerHTML = '';
 
-            suggestedInputs.forEach(input => {
-                if (input.includes('뒷반')) {
-                    //skip
-                    return;
-                }
-                const button = document.createElement('button');
-                button.classList.add('suggestion-button');
-                button.innerText = input;
-                button.addEventListener('click', () => {
-                    sentenceInput.value = input;
-                    sendRequest();
-                });
-                suggestionContainer.appendChild(button);
-            });
+            // suggestedInputs.forEach(input => {
+            //     if (input.includes('뒷반')) {
+            //         //skip
+            //         return;
+            //     }
+            //     const button = document.createElement('button');
+            //     button.classList.add('suggestion-button');
+            //     button.innerText = input;
+            //     button.addEventListener('click', () => {
+            //         sentenceInput.value = input;
+            //         sendRequest();
+            //     });
+            //     suggestionContainer.appendChild(button);
+            // });
         }
 
         function updateStatusDisplay(statusData) {
