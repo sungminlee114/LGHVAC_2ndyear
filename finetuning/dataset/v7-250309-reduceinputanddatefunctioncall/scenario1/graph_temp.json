@@ -1670,75 +1670,6 @@
         }
     },
     {
-        "Input": "지난달 옆반의 실내온도와 설정온도를 보여줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 지난달 동안 옆반(01_IB7)의 실내온도와 설정온도를 확인하고 싶어함. 이를 위해 해당 반의 roomtemp와 settemp 데이터를 가져와야함. 실내온도는 연속적인 값이므로 선 그래프(line graph)로, 설정온도는 연속적인 값이므로 선 그래프(line graph)로 시각화하여 하나의 축에서 비교함.",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "roomtemp",
-                            "settemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('month', DATE 'CURRENT_DATE' - INTERVAL '1 month'), DATE_TRUNC('month', DATE 'CURRENT_DATE'))",
-                        "spatials": [
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": "rawtimeseries = qr[['timestamp','roomtemp','settemp']];",
-                    "returns": [
-                        "rawtimeseries"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "온도",
-                                    "title": "지난달 옆반의 실내온도와 설정온도 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "rawtimeseries['timestamp']",
-                                        "y": "rawtimeseries['roomtemp']",
-                                        "label": "옆반 실내온도"
-                                    },
-                                    {
-                                        "x": "rawtimeseries['timestamp']",
-                                        "y": "rawtimeseries['settemp']",
-                                        "label": "옆반 설정온도"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
         "Input": "지난 3주간 옆반의 실내온도와 설정온도를 보여줘",
         "Tags": {
             "Style": [
@@ -1965,75 +1896,6 @@
             ]
         }
     },
-    {
-        "Input": "지난 3주간 우리반과 옆반의 실내온도를 비교해줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 지난 3주간 동안 우리반(01_IB5)과 옆반(01_IB7)의 실내온도 변화를 비교하고 싶어함. 이를 위해 두 반의 roomtemp 데이터를 가져온 후, 같은 시간대의 데이터를 매칭하여 연속적인 값이므로 선 그래프(line graph)로 시각화하여 실내온도의 변화를 쉽게 파악할 수 있도록 함.",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '3 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
-                        "spatials": [
-                            "01_IB5",
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": "roomtemp_ours = qr[qr['idu'] == '01_IB5'];roomtemp_theirs = qr[qr['idu'] == '01_IB7'];roomtemp_rawtimeseries = pd.merge(roomtemp_ours, roomtemp_theirs, on='timestamp', suffixes=('_ours', '_theirs'));",
-                    "returns": [
-                        "roomtemp_rawtimeseries"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "실내온도",
-                                    "title": "지난 3주간 우리반과 옆반 실내온도 변화 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "roomtemp_rawtimeseries['timestamp']",
-                                        "y": "roomtemp_rawtimeseries['roomtemp_ours']",
-                                        "label": "우리반 실내온도"
-                                    },
-                                    {
-                                        "x": "roomtemp_rawtimeseries['timestamp']",
-                                        "y": "roomtemp_rawtimeseries['roomtemp_theirs']",
-                                        "label": "옆반 실내온도"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
      {
         "Input": "우리반과 옆반 지난 2주간 설정온도 차이 보여줘",
         "Tags": {
@@ -2246,75 +2108,7 @@
             ]
         }
     },
-    {
-        "Input": "지난 2주간 우리반과 옆반의 실내온도를 비교해줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 지난 2주간 동안 우리반(01_IB5)과 옆반(01_IB7)의 실내온도 변화를 비교하고 싶어함. 이를 위해 두 반의 roomtemp 데이터를 가져온 후, 같은 시간대의 데이터를 매칭하여 연속적인 값이므로 선 그래프(line graph)로 시각화하여 실내온도의 변화를 쉽게 파악할 수 있도록 함.",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '2 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
-                        "spatials": [
-                            "01_IB5",
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": "roomtemp_ours = qr[qr['idu'] == '01_IB5'];roomtemp_theirs = qr[qr['idu'] == '01_IB7'];roomtemp_rawtimeseries = pd.merge(roomtemp_ours, roomtemp_theirs, on='timestamp', suffixes=('_ours', '_theirs'));",
-                    "returns": [
-                        "roomtemp_rawtimeseries"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "실내온도",
-                                    "title": "지난 2주간 우리반과 옆반 실내온도 변화 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "roomtemp_rawtimeseries['timestamp']",
-                                        "y": "roomtemp_rawtimeseries['roomtemp_ours']",
-                                        "label": "우리반 실내온도"
-                                    },
-                                    {
-                                        "x": "roomtemp_rawtimeseries['timestamp']",
-                                        "y": "roomtemp_rawtimeseries['roomtemp_theirs']",
-                                        "label": "옆반 실내온도"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
+    
     {
         "Input": "지난달 옆반의 실내온도와 전원상태를 보여줘",
         "Tags": {
@@ -3853,85 +3647,7 @@
             ]
         }
     },
-    {
-        "Input": "지난 일주일간 우리반의 실내온도와 전원상태를 보여줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 지난 일주일간 동안 우리반(01_IB5)의 실내온도와 전원상태를 확인하고 싶어함. 이를 위해 해당 반의 roomtemp와 oper 데이터를 가져와야함. 실내온도는 연속적인 값이므로 선 그래프(line graph)로, 전원상태는 이산적인 값이므로 마커 그래프(marker graph)로 시각화하여 각각 별개의 축을 사용해 비교함.",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "roomtemp",
-                            "oper"
-                        ],
-                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
-                        "spatials": [
-                            "01_IB5"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": "rawtimeseries = qr[['timestamp','roomtemp','oper']];",
-                    "returns": [
-                        "rawtimeseries"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "실내온도",
-                                    "title": "지난 일주일간 우리반의 실내온도 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "rawtimeseries['timestamp']",
-                                        "y": "rawtimeseries['roomtemp']",
-                                        "label": "우리반 실내온도"
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "marker",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "전원상태",
-                                    "title": "지난 일주일간 우리반의 전원상태 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "rawtimeseries['timestamp']",
-                                        "y": "rawtimeseries['oper']",
-                                        "label": "우리반 전원상태"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
+
     {
         "Input": "지난 6일간 우리반의 실내온도와 설정온도를 보여줘",
         "Tags": {
@@ -4268,75 +3984,6 @@
                                         "x": "oper_rawtimeseries['timestamp']",
                                         "y": "oper_rawtimeseries['oper_theirs']",
                                         "label": "옆반 전원상태"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "이번 주와 지난주 옆반의 실내온도와 설정온도를 보여줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 이번 주와 지난주 동안 옆반(01_IB7)의 실내온도와 설정온도를 확인하고 싶어함. 이를 위해 해당 반의 roomtemp와 settemp 데이터를 가져와야함. 실내온도는 연속적인 값이므로 선 그래프(line graph)로, 설정온도는 연속적인 값이므로 선 그래프(line graph)로 시각화하여 하나의 축에서 비교함.",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "roomtemp",
-                            "settemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE') + INTERVAL '1 week')",
-                        "spatials": [
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": "rawtimeseries = qr[['timestamp','roomtemp','settemp']];",
-                    "returns": [
-                        "rawtimeseries"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "실내온도 & 설정온도",
-                                    "title": "이번 주 옆반의 실내온도와 설정온도 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "rawtimeseries['timestamp']",
-                                        "y": "rawtimeseries['roomtemp']",
-                                        "label": "옆반 실내온도"
-                                    },
-                                    {
-                                        "x": "rawtimeseries['timestamp']",
-                                        "y": "rawtimeseries['settemp']",
-                                        "label": "옆반 설정온도"
                                     }
                                 ]
                             }
@@ -4725,7 +4372,7 @@
                             "timestamp",
                             "settemp"
                         ],
-                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '3 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))",
+                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '4 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))",
                         "spatials": [
                             "01_IB5",
                             "01_IB7"
