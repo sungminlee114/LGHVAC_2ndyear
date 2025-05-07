@@ -120,7 +120,7 @@
         "Response": {
             "Thinking": "사용자는 오늘 우리반(02_I84)의 가장 최근 설정온도를 알고 싶어합니다. 최근 5분간 우리반의 설정온도 데이터를 쿼리한 후 가장 최신의 데이터를 반환하면 됩니다.",
             "Expectations": [
-                "우리반의 가장 최근 설정온도는 {{settemp_recent_time}}에 설정된 {{settemp_recent}}℃입니다."
+                "우리반의 가장 최근 설정온도는 {{recent_time}}에 설정된 {{settemp_recent}}℃입니다."
             ],
             "Instructions": [
                 {
