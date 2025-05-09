@@ -114,7 +114,7 @@ class UnslothInference:
         tokenizer: AutoTokenizer,
         batch_data: List[Dict],
         common_prompt: str,
-    ) -> str:
+    ) -> List[Dict]:
         try:
             batch_data = Dataset.from_list(batch_data)
             
@@ -213,10 +213,6 @@ class UnslothInference:
         # Setup model and tokenizer
         model, tokenizer = self.setup_model()
         
-        
-        # 토크나이저에 패딩 토큰 설정
-        # if tokenizer.pad_token is None:
-        #     tokenizer.pad_token = tokenizer.eos_token
         print(tokenizer.pad_token, tokenizer.eos_token)
         # 배치 처리
         with tqdm(total=len(dataset)) as pbar:
@@ -446,64 +442,16 @@ def main():
     
 
     train_type = [
-        "woall", # 0
-        "FI", # 1
-        "ISP", # 2
+        "woCoTExp", # 0
+        "woQM", # 1
+        "woOp", # 2
         "ours" # 3
     ][0]
 
-    if train_type == "woall":
-        model_name, tr_config = \
-            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "r128_a256_woall/checkpoint-60"
+    model_name, tr_config = \
+        "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+        f"v7_r256_a512_{train_type}_tr60_0503/checkpoint-90"
         
-        model_name, tr_config = \
-            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "v5_r64_a128_woall/checkpoint-72"
-
-        model_name, tr_config = \
-            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "v5_r32_a64_woall/checkpoint-70"
-        
-        model_name, tr_config = \
-            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "v7_r256_a512_woall_16bit_adamw16bit_0322/checkpoint-60"
-    
-    elif train_type == "FI":
-        # model_name, tr_config = \
-        #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-        #     f"r256_a512_FI/checkpoint-57"
-        model_name, tr_config = \
-            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            f"v5_r256_a512_FI/checkpoint-43"
-        pass
-    
-    elif train_type == "ISP":
-        # model_name, tr_config = \
-        #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-        #     f"r256_a512_ISP/checkpoint-104"
-        pass
-    
-    elif train_type == "ours":
-        # model_name, tr_config = \
-        #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-        #     "r128_a256_ours/checkpoint-51"
-        
-        model_name, tr_config = \
-            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "v7_r256_a512_ours_4bit_0322/checkpoint-37"
-        
-        model_name, tr_config = \
-            "Bllossom-llama-3-Korean-Bllossom-70B", \
-            "v7_r32_a64_ours_4bit_0322/checkpoint-67"
-
-        model_name, tr_config = \
-            "Bllossom-llama-3-Korean-Bllossom-70B", \
-            "v7_r64_a128_ours_4bit_0322/checkpoint-38"
-
-        model_name, tr_config = \
-            "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-            "v7_r256_a512_ours_16bit_adamw16bit_0322/checkpoint-56"
     print(f"Model: {model_name}, Config: {tr_config}")
 
     model_dir = Path(f"/model/{model_name}")
@@ -546,7 +494,7 @@ def main():
     common_prompt = re.sub(r"<\|.*?\|>", "", common_prompt)
     
     # Initialize distributed inference
-    batch_size = 15  # 배치 크기 설정
+    batch_size = 20  # 배치 크기 설정
     inference = UnslothInference(
         checkpoint_dir=str(checkpoint_dir),
         cache_dir=str(cache_dir),

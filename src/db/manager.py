@@ -34,11 +34,12 @@ class DBManager:
         return cls.db_instance.execute_sql(sql)
 
     @classmethod
-    def structured_query(cls, args, get_rowids=False):
-        return cls.db_instance.structured_query(**args, get_rowids=get_rowids)
-    
-    @classmethod
     def structured_query_data_t(cls, metadata, args, get_rowids=False):
         return cls.db_instance.structured_query_data_t(metadata, **args, get_rowids=get_rowids)
+
+    @classmethod
+    def get_query_strings(cls, metadata, args):
+        return cls.db_instance.get_query_strings(metadata, **args)
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

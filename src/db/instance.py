@@ -246,7 +246,14 @@ class DBInstance:
             logger.error(f"An error occurred while selecting data from {table_name}: {e}")
             return None
 
-    def structured_query(self, table_name, columns=None, conditions=None, subquery=None, get_rowids=False) -> pd.DataFrame:
+    def execute_structured_query_string(self, query_string:str) -> pd.DataFrame:
+        query_composed = sql.SQL(query_string)
+        self.cursor.execute(query_composed)
+        rows = self.cursor.fetchall()
+        colnames = [desc[0] for desc in self.cursor.description]
+        return pd.DataFrame(rows, columns=colnames)
+
+    def structured_query_to_query_string(self, table_name, columns=None, conditions=None, subquery=None, get_rowids=False):
         """
         Select data from the database table with the option for subqueries and conditions.
         
@@ -336,6 +343,8 @@ class DBInstance:
             select_query += sql.SQL(" ORDER BY timestamp")
             
             logger.debug(f"Select query as string: {select_query.as_string(self.connection)}")
+            return select_query.as_string(self.connection)
+            
             # print(select_query.as_string(self.connection), flush=True)
             # Execute the query
             self.cursor.execute(select_query)
@@ -357,11 +366,10 @@ class DBInstance:
             logger.error("Error message: {}".format(e))
             return None
     
-    def structured_query_data_t(self, metadata, columns, temporal=None, spatials=None, get_rowids=False) -> pd.DataFrame:
+    def get_query_strings(self, metadata, columns, temporal=None, spatials=None, get_rowids=False):
         """
-        temporal: '[~, ~]', '(~, ~)', '[~, ~)', '(~, ~]', '(~', '~)', '[~', '~]', '~'
+        Returns a list of query strings for the given metadata, columns, temporal, spatials, and get_rowids.
         """
-
         temporal = parse_temporal(temporal)
 
         if temporal != None:
@@ -384,15 +392,26 @@ class DBInstance:
             columns.remove("idu_name")
             columns.append("raw:(SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name")
 
+        query_strings = [self.structured_query_to_query_string(
+            table_name='data_t',
+            columns=deepcopy(columns),
+            conditions=deepcopy(temporal),
+            subquery=f"idu_id IN (SELECT id FROM idu_t WHERE name = {spatial})",
+            get_rowids=get_rowids
+        ) for spatial in spatials]
+
+        return query_strings
+
+    def structured_query_data_t(self, metadata, columns, temporal=None, spatials=None, get_rowids=False) -> pd.DataFrame:
+        """
+        temporal: '[~, ~]', '(~, ~)', '[~, ~)', '(~, ~]', '(~', '~)', '[~', '~]', '~'
+        """
+
+        query_strings = self.get_query_strings(metadata, columns, temporal, spatials, get_rowids)
+
         result = {}
-        for spatial in spatials:
-            r = self.structured_query(
-                table_name='data_t',
-                columns=deepcopy(columns),
-                conditions=deepcopy(temporal),
-                subquery=f"idu_id IN (SELECT id FROM idu_t WHERE name = {spatial})",
-                get_rowids=get_rowids
-            )
+        for spatial, query_string in zip(spatials, query_strings):
+            r = self.execute_structured_query_string(query_string)
             if r is None:
                 continue
 
@@ -424,6 +443,8 @@ class DBInstance:
             logger.info(f"Continuous aggregate {agg_name} created successfully")
         except Exception as e:
             logger.error(f"An error occurred while creating continuous aggregate {agg_name}: {e}")
+
+    def get_query_string(self, metadata, args):
 
     def set_retention_policy(self, table_name, retention_period):
         """
@@ -479,7 +500,7 @@ if __name__ == "__main__":
         import json
         
         print(
-            db_instance.structured_query(
+            db_instance.structured_query_to_query_string(
                 'idu_t',
                 columns=['id', 'name'],
                 conditions=["name in ('01_IB5', '01_IB7')"]
@@ -487,7 +508,7 @@ if __name__ == "__main__":
         )
         
         
-        print(db_instance.structured_query(
+        print(db_instance.structured_query_to_query_string(
             table_name='data_t',
             columns=['idu_id', 'roomtemp'],
             conditions=[
@@ -510,7 +531,7 @@ if __name__ == "__main__":
             }"""
         )
         
-        result = db_instance.structured_query(**args)
+        result = db_instance.structured_query_to_query_string(**args)
         # print(result[0]["timestamp"])
         print(result)
         
