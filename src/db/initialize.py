@@ -154,7 +154,7 @@ def add_dummy_data(db_instance: DBInstance, time_range: pd.date_range):
 if __name__ == "__main__":
     # When creating the database for the first time
     db_instance = DBInstance(dbname='postgres')
-    # initialize_db(db_instance)
+    initialize_db(db_instance)
     # add_data_from_unzipped(db_instance, Path('/dataset/LG/3_processed/0418_YongDongIllHigh_school/sr60/raw'))
     # add_dummy_data(db_instance, pd.date_range(start='2021-01-01', end='2021-12-31', freq='1min'))
     add_dummy_data(db_instance, pd.date_range(start='2022-01-01', end='2022-05-31', freq='1min'))

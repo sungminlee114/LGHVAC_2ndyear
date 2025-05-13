@@ -445,6 +445,7 @@ class DBInstance:
             logger.error(f"An error occurred while creating continuous aggregate {agg_name}: {e}")
 
     def get_query_string(self, metadata, args):
+        pass
 
     def set_retention_policy(self, table_name, retention_period):
         """
@@ -466,7 +467,7 @@ class DBInstance:
         self.close()
 
     def close(self):
-        if self.cursor is not None and self.is_connected:
+        if not self.cursor and self.is_connected:
             self.cursor.close()
             self.connection.close()
             logger.info("Database connection closed")
