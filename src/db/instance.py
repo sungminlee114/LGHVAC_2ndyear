@@ -366,7 +366,7 @@ class DBInstance:
             logger.error("Error message: {}".format(e))
             return None
     
-    def get_query_strings(self, metadata, columns, temporal=None, spatials=None, get_rowids=False):
+    def get_query_strings(self, metadata, columns, temporal=None, spatials=None, get_rowids=False, exp_tag=None):
         """
         Returns a list of query strings for the given metadata, columns, temporal, spatials, and get_rowids.
         """
@@ -392,15 +392,22 @@ class DBInstance:
             columns.remove("idu_name")
             columns.append("raw:(SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name")
 
-        query_strings = [self.structured_query_to_query_string(
-            table_name='data_t',
-            columns=deepcopy(columns),
-            conditions=deepcopy(temporal),
-            subquery=f"idu_id IN (SELECT id FROM idu_t WHERE name = {spatial})",
-            get_rowids=get_rowids
-        ) for spatial in spatials]
-
-        return query_strings
+        if exp_tag == "woQM":
+            return self.structured_query_to_query_string(
+                table_name='data_t',
+                columns=deepcopy(columns),
+                conditions=deepcopy(temporal),
+                subquery=f"idu_id IN (SELECT id FROM idu_t WHERE name IN ({', '.join(spatials)}))",
+                get_rowids=get_rowids
+            )
+        else:
+            return [self.structured_query_to_query_string(
+                table_name='data_t',
+                columns=deepcopy(columns),
+                conditions=deepcopy(temporal),
+                subquery=f"idu_id IN (SELECT id FROM idu_t WHERE name = {spatial})",
+                get_rowids=get_rowids
+            ) for spatial in spatials]
 
     def structured_query_data_t(self, metadata, columns, temporal=None, spatials=None, get_rowids=False) -> pd.DataFrame:
         """

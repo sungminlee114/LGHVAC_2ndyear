@@ -38,8 +38,8 @@ class DBManager:
         return cls.db_instance.structured_query_data_t(metadata, **args, get_rowids=get_rowids)
 
     @classmethod
-    def get_query_strings(cls, metadata, args):
-        return cls.db_instance.get_query_strings(metadata, **args)
+    def get_query_strings(cls, metadata, args, exp_tag=None):
+        return cls.db_instance.get_query_strings(metadata, **args, exp_tag=exp_tag)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

@@ -397,19 +397,6 @@ def read_dataset(train_type, dir, path):
     
     result = []
     for d in data:
-        if "v5" in dir.name:
-            if train_type in ["woall", "FI", "ISP"]:
-                del d["Response"]["Strategy"]
-            
-            if train_type in ["woall", "FI"]:
-                del d["Response"]["Input Semantic Parsing"]
-            
-            if train_type in ["woall"]:
-                del d["Response"]["Formalized Input"]
-        elif "v6" in dir.name:
-            if train_type in ["woall"]:
-                del d["Response"]["생각"]
-        
         tags = d["Tags"]["Style"]
 
         skip_tags = ["Graph", "Reason"]
@@ -423,7 +410,7 @@ def read_dataset(train_type, dir, path):
         if skip:
             continue
 
-        result.append({"Metadata": metadata, "Input": d["Input"], "Response": json.dumps(d["Response"], ensure_ascii=False)})
+        result.append({"Metadata": metadata, "Input": d["Input"]})
     # result = [{"Input": d["Input"], "Response": json.dumps(d["Response"], ensure_ascii=False)} for d in data]
     # print(f"Read {len(result)} examples from {path}")
     # print(f"Type of result: {type(result)}")
@@ -446,16 +433,22 @@ def main():
         "woQM", # 1
         "woOp", # 2
         "ours" # 3
-    ][0]
+    ][1]
 
-    model_name, tr_config = \
+    model_name, tr_dir = \
         "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-        f"v7_r256_a512_{train_type}_tr60_0503/checkpoint-90"
+        f"v7_r256_a512_{train_type}_tr60_0503/"
+    
+    model_dir = Path(f"/model/{model_name}")
+    checkpoint_dir = Path(f"{model_dir}/chkpts/{tr_dir}")
+
+    # last checkpoint in chekpoint_dir
+    checkpoint_dir = max(checkpoint_dir.iterdir(), key=os.path.getmtime)
+    tr_config = f"{tr_dir}/{checkpoint_dir.name}"
+    checkpoint_dir = Path(f"{model_dir}/chkpts/{tr_config}")
         
     print(f"Model: {model_name}, Config: {tr_config}")
 
-    model_dir = Path(f"/model/{model_name}")
-    checkpoint_dir = Path(f"{model_dir}/chkpts/{tr_config}")
     cache_dir = Path(f"{model_dir}/cache")
     
     # Verify paths exist
@@ -472,7 +465,7 @@ def main():
         dataset.extend(data)
         
     
-    common_prompt = open(BASE_DIR / F"prompt.txt", "r").read()
+    
 
     if "v5" in BASE_DIR.name:
         if train_type in ["woall", "FI", "ISP"]:
@@ -486,9 +479,14 @@ def main():
             common_prompt = re.sub(r"\n?<\|FI\|>(.|\n)*?<\|FI\|>", "", common_prompt)
     
     elif "v6" in BASE_DIR.name or "v7" in BASE_DIR.name:
-        if train_type in ["woall"]:
-            # search <|FI|>~~<|FI|> and remove between them
-            common_prompt = re.sub(r"\n?<\|Ours\|>(.|\n)*?<\|Ours\|>", "", common_prompt)
+        # if train_type in ["woall"]:
+        #     # search <|FI|>~~<|FI|> and remove between them
+        #     common_prompt = re.sub(r"\n?<\|Ours\|>(.|\n)*?<\|Ours\|>", "", common_prompt)
+        if train_type in ["ours"]:
+            common_prompt = open(BASE_DIR / F"prompt.txt", "r").read()
+        else:
+            common_prompt = open(BASE_DIR / F"prompt_v2.txt", "r").read()
+            common_prompt = re.sub(fr"\n?<\|{train_type}\|>(.|\n)*?<\|{train_type}\|>", "", common_prompt)
 
     # remove all <||>
     common_prompt = re.sub(r"<\|.*?\|>", "", common_prompt)
