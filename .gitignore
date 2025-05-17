@@ -9,3 +9,4 @@ experiments/unsloth_compiled_cache/
 finetuning/try_lora/unsloth_compiled_cache/
 model/
 *.gguf
+*/unsloth_compiled_cache/
