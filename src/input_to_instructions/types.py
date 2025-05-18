@@ -27,6 +27,11 @@ class InstructionQ:
     result_name: str
 
 @dataclass
+class InstructionQ_raw:
+    query: str
+    result_name: str
+
+@dataclass
 class InstructionO:
     scripts: list[str]
     returns: list[str]

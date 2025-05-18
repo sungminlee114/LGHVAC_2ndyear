@@ -110,7 +110,7 @@ class ResponseGeneration:
         return variables
 
     @classmethod
-    def execute(cls, instruction: InstructionR, variables, input: str, metadata: dict) -> str:
+    def execute(cls, instruction: InstructionR, variables, input: str, metadata: dict, exp_tag=None) -> str:
         """Generate a response based on the given instruction, variables and input.
         
         Args:
@@ -123,26 +123,36 @@ class ResponseGeneration:
             The generated response
         """
         # If no variables are required, return the first expectation directly
-        if len(instruction.required_variables) == 0:
+        if exp_tag == None and len(instruction.required_variables) == 0:
             if type(instruction.expectations) == str:
                 return instruction.expectations, {}
             return instruction.expectations[0], {}
             
         # Check if all required variables are available
-        if any([required_v not in variables or variables[required_v] in [] 
+        if exp_tag == None and any([required_v not in variables or variables[required_v] in [] 
                 for required_v in instruction.required_variables]):
             return "죄송합니다, 관련 데이터를 찾을 수 없습니다.", {}  # "Sorry, related data couldn't be found"
             
         # Filter variables to include only required ones
-        result = {k: v for k, v in variables.items() if k in instruction.required_variables}
-        
+        if exp_tag in ["woCoTExp", "woOp"]:
+            result = {k: v for k, v in variables.items() if k not in ["Metadata"]}
+        else:
+            result = {k: v for k, v in variables.items() if k in instruction.required_variables}
+
         # Format input for the model
-        formatted_input = """질문: {input};Metadata: {metadata};예시: {expectations};결과: {result}""".format(
-            input=input,
-            metadata=metadata,
-            expectations=instruction.expectations,
-            result=result
-        )
+        if exp_tag != "woCoTExp":
+            formatted_input = """질문: {input}; Metadata: {metadata}; 예시: {expectations}; 참고: {result}""".format(
+                input=input,
+                metadata=metadata,
+                expectations=instruction.expectations,
+                result=result
+            )
+        else:
+            formatted_input = """질문: {input}; Metadata: {metadata}; 참고: {result}""".format(
+                input=input,
+                metadata=metadata,
+                result=result
+            )
         
         # Run inference
         if cls.instance_type == "llama.cpp":

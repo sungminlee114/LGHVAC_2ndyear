@@ -41,5 +41,9 @@ class DBManager:
     def get_query_strings(cls, metadata, args, exp_tag=None):
         return cls.db_instance.get_query_strings(metadata, **args, exp_tag=exp_tag)
 
+    @classmethod
+    def execute_structured_query_string(cls, query_string:str):
+        return cls.db_instance.execute_structured_query_string(query_string)
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

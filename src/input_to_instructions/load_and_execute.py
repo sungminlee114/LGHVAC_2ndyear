@@ -1,6 +1,8 @@
 __all__ = ["InputToInstruction"]
 
 import logging
+
+from src.input_to_instructions.types import InstructionQ_raw
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -55,7 +57,7 @@ class InputToInstruction:
         return cls.instance is not None and cls.instance.is_loaded()
     
     @classmethod
-    def postprocess(cls, response_raw):
+    def postprocess(cls, response_raw, exp_tag=None):
         # Parse the response
         try:
             if type(response_raw) != dict:
@@ -63,11 +65,13 @@ class InputToInstruction:
             else:
                 response = response_raw
             raw_instructions = response["Instructions"]
+
             if "Expectations" in response:
                 expectations = response["Expectations"]
+            elif exp_tag == "woCoTExp":
+                expectations = ""
             else:
                 raise Exception("Expectations not found in response.")
-                
         except Exception as e:
             logger.warning(f"Failed to parse response: {response_raw}. Falling to regex.")
             try:
@@ -96,17 +100,25 @@ class InputToInstruction:
             try:
                 match raw_instruction["type"]:
                     case "q":
-                        args = raw_instruction["args"]
-                        if "table_name" in args:
-                            del args["table_name"]
-                        # args["metadata"] = metadata
+                        if exp_tag != "woQM":
+                            args = raw_instruction["args"]
+                            if "table_name" in args:
+                                del args["table_name"]
+                            # args["metadata"] = metadata
 
-                        instructions.append(
-                            InstructionQ(
-                                args=args,
-                                result_name=raw_instruction["result_name"]
+                            instructions.append(
+                                InstructionQ(
+                                    args=args,
+                                    result_name=raw_instruction["result_name"]
+                                )
                             )
-                        )
+                        else:
+                            instructions.append(
+                                InstructionQ_raw(
+                                    query=raw_instruction["query"],
+                                    result_name=raw_instruction["result_name"]
+                                )
+                            )
                     case "o":
                         scripts = raw_instruction["script"].split(";")
                         scripts = [script.strip() for script in scripts]
