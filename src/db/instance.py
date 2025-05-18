@@ -385,8 +385,6 @@ class DBInstance:
         
         if spatials is not None:
             spatials = [f"'{name}'" for name in spatials]
-            # spatials = 
-            # print(spatials, flush=True)
         
         if "idu_name" in columns:
             columns.remove("idu_name")
@@ -402,12 +400,12 @@ class DBInstance:
             )
         else:
             return [self.structured_query_to_query_string(
-                table_name='data_t',
-                columns=deepcopy(columns),
-                conditions=deepcopy(temporal),
-                subquery=f"idu_id IN (SELECT id FROM idu_t WHERE name = {spatial})",
-                get_rowids=get_rowids
-            ) for spatial in spatials]
+                    table_name='data_t',
+                    columns=deepcopy(columns),
+                    conditions=deepcopy(temporal),
+                    subquery=f"idu_id IN (SELECT id FROM idu_t WHERE name = {spatial})",
+                    get_rowids=get_rowids
+                ) for spatial in spatials]
 
     def structured_query_data_t(self, metadata, columns, temporal=None, spatials=None, get_rowids=False) -> pd.DataFrame:
         """

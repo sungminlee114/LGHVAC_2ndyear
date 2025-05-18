@@ -443,8 +443,9 @@ def main():
     checkpoint_dir = Path(f"{model_dir}/chkpts/{tr_dir}")
 
     # last checkpoint in chekpoint_dir
-    checkpoint_dir = max(checkpoint_dir.iterdir(), key=os.path.getmtime)
+    checkpoint_dir = sorted(checkpoint_dir.iterdir(), key=lambda x: int(x.name.split("-")[-1]))[-1]
     tr_config = f"{tr_dir}/{checkpoint_dir.name}"
+    print(tr_config)
     checkpoint_dir = Path(f"{model_dir}/chkpts/{tr_config}")
         
     print(f"Model: {model_name}, Config: {tr_config}")
