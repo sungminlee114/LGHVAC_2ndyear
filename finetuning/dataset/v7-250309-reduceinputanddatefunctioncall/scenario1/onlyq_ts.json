@@ -193,7 +193,7 @@
                     "result_name": "qr"
                 }, {
                     "type": "o",
-                    "script": "qr['temp_diff'] = qr['roomtemp'] - qr['settemp'];max_diff = qr['temp_diff'].max();max_diff_dates = qr[qr['temp_diff'] == max_diff]['timestamp'].values;max_diff_settemps = qr[qr['temp_diff'] == max_diff]['settemp'].values;max_diff_roomtemps = qr[qr['temp_diff'] == max_diff]['roomtemp'].values;",
+                    "script": "qr['temp_diff']=qr['roomtemp']-qr['settemp'];max_diff=qr['temp_diff'].max();sel=qr.loc[qr['temp_diff']==max_diff];max_diff_dates=sel['timestamp'].drop_duplicates().dt.strftime('%Y-%m-%d %H:%M:%S').tolist();max_diff_settemps=sel['settemp'].drop_duplicates().tolist();max_diff_roomtemps=sel['roomtemp'].drop_duplicates().tolist();",
                     "returns": [
                         "max_diff_dates",
                         "max_diff_roomtemps",

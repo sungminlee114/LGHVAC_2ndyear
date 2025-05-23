@@ -332,7 +332,7 @@
                 },
                 {
                     "type": "o",
-                    "script": "coldest_temp = qr['settemp'].min();coldest_dates = qr[qr['settemp'] == coldest_temp]['timestamp'].dt.strftime('%Y-%m-%d');",
+                    "script": "coldest_temp = qr['settemp'].min();coldest_dates = qr[qr['settemp'] == coldest_temp]['timestamp'].dt.strftime('%Y-%m-%d').drop_duplicates().tolist();",
                     "returns": [
                         "coldest_dates",
                         "coldest_temp"
@@ -1192,7 +1192,7 @@
                 },
                 {
                     "type": "o",
-                    "script": "qr['temp_diff'] = qr['roomtemp'] - qr['settemp'];max_diff = qr['temp_diff'].max();max_diff_data = qr[qr['temp_diff'] == max_diff];max_diff_timestamps = max_diff_data['timestamp'].values;max_diff_settemps = max_diff_data['settemp'].values;max_diff_roomtemps = max_diff_data['roomtemp'].values;",
+                    "script": "qr['temp_diff']=qr['roomtemp']-qr['settemp'];max_diff=qr['temp_diff'].max();max_diff_data=qr.loc[qr['temp_diff']==max_diff].drop_duplicates(subset='timestamp');max_diff_timestamps=max_diff_data['timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S').tolist();max_diff_settemps=max_diff_data['settemp'].drop_duplicates().tolist();max_diff_roomtemps=max_diff_data['roomtemp'].drop_duplicates().tolist();",
                     "returns": [
                         "max_diff_timestamps",
                         "max_diff_settemps",
