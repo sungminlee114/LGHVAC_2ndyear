@@ -65,12 +65,14 @@
 
 
 ,
+
 {
   "Input": "2주전 우리반과 옆반 합쳐서 설정온도가 가장 낮은날이 언제야?",
   "Tags": {
     "SQL_Q": "SELECT \"settemp\", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, \"timestamp\" FROM \"data_t\" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5', '01_IB7')) AND timestamp >= DATE_TRUNC('week', DATE '2022-09-30' - INTERVAL '2 week') AND timestamp < DATE_TRUNC('week', DATE '2022-09-30' - INTERVAL '1 week') AND \"settemp\" IS NOT NULL AND \"settemp\" IS DISTINCT FROM 'NaN' ORDER BY timestamp",
     "result_name": "qr",
-    "SQL_O": "/* ① 주-전체 → qr  -------------------------------------------*/\nWITH qr AS (SELECT \"settemp\", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, \"timestamp\" FROM \"data_t\" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5', '01_IB7')) AND timestamp >= DATE_TRUNC('week', DATE '2022-09-30' - INTERVAL '2 week') AND timestamp < DATE_TRUNC('week', DATE '2022-09-30' - INTERVAL '1 week') AND \"settemp\" IS NOT NULL AND \"settemp\" IS DISTINCT FROM 'NaN' ORDER BY timestamp),\n/* ② 날짜별 평균 설정온도 → daily  -----------------------------*/\n     daily AS (\n       SELECT DATE(\"timestamp\") AS d,\n              AVG(settemp)      AS avg_settemp\n       FROM   qr\n       GROUP  BY d\n     ),\n/* ③ 가장 낮은 평균값 찾기 → mn  ------------------------------*/\n     mn AS (\n       SELECT MIN(avg_settemp) AS coldest_temp\n       FROM   daily\n     )\n/* ④ 그 값과 같은 날짜만 반환 ----------------------------------*/\nSELECT ARRAY_AGG(d ORDER BY d) AS coldest_dates,\n       coldest_temp\nFROM   daily, mn\nWHERE  daily.avg_settemp = mn.coldest_temp;"
+    "SQL_O": "WITH qr AS (SELECT \"settemp\", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, \"timestamp\" FROM \"data_t\" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5', '01_IB7')) AND timestamp >= DATE_TRUNC('week', DATE '2022-09-30' - INTERVAL '2 week') AND timestamp < DATE_TRUNC('week', DATE '2022-09-30' - INTERVAL '1 week') AND \"settemp\" IS NOT NULL AND \"settemp\" IS DISTINCT FROM 'NaN' ORDER BY timestamp),\ncoldest AS (\n  SELECT MIN(settemp) AS coldest_temp\n  FROM qr\n)\nSELECT ARRAY_AGG(DISTINCT TO_CHAR(\"timestamp\", 'YYYY-MM-DD') ORDER BY TO_CHAR(\"timestamp\", 'YYYY-MM-DD')) AS coldest_dates,\n       (SELECT coldest_temp FROM coldest) AS coldest_temp\nFROM qr\nWHERE settemp = (SELECT coldest_temp FROM coldest);",
+    "final_result": "result"
   }
 }
 
@@ -85,7 +87,8 @@
     "Tags": {
       "SQL_Q": "SELECT \"settemp\", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, \"timestamp\" FROM \"data_t\" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5')) AND timestamp >= TIMESTAMP '2022-09-30 12:00:00' - INTERVAL '5 minutes' AND timestamp <= TIMESTAMP '2022-09-30 12:00:00' AND \"settemp\" IS NOT NULL AND \"settemp\" IS DISTINCT FROM 'NaN' ORDER BY timestamp",
       "result_name": "qr",
-      "SQL_O": "WITH qr AS (SELECT \"settemp\", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, \"timestamp\" FROM \"data_t\" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5')) AND timestamp >= TIMESTAMP '2022-09-30 12:00:00' - INTERVAL '5 minutes' AND timestamp <= TIMESTAMP '2022-09-30 12:00:00' AND \"settemp\" IS NOT NULL AND \"settemp\" IS DISTINCT FROM 'NaN' ORDER BY timestamp)\nSELECT settemp AS settemp_recent,\n       \"timestamp\" AS settemp_recent_time\nFROM qr\nORDER BY \"timestamp\" DESC\nLIMIT 1;"
+      "SQL_O": "WITH qr AS (SELECT \"settemp\", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, \"timestamp\" FROM \"data_t\" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5')) AND timestamp >= TIMESTAMP '2022-09-30 12:00:00' - INTERVAL '5 minutes' AND timestamp <= TIMESTAMP '2022-09-30 12:00:00' AND \"settemp\" IS NOT NULL AND \"settemp\" IS DISTINCT FROM 'NaN' ORDER BY timestamp)\nSELECT settemp AS settemp_recent,\n       \"timestamp\" AS settemp_recent_time\nFROM qr\nORDER BY \"timestamp\" DESC\nLIMIT 1;",
+      "final_result": "result"
     }
   },
   {
@@ -190,23 +193,23 @@
 ,
 
   {
-    "Input": "우리반, 옆반, 앞반 중 가장 추운 방은?",
-    "Tags": {
-      "SQL_Q": "SELECT \"roomtemp\", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, \"timestamp\" FROM \"data_t\" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5', '01_IB7', '02_I81')) AND timestamp >= TIMESTAMP '2022-09-30 12:00:00' - INTERVAL '5 minutes' AND timestamp <= TIMESTAMP '2022-09-30 12:00:00' AND \"roomtemp\" IS NOT NULL AND \"roomtemp\" IS DISTINCT FROM 'NaN' ORDER BY timestamp",
-      "result_name": "qr",
-      "SQL_O": "SELECT \"roomtemp\", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, \"timestamp\" FROM \"data_t\" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5', '01_IB7', '02_I81')) AND timestamp >= TIMESTAMP '2022-09-30 12:00:00' - INTERVAL '5 minutes' AND timestamp <= TIMESTAMP '2022-09-30 12:00:00' AND \"roomtemp\" IS NOT NULL AND \"roomtemp\" IS DISTINCT FROM 'NaN' ORDER BY timestamp),\n     ht AS (\n  SELECT MIN(roomtemp) AS coldest_temp FROM qr\n)\nSELECT ARRAY(\n         SELECT DISTINCT idu_name          -- 중복 제거\n         FROM   qr, ht\n         WHERE  qr.roomtemp = ht.coldest_temp\n         ORDER  BY idu_name                -- 보기 좋게 정렬\n       ) AS coldest_rooms,\n       coldest_temp\nFROM   ht;",
-      "final_result": "result"
-    }
-  },
+  "Input": "우리반, 옆반, 앞반 중 가장 추운 방은?",
+  "Tags": {
+    "SQL_Q": "SELECT \"roomtemp\", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, \"timestamp\" FROM \"data_t\" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5', '01_IB7', '02_I81')) AND timestamp >= TIMESTAMP '2022-09-30 12:00:00' - INTERVAL '5 minutes' AND timestamp <= TIMESTAMP '2022-09-30 12:00:00' AND \"roomtemp\" IS NOT NULL AND \"roomtemp\" IS DISTINCT FROM 'NaN' ORDER BY timestamp",
+    "result_name": "qr",
+    "SQL_O": "WITH qr AS (SELECT \"roomtemp\", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, \"timestamp\" FROM \"data_t\" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5', '01_IB7', '02_I81')) AND timestamp >= TIMESTAMP '2022-09-30 12:00:00' - INTERVAL '5 minutes' AND timestamp <= TIMESTAMP '2022-09-30 12:00:00' AND \"roomtemp\" IS NOT NULL AND \"roomtemp\" IS DISTINCT FROM 'NaN' ORDER BY timestamp),\nht AS (\n  SELECT MIN(roomtemp) AS coldest_temp FROM qr\n)\nSELECT ARRAY(\n         SELECT DISTINCT idu_name          -- 중복 제거\n         FROM   qr, ht\n         WHERE  qr.roomtemp = ht.coldest_temp\n         ORDER  BY idu_name                -- 보기 좋게 정렬\n       ) AS coldest_rooms,\n       (SELECT coldest_temp FROM ht) AS coldest_temp\nFROM   ht;",
+    "final_result": "result"
+  }
+},
   {
-    "Input": "에어켠 제일 세게 킨 방 3개 알려줘",
-    "Tags": {
-      "SQL_Q": "SELECT \"oper\", \"settemp\", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, \"timestamp\" FROM \"data_t\" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5', '01_IB7', '02_I81')) AND timestamp >= TIMESTAMP '2022-09-30 12:00:00' - INTERVAL '5 minutes' AND timestamp <= TIMESTAMP '2022-09-30 12:00:00' AND \"oper\" IS NOT NULL AND \"settemp\" IS NOT NULL AND \"settemp\" IS DISTINCT FROM 'NaN' ORDER BY timestamp",
-      "result_name": "qr",
-      "SQL_O": "WITH qr AS (SELECT \"oper\", \"settemp\", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, \"timestamp\" FROM \"data_t\" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5', '01_IB7', '02_I81')) AND timestamp >= TIMESTAMP '2022-09-30 12:00:00' - INTERVAL '5 minutes' AND timestamp <= TIMESTAMP '2022-09-30 12:00:00' AND \"oper\" IS NOT NULL AND \"settemp\" IS NOT NULL AND \"settemp\" IS DISTINCT FROM 'NaN' ORDER BY timestamp), latest AS (\n  SELECT *\n  FROM   qr\n  WHERE  \"timestamp\" = (SELECT MAX(\"timestamp\") FROM qr)\n    AND  oper = TRUE\n), ranked AS (\n  SELECT idu_name,\n         settemp,\n         ROW_NUMBER() OVER (ORDER BY settemp DESC) AS r\n  FROM   latest\n)\nSELECT ARRAY(SELECT idu_name FROM ranked WHERE r <= 3) AS top3_rooms,\n       ARRAY(SELECT settemp  FROM ranked WHERE r <= 3) AS top3_temps;",
-      "final_result": "result"
-    }
-  },
+  "Input": "에어컨 제일 세게 킨 방 3개 알려줘",
+  "Tags": {
+    "SQL_Q": "SELECT \"oper\", \"settemp\", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, \"timestamp\" FROM \"data_t\" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5', '01_IB7', '02_I81')) AND timestamp >= TIMESTAMP '2022-09-30 12:00:00' - INTERVAL '5 minutes' AND timestamp <= TIMESTAMP '2022-09-30 12:00:00' AND \"oper\" IS NOT NULL AND \"settemp\" IS NOT NULL AND \"settemp\" IS DISTINCT FROM 'NaN' ORDER BY timestamp",
+    "result_name": "qr",
+    "SQL_O": "WITH qr AS (SELECT \"oper\", \"settemp\", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, \"timestamp\" FROM \"data_t\" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5', '01_IB7', '02_I81')) AND timestamp >= TIMESTAMP '2022-09-30 12:00:00' - INTERVAL '5 minutes' AND timestamp <= TIMESTAMP '2022-09-30 12:00:00' AND \"oper\" IS NOT NULL AND \"settemp\" IS NOT NULL AND \"settemp\" IS DISTINCT FROM 'NaN' ORDER BY timestamp), latest AS (\n  SELECT *\n  FROM qr\n  WHERE \"timestamp\" = (SELECT MAX(\"timestamp\") FROM qr)\n    AND oper = TRUE\n), ranked AS (\n  SELECT idu_name,\n         settemp,\n         ROW_NUMBER() OVER (ORDER BY settemp ASC) AS r\n  FROM latest\n)\nSELECT ARRAY(SELECT idu_name FROM ranked WHERE r <= 3) AS top3_rooms,\n       ARRAY(SELECT settemp  FROM ranked WHERE r <= 3) AS top3_temps;",
+    "final_result": "result"
+  }
+},
   {
     "Input": "작년 옆반 가장 더웠던 달은?",
     "Tags": {
