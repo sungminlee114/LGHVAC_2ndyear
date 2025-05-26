@@ -173,7 +173,7 @@
         "Response": {
             "Thinking": "사용자는 지난주 우리반의 설정온도와 실내온도의 차이를 계산해 가장 큰 차이가 발생한 날짜를 찾고, 해당 날짜의 실내온도, 설정온도 및 차이를 반환해야 합니다.",
             "Expectations": [
-                "지난주 {{max_diff_dates}}일에 설정온도({{max_diff_settemps}}℃)와 실내온도({{max_diff_roomtemps}}℃)의 차이가 {{max_diff}}℃로 가장 많이 났습니다."
+                "지난주 {{max_diff_timestamps}}일에 설정온도({{max_diff_settemps}}℃)와 실내온도({{max_diff_roomtemps}}℃)의 차이가 {{max_diff}}℃로 가장 많이 났습니다."
             ],
             "Instructions": [
                 {
@@ -193,9 +193,9 @@
                     "result_name": "qr"
                 }, {
                     "type": "o",
-                    "script": "qr['temp_diff']=qr['roomtemp']-qr['settemp'];max_diff=qr['temp_diff'].max();sel=qr.loc[qr['temp_diff']==max_diff];max_diff_dates=sel['timestamp'].drop_duplicates().dt.strftime('%Y-%m-%d %H:%M:%S').tolist();max_diff_settemps=sel['settemp'].drop_duplicates().tolist();max_diff_roomtemps=sel['roomtemp'].drop_duplicates().tolist();",
+                    "script": "qr['temp_diff']=qr['roomtemp']-qr['settemp'];max_diff=qr['temp_diff'].max();sel=qr.loc[qr['temp_diff']==max_diff];max_diff_timestamps=sel['timestamp'].drop_duplicates().dt.strftime('%Y-%m-%d %H:%M:%S').tolist();max_diff_settemps=sel['settemp'].drop_duplicates().tolist();max_diff_roomtemps=sel['roomtemp'].drop_duplicates().tolist();",
                     "returns": [
-                        "max_diff_dates",
+                        "max_diff_timestamps",
                         "max_diff_roomtemps",
                         "max_diff_settemps",
                         "max_diff"
