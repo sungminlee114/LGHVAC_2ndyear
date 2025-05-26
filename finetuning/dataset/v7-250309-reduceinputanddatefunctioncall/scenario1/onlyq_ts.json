@@ -231,7 +231,7 @@
                     "result_name": "qr"
                 }, {
                     "type": "o",
-                    "script": "qr['date'] = qr['timestamp'].dt.date;daily_avg_temp = qr.groupby('date')[['roomtemp', 'settemp']].mean();dates = daily_avg_temp[daily_avg_temp['settemp'] < daily_avg_temp['roomtemp']].index;",
+                    "script": "qr['date'] = qr['timestamp'].dt.date;daily_avg_temp = qr.groupby('date')[['roomtemp', 'settemp']].mean();dates = daily_avg_temp[daily_avg_temp['settemp'] < daily_avg_temp['roomtemp']].index;dates = pd.to_datetime(dates).strftime('%Y-%m-%d')",
                     "returns": [
                         "dates"
                     ]

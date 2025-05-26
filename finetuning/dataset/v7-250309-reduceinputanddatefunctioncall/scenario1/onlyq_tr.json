@@ -56,7 +56,7 @@
         "Response": {
             "Thinking": "사용자는 오늘 하루 평균 우리반과 옆반의 실내온도의 차이를 알고 싶어함. 사용자는 차이 결과 뿐만 아니라 계산에 사용된 각 반의 평균 실내온도 값도 궁금할 것임. 오늘 하루 우리반과 옆반의 실내온도를 쿼리한 후 각 반의 평균 실내온도 및 그 차이를 계산하여 반환하면 됨.",
             "Expectations": [
-                "우리반({{roomtemp_ours}}℃)이 옆반({{roomtemp_beside}}℃)보다 {{roomtemp_diff}}℃ 높습니다."
+                "우리반({{roomtemp_ours}}℃)이 옆반({{roomtemp_beside}}℃)보다 {{temp_diff}}℃ 높습니다."
             ],
             "Instructions": [
                 {
@@ -76,11 +76,11 @@
                 },
                 {
                     "type": "o",
-                    "script": "roomtemp_ours = qr[qr['idu'] == '01_IB5']['roomtemp'].mean();roomtemp_beside = qr[qr['idu'] == '01_IB7']['roomtemp'].mean();roomtemp_diff = roomtemp_ours - roomtemp_beside;",
+                    "script": "roomtemp_ours = qr[qr['idu'] == '01_IB5']['roomtemp'].mean();roomtemp_beside = qr[qr['idu'] == '01_IB7']['roomtemp'].mean();temp_diff = roomtemp_ours - roomtemp_beside;",
                     "returns": [
                         "roomtemp_ours",
                         "roomtemp_beside",
-                        "roomtemp_diff"
+                        "temp_diff"
                     ]
                 }
             ]
@@ -1258,7 +1258,7 @@
         "Response": {
             "Thinking": "사용자는 현재 우리반과 옆반의 실내온도 차이를 알고 싶어함. 최근 5분간 우리반과 옆반의 실내온도를 쿼리한 후 가장 최근 값들과 차이를 계산해 반환하면 됨.",
             "Expectations": [
-                "The current temperature in our class is {{roomtemp_ours}}℃, and the temperature in the adjacent class is {{roomtemp_theirs}}℃, with a difference of {{temp_diff}}℃."
+                "The current temperature in our class is {{roomtemp_ours}}℃, and the temperature in the adjacent class is {{roomtemp_beside}}℃, with a difference of {{temp_diff}}℃."
             ],
             "Instructions": [
                 {
@@ -1278,10 +1278,10 @@
                 },
                 {
                     "type": "o",
-                    "script": "qr_recent=qr[qr['timestamp']==qr['timestamp'].max()];roomtemp_ours = qr_recent[qr_recent['idu'] == '01_IB5']['roomtemp'].values[0];roomtemp_theirs = qr_recent[qr_recent['idu'] == '01_IB7']['roomtemp'].values[0];temp_diff = roomtemp_ours - roomtemp_theirs;",
+                    "script": "qr_recent=qr[qr['timestamp']==qr['timestamp'].max()];roomtemp_ours = qr_recent[qr_recent['idu'] == '01_IB5']['roomtemp'].values[0];roomtemp_beside = qr_recent[qr_recent['idu'] == '01_IB7']['roomtemp'].values[0];temp_diff = roomtemp_ours - roomtemp_beside;",
                     "returns": [
                         "roomtemp_ours",
-                        "roomtemp_theirs",
+                        "roomtemp_beside",
                         "temp_diff"
                     ]
                 }
@@ -1636,7 +1636,7 @@
         "Response": {
             "Thinking": "사용자는 현재 우리반과 옆반 중 실내온도가 더 낮은 곳을 알고싶어함. 최근 5분간 우리반과 옆반의 실내온도를 쿼리한 후 가장 최근 값들을 비교해 더 낮은 곳의 이름과 각 반의 실내온도를 반환하면 됨.",
             "Expectations": [
-                "{{colder_idu}}({{roomtemp_theirs}}℃)이 우리반({{roomtemp_ours}}℃)보다 {{roomtemp_diff}}℃ 더 낮아요."
+                "{{colder_idu}}({{roomtemp_beside}}℃)이 우리반({{roomtemp_ours}}℃)보다 {{temp_diff}}℃ 더 낮아요."
             ],
             "Instructions": [
                 {
@@ -1656,11 +1656,11 @@
                 },
                 {
                     "type": "o",
-                    "script": "qr_recent=qr[qr['timestamp']==qr['timestamp'].max()];roomtemp_ours = qr_recent[qr_recent['idu'] == '01_IB5']['roomtemp'].values[0];roomtemp_theirs = qr_recent[qr_recent['idu'] == '01_IB7']['roomtemp'].values[0];colder_idu = '01_IB7' if roomtemp_theirs < roomtemp_ours else '01_IB5';roomtemp_diff = abs(roomtemp_ours - roomtemp_theirs);",
+                    "script": "qr_recent=qr[qr['timestamp']==qr['timestamp'].max()];roomtemp_ours = qr_recent[qr_recent['idu'] == '01_IB5']['roomtemp'].values[0];roomtemp_beside = qr_recent[qr_recent['idu'] == '01_IB7']['roomtemp'].values[0];colder_idu = '01_IB7' if roomtemp_beside < roomtemp_ours else '01_IB5';temp_diff = abs(roomtemp_ours - roomtemp_beside);",
                     "returns": [
                         "roomtemp_ours",
-                        "roomtemp_theirs",
-                        "roomtemp_diff",
+                        "roomtemp_beside",
+                        "temp_diff",
                         "colder_idu"
                     ]
                 }
@@ -1802,7 +1802,7 @@
                 },
                 {
                     "type": "o",
-                    "script": "qr['date'] = qr['timestamp'].dt.date;daily_oper_time = qr.groupby('date')['oper'].sum();longest_oper_time = daily_oper_time.max();longest_oper_dates = daily_oper_time[daily_oper_time == longest_oper_time].index;longest_oper_time_in_hours = longest_oper_time * (qr['timestamp'].diff().dt.total_seconds() / 3600).mean();",
+                    "script": "qr['date'] = qr['timestamp'].dt.date;daily_oper_time = qr.groupby('date')['oper'].sum();longest_oper_time = daily_oper_time.max();longest_oper_dates = daily_oper_time[daily_oper_time == longest_oper_time].index;longest_oper_dates = pd.to_datetime(longest_oper_dates).strftime('%Y-%m-%d').tolist();longest_oper_time_in_hours = longest_oper_time * (qr['timestamp'].diff().dt.total_seconds() / 3600).mean();",
                     "returns": [
                         "longest_oper_dates",
                         "longest_oper_time_in_hours"
@@ -2214,7 +2214,7 @@
                 },
                 {
                     "type": "o",
-                    "script": "roomtemp_ours = qr[qr['idu'] == '01_IB5'];roomtemp_theirs = qr[qr['idu'] == '01_IB7'];roomtemp_rawtimeseries = pd.merge(roomtemp_ours, roomtemp_theirs, on='timestamp', suffixes=('_ours', '_theirs'));",
+                    "script": "roomtemp_ours = qr[qr['idu'] == '01_IB5'];roomtemp_beside = qr[qr['idu'] == '01_IB7'];roomtemp_rawtimeseries = pd.merge(roomtemp_ours, roomtemp_beside, on='timestamp', suffixes=('_ours', '_theirs'));",
                     "returns": [
                         "roomtemp_rawtimeseries"
                     ]
@@ -2238,7 +2238,7 @@
                                     },
                                     {
                                         "x": "roomtemp_rawtimeseries['timestamp']",
-                                        "y": "roomtemp_rawtimeseries['roomtemp_theirs']",
+                                        "y": "roomtemp_rawtimeseries['roomtemp_beside']",
                                         "label": "옆반 실내온도"
                                     }
                                 ]
@@ -2478,7 +2478,7 @@
                 },
                 {
                     "type": "o",
-                    "script": "roomtemp_ours = qr[qr['idu'] == '01_IB5'];roomtemp_theirs = qr[qr['idu'] == '01_IB7'];roomtemp_rawtimeseries = pd.merge(roomtemp_ours, roomtemp_theirs, on='timestamp', suffixes=('_ours', '_theirs'));roomtemp_rawtimeseries['temp_diff'] = roomtemp_rawtimeseries['roomtemp_ours'] - roomtemp_rawtimeseries['roomtemp_theirs'];",
+                    "script": "roomtemp_ours = qr[qr['idu'] == '01_IB5'];roomtemp_beside = qr[qr['idu'] == '01_IB7'];roomtemp_rawtimeseries = pd.merge(roomtemp_ours, roomtemp_beside, on='timestamp', suffixes=('_ours', '_theirs'));roomtemp_rawtimeseries['temp_diff'] = roomtemp_rawtimeseries['roomtemp_ours'] - roomtemp_rawtimeseries['roomtemp_theirs'];",
                     "returns": [
                         "roomtemp_rawtimeseries"
                     ]
@@ -2949,7 +2949,7 @@
                 },
                 {
                     "type": "o",
-                    "script": "roomtemp_ours = qr[qr['idu'] == '01_IB5'];roomtemp_theirs = qr[qr['idu'] == '01_IB7'];roomtemp_rawtimeseries = pd.merge(roomtemp_ours, roomtemp_theirs, on='timestamp', suffixes=('_ours', '_theirs'));",
+                    "script": "roomtemp_ours = qr[qr['idu'] == '01_IB5'];roomtemp_beside = qr[qr['idu'] == '01_IB7'];roomtemp_rawtimeseries = pd.merge(roomtemp_ours, roomtemp_beside, on='timestamp', suffixes=('_ours', '_theirs'));",
                     "returns": [
                         "roomtemp_rawtimeseries"
                     ]
@@ -2973,7 +2973,7 @@
                                     },
                                     {
                                         "x": "roomtemp_rawtimeseries['timestamp']",
-                                        "y": "roomtemp_rawtimeseries['roomtemp_theirs']",
+                                        "y": "roomtemp_rawtimeseries['roomtemp_beside']",
                                         "label": "옆반"
                                     }
                                 ]
@@ -3302,7 +3302,7 @@
                 },
                 {
                     "type": "o",
-                    "script": "roomtemp_ours = qr[qr['idu'] == '01_IB5'];roomtemp_theirs = qr[qr['idu'] == '01_IB7'];roomtemp_rawtimeseries = pd.merge(roomtemp_ours, roomtemp_theirs, on='timestamp', suffixes=('_ours', '_theirs'));",
+                    "script": "roomtemp_ours = qr[qr['idu'] == '01_IB5'];roomtemp_beside = qr[qr['idu'] == '01_IB7'];roomtemp_rawtimeseries = pd.merge(roomtemp_ours, roomtemp_beside, on='timestamp', suffixes=('_ours', '_theirs'));",
                     "returns": [
                         "roomtemp_rawtimeseries"
                     ]
@@ -3326,7 +3326,7 @@
                                     },
                                     {
                                         "x": "roomtemp_rawtimeseries['timestamp']",
-                                        "y": "roomtemp_rawtimeseries['roomtemp_theirs']",
+                                        "y": "roomtemp_rawtimeseries['roomtemp_beside']",
                                         "label": "옆반 실내온도"
                                     }
                                 ]
