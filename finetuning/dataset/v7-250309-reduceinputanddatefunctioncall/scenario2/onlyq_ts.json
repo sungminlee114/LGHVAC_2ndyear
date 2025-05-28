@@ -98,7 +98,7 @@
                 },
                 {
                     "type": "o",
-                    "script": "qr_recent = qr[qr['timestamp'] == qr['timestamp'].max()];on_names = qr_recent[qr_recent['oper'] == True]['idu'].values;",
+                    "script": "qr_recent = qr[qr['timestamp'] == qr['timestamp'].max()];on_names = pd.unique(qr_recent[qr_recent['oper'] == True]['idu']);",
                     "returns": [
                         "on_names"
                     ]

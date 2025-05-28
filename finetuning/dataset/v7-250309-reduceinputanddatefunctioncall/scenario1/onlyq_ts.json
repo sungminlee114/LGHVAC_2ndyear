@@ -302,7 +302,7 @@
                     "result_name": "qr"
                 }, {
                     "type": "o",
-                    "script": "max_settemp = qr['settemp'].max();max_settemp_dates = qr[qr['settemp'] == max_settemp]['timestamp'].dt.strftime('%Y-%m-%d');",
+                    "script": "max_settemp = qr['settemp'].max();max_settemp_dates = qr[qr['settemp'] == max_settemp]['timestamp'].dt.strftime('%Y-%m-%d').drop_duplicates().tolist();",
                     "returns": [
                         "max_settemp_dates",
                         "max_settemp"
