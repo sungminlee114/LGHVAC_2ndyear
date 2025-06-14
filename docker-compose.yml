@@ -1,46 +1,47 @@
 services:
-  # db_s:
-  #   container_name: db_c
-  #   image: timescale/timescaledb:latest-pg16
-  #   privileged: true
-  #   environment:
-  #       TZ: 'GMT+9'
-  #       PGTZ: 'GMT+9'
-  #       POSTGRESS_USER: 'postgres'
-  #       POSTGRES_PASSWORD: 'postgres'
-  #   volumes:
-  #     - postgresql:/var/lib/postgresql/data
-  #   networks:
-  #     - db_n
-  #   ports:
-  #     - "5432:5432"
-  # pgadmin_s:
-  #   container_name: pgadmin_c
-  #   image: dpage/pgadmin4
-  #   privileged: true
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: pgadmin@mycomp.com
-  #     PGADMIN_DEFAULT_PASSWORD: password
-  #     PGADMIN_CONFIG_SERVER_MODE: 'False'
-  #     PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
-  #     TZ: 'GMT+9'
-  #   entrypoint: /bin/sh -c "chmod 600 /pgpass; /entrypoint.sh;"
-  #   user: root
-  #   configs:
-  #     - source: servers.json
-  #       target: /pgadmin4/servers.json
-  #     - source: pgpass
-  #       target: /pgpass
-  #   volumes:
-  #     - pgadmin:/var/lib/pgadmin4/storage
-  #   networks:
-  #     - db_n
-  #   depends_on:
-  #     - db_s
-  #   ports:
-  #     - "9913:80"
-  main_mj_s:
-    container_name: main_mj_c
+  db_s:
+    container_name: db_c
+    image: timescale/timescaledb:latest-pg16
+    privileged: true
+    environment:
+        TZ: 'GMT+9'
+        PGTZ: 'GMT+9'
+        POSTGRESS_USER: 'postgres'
+        POSTGRES_PASSWORD: 'postgres'
+    volumes:
+      - postgresql:/var/lib/postgresql/data
+    networks:
+      - db_n
+    ports:
+      - "5432:5432"
+  pgadmin_s:
+    container_name: pgadmin_c
+    image: dpage/pgadmin4
+    privileged: true
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin@mycomp.com
+      PGADMIN_DEFAULT_PASSWORD: password
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+      TZ: 'GMT+9'
+    entrypoint: /bin/sh -c "chmod 600 /pgpass; /entrypoint.sh;"
+    user: root
+    configs:
+      - source: servers.json
+        target: /pgadmin4/servers.json
+      - source: pgpass
+        target: /pgpass
+    volumes:
+      - pgadmin:/var/lib/pgadmin4/storage
+    networks:
+      - db_n
+    depends_on:
+      - db_s
+    ports:
+      - "9913:80"
+
+  main_sm_s:
+    container_name: main_sm_c
     build: .
     privileged: true
     command: /bin/bash
@@ -60,26 +61,26 @@ services:
             count: 1
             capabilities: [gpu]
   
-# networks:
-#   db_n:
-#     driver: bridge
+networks:
+  db_n:
+    driver: bridge
 
-# volumes:
-#   postgresql:
-#   pgadmin:
+volumes:
+  postgresql:
+  pgadmin:
 
-# configs:
-#   pgpass:
-#     content: db_s:5432:*:postgres:postgres
-#   servers.json:
-#     content: |
-#       {"Servers": {"1": {
-#         "Group": "Servers",
-#         "Name": "TimescaleDB",
-#         "Host": "db_s",
-#         "Port": 5432,
-#         "MaintenanceDB": "postgres",
-#         "Username": "postgres",
-#         "PassFile": "/pgpass",
-#         "SSLMode": "prefer"
-#       }}}
+configs:
+  pgpass:
+    content: db_s:5432:*:postgres:postgres
+  servers.json:
+    content: |
+      {"Servers": {"1": {
+        "Group": "Servers",
+        "Name": "TimescaleDB",
+        "Host": "db_s",
+        "Port": 5432,
+        "MaintenanceDB": "postgres",
+        "Username": "postgres",
+        "PassFile": "/pgpass",
+        "SSLMode": "prefer"
+      }}}

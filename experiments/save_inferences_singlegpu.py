@@ -21,6 +21,41 @@ else:
     attn_implementation = "eager"
     torch_dtype = torch.float16
 print(f"attn_implementation: {attn_implementation}, torch_dtype: {torch_dtype}")
+
+import pynvml
+class GPUMemoryTracker:
+    def __init__(self):
+        pynvml.nvmlInit()
+        self.handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+        self.peak_memory = 0
+        self.track = False
+    
+    def tracking_loop(self):
+        while self.track:
+            self.update_peak_memory()
+            time.sleep(.1)
+
+    def start_tracking(self):
+        # start a thread that updates the peak memory usage every 1 second
+        self.track = True
+
+        self.thread = threading.Thread(target=self.tracking_loop)
+        self.thread.start()
+
+    def stop_tracking(self):
+        self.track = False
+        self.thread.join()
+
+    def get_memory_info(self):
+        props = pynvml.nvmlDeviceGetMemoryInfo(self.handle)
+        return props.used / 1024**3 # GB
+    
+    def update_peak_memory(self):
+        self.peak_memory = max(self.peak_memory, self.get_memory_info())
+    
+    def __del__(self):
+        pynvml.nvmlShutdown()
+
 class UnslothInference:
     def __init__(
         self,
@@ -105,6 +140,9 @@ class UnslothInference:
             pattern = r"<\|start_header_id\|>assistant<\|end_header_id\|>(.*?)<\|eot_id\|>"
         elif "start_of_turn" in text:
             pattern = r"<start_of_turn>model\n(.*?)<eos>"
+        elif "im_start" in text:
+            # <|im_start|>assistant{"Thinking": "사용자는 오늘 4층에 있는 모든 방의 설정온도의 평균값을 알고 싶어합니다. 4층에 해당하는 idu들(01_IB7, 02_I84, 02_I85)의 오늘 설정온도 데이터를 쿼리한 후 평균값을 계산하여 반환하면 됩니다.", "Expectations": ["오늘 4층의 평균 설정온도는 {{settemp_avg}}℃ 입니다."], "Instructions": [{"type": "q", "args": {"table_name": "data_t", "columns": ["settemp"], "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE'), DATE_TRUNC('day', DATE 'CURRENT_DATE' + INTERVAL '1 day'))", "spatials": ["01_IB7", "02_I84", "02_I85"]}, "result_name": "qr"}, {"type": "o", "script": "settemp_avg = qr['settemp'].mean();", "returns": ["settemp_avg"]}]}<|im_end|>
+            pattern = r"<\|im_start\|>assistant\n(.*?)<\|im_end\|>"
         match = re.search(pattern, text, re.DOTALL)
         return match.group(1).strip() if match else None
 
@@ -131,7 +169,11 @@ class UnslothInference:
                         {"role": "user", "content": f"{common_prompt};{json.dumps(metadata)};{input}"},
                     ]
                 else:
-                    raise ValueError(f"Unsupported model architecture: {model.config.architectures[0]}")
+                    chat = [
+                        {"role": "system", "content": common_prompt},
+                        {"role": "user", "content": f"Metadata:{metadata};Input:{input};"},
+                    ]
+                    # raise ValueError(f"Unsupported model architecture: {model.config.architectures[0]}")
                 
                 chat = tokenizer.apply_chat_template(
                     chat,
@@ -195,7 +237,7 @@ class UnslothInference:
                 else:
                     parsed_responses.append(parsed)
             end_time = time.time()
-            print(f"Elapsed time: {end_time - start_time:.2f}s")
+            # print(f"Elapsed time: {end_time - start_time:.2f}s")
             return parsed_responses
             
         except Exception as e:
@@ -215,6 +257,7 @@ class UnslothInference:
         
         print(tokenizer.pad_token, tokenizer.eos_token)
         # 배치 처리
+        start_time = time.time()
         with tqdm(total=len(dataset)) as pbar:
             for batch_start in range(0, len(dataset), self.batch_size):
                 batch_end = min(batch_start + self.batch_size, len(dataset))
@@ -248,7 +291,7 @@ class UnslothInference:
                         print(f"Error in response for sample {batch_start + i}")
                 
                 pbar.update(batch_end - batch_start)
-
+        print(f"Elapsed time per sample: {(time.time() - start_time) / len(dataset)}s")
 class LLamaInference(UnslothInference):
     def __init__(
         self,
@@ -399,7 +442,7 @@ def read_dataset(train_type, dir, path):
     for d in data:
         tags = d["Tags"]["Style"]
 
-        skip_tags = ["Graph", "Reason"]
+        skip_tags = ["Reason", "Graph", "Unrelated", "Prediction"]
 
         skip = False
         for skip_tag in skip_tags:
@@ -430,14 +473,16 @@ def main():
 
     train_type = [
         "woCoTExp", # 0
-        "woQM", # 1
-        "woOp", # 2
-        "ours" # 3
-    ][1]
+        "woCoT", # 1
+        "woQM", # 2
+        "woOp", # 3
+        "ours" # 4
+    ][4]
 
     model_name, tr_dir = \
         "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-        f"v7_r256_a512_{train_type}_tr60_0503/"
+        f"v7_r256_a512_{train_type}_tr60_0613/"
+
     
     model_dir = Path(f"/model/{model_name}")
     checkpoint_dir = Path(f"{model_dir}/chkpts/{tr_dir}")
@@ -493,7 +538,7 @@ def main():
     common_prompt = re.sub(r"<\|.*?\|>", "", common_prompt)
     
     # Initialize distributed inference
-    batch_size = 20  # 배치 크기 설정
+    batch_size = 1  # 배치 크기 설정
     inference = UnslothInference(
         checkpoint_dir=str(checkpoint_dir),
         cache_dir=str(cache_dir),
@@ -514,12 +559,22 @@ def main():
     output_file = f"r-{tr_config.replace('/', '-')}.json"
     open(output_file, "w").close()  # Clear output file
     
+    track_memory = True
+    if track_memory:
+        memory_tracker = GPUMemoryTracker()
+        memory_tracker.start_tracking()
+        # add a new thread that tracks the peak memory usage
+
     inference.run(
         dataset=dataset,
         common_prompt=common_prompt,
         output_file=output_file
     )
-    
+
+    if track_memory:
+        memory_tracker.stop_tracking()
+        print(f"Peak memory usage: {memory_tracker.peak_memory} GB")
+        print(tr_config)
     # Write [ at the beginning and ] at the end of the file
     # Replace \n with ,\n
     with open(output_file, "r") as f:

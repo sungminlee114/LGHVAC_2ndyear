@@ -34,9 +34,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "roomtemp_avg = qr['roomtemp'].mean()"
-                    ]
+                    "script": "roomtemp_avg = qr['roomtemp'].mean();"
                 }
             ]
         }
@@ -77,10 +75,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "qr_recent = qr[qr['timestamp'] == qr['timestamp'].max()]",
-                        "off_names = pd.unique(qr_recent[qr_recent['oper'] == False]['idu'])"
-                    ]
+                    "script": "qr_recent = qr[qr['timestamp'] == qr['timestamp'].max()];off_names = pd.unique(qr_recent[qr_recent['oper'] == False]['idu']);"
                 }
             ]
         }
@@ -123,11 +118,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "qr_recent = qr[qr['timestamp'] == qr['timestamp'].max()]",
-                        "coldest_temp = qr_recent['roomtemp'].min()",
-                        "coldest_rooms = pd.unique(qr_recent[qr_recent['roomtemp'] == coldest_temp]['idu'])"
-                    ]
+                    "script": "qr_recent = qr[qr['timestamp'] == qr['timestamp'].max()];coldest_temp = qr_recent['roomtemp'].min();coldest_rooms = pd.unique(qr_recent[qr_recent['roomtemp'] == coldest_temp]['idu']);"
                 }
             ]
         }
@@ -167,10 +158,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "settemp_max = qr['settemp'].max()",
-                        "settemp_min = qr['settemp'].min()"
-                    ]
+                    "script": "settemp_max = qr['settemp'].max();settemp_min = qr['settemp'].min();"
                 }
             ]
         }
@@ -193,9 +181,7 @@
             "Instructions": [
                 {
                     "type": "o",
-                    "script": [
-                        "current_time = pd.Timestamp(Metadata['current_datetime']).strftime('%H:%M:%S')"
-                    ]
+                    "script": "current_time = pd.Timestamp(Metadata['current_datetime']).strftime('%H:%M:%S');"
                 }
             ]
         }
@@ -237,10 +223,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "hottest_temp = qr['roomtemp'].max()",
-                        "hottest_rooms = pd.unique(qr[qr['roomtemp'] == hottest_temp]['idu'])"
-                    ]
+                    "script": "hottest_temp = qr['roomtemp'].max();hottest_rooms = pd.unique(qr[qr['roomtemp'] == hottest_temp]['idu']);"
                 }
             ]
         }

@@ -38,9 +38,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "qr"
-                    ]
+                    "script": "qr"
                 }
             ]
         }
@@ -93,11 +91,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "morning_avg = qr_morning['roomtemp'].mean()",
-                        "evening_avg = qr_evening['roomtemp'].mean()",
-                        "temp_diff = evening_avg - morning_avg"
-                    ]
+                    "script": "morning_avg = qr_morning['roomtemp'].mean();evening_avg = qr_evening['roomtemp'].mean();temp_diff = evening_avg - morning_avg;"
                 }
             ]
         }
@@ -136,11 +130,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "qr_recent = qr[qr['timestamp'] == qr['timestamp'].max()]",
-                        "roomtemp_ours = qr_recent[qr_recent['idu'] == '01_IB5']['roomtemp'].values[0]",
-                        "roomtemp_beside = qr_recent[qr_recent['idu'] == '01_IB7']['roomtemp'].values[0]"
-                    ]
+                    "script": "qr_recent = qr[qr['timestamp'] == qr['timestamp'].max()];roomtemp_ours = qr_recent[qr_recent['idu'] == '01_IB5']['roomtemp'].values[0];roomtemp_beside = qr_recent[qr_recent['idu'] == '01_IB7']['roomtemp'].values[0];"
                 }
             ]
         }
@@ -179,12 +169,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "qr_recent = qr[qr['timestamp'] == qr['timestamp'].max()]",
-                        "settemp = qr_recent['settemp'].values[0]",
-                        "roomtemp = qr_recent['roomtemp'].values[0]",
-                        "temp_diff = roomtemp - settemp"
-                    ]
+                    "script": "qr_recent = qr[qr['timestamp'] == qr['timestamp'].max()];settemp = qr_recent['settemp'].values[0];roomtemp = qr_recent['roomtemp'].values[0];temp_diff = roomtemp - settemp;"
                 }
             ]
         }
@@ -224,14 +209,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "qr['temp_diff']=qr['roomtemp']-qr['settemp']",
-                        "max_diff=qr['temp_diff'].max()",
-                        "sel=qr.loc[qr['temp_diff']==max_diff]",
-                        "max_diff_timestamps=sel['timestamp'].drop_duplicates().dt.strftime('%Y-%m-%d %H:%M:%S').tolist()",
-                        "max_diff_settemps=sel['settemp'].drop_duplicates().tolist()",
-                        "max_diff_roomtemps=sel['roomtemp'].drop_duplicates().tolist()"
-                    ]
+                    "script": "qr['temp_diff']=qr['roomtemp']-qr['settemp'];max_diff=qr['temp_diff'].max();sel=qr.loc[qr['temp_diff']==max_diff];max_diff_timestamps=sel['timestamp'].drop_duplicates().dt.strftime('%Y-%m-%d %H:%M:%S').tolist();max_diff_settemps=sel['settemp'].drop_duplicates().tolist();max_diff_roomtemps=sel['roomtemp'].drop_duplicates().tolist();"
                 }
             ]
         }
@@ -270,12 +248,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "qr['date'] = qr['timestamp'].dt.date",
-                        "daily_avg_temp = qr.groupby('date')[['roomtemp', 'settemp']].mean()",
-                        "dates = daily_avg_temp[daily_avg_temp['settemp'] < daily_avg_temp['roomtemp']].index",
-                        "dates = pd.to_datetime(dates).strftime('%Y-%m-%d')"
-                    ]
+                    "script": "qr['date'] = qr['timestamp'].dt.date;daily_avg_temp = qr.groupby('date')[['roomtemp', 'settemp']].mean();dates = daily_avg_temp[daily_avg_temp['settemp'] < daily_avg_temp['roomtemp']].index;dates = pd.to_datetime(dates).strftime('%Y-%m-%d')"
                 }
             ]
         }
@@ -313,10 +286,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "qr_recent = qr[qr['timestamp'] == qr['timestamp'].max()]",
-                        "oper = qr_recent['oper'].values[0]"
-                    ]
+                    "script": "qr_recent = qr[qr['timestamp'] == qr['timestamp'].max()];oper = qr_recent['oper'].values[0];"
                 }
             ]
         }
@@ -355,10 +325,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "max_settemp = qr['settemp'].max()",
-                        "max_settemp_dates = qr[qr['settemp'] == max_settemp]['timestamp'].dt.strftime('%Y-%m-%d').drop_duplicates().tolist()"
-                    ]
+                    "script": "max_settemp = qr['settemp'].max();max_settemp_dates = qr[qr['settemp'] == max_settemp]['timestamp'].dt.strftime('%Y-%m-%d').drop_duplicates().tolist();"
                 }
             ]
         }
@@ -427,9 +394,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "roomtemp_avg = qr['roomtemp'].mean()"
-                    ]
+                    "script": "roomtemp_avg = qr['roomtemp'].mean();"
                 }
             ]
         }
@@ -482,9 +447,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "settemp = qr['settemp'].mean()"
-                    ]
+                    "script": "settemp = qr['settemp'].mean();"
                 }
             ]
         }
@@ -522,10 +485,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "roomtemp_max = qr['roomtemp'].max()",
-                        "roomtemp_min = qr['roomtemp'].min()"
-                    ]
+                    "script": "roomtemp_max = qr['roomtemp'].max();roomtemp_min = qr['roomtemp'].min();"
                 }
             ]
         }
@@ -584,9 +544,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "qr"
-                    ]
+                    "script": "qr"
                 }
             ]
         }
@@ -609,9 +567,7 @@
             "Instructions": [
                 {
                     "type": "o",
-                    "script": [
-                        "current_time = pd.Timestamp(Metadata['current_datetime']).strftime('%H:%M:%S')"
-                    ]
+                    "script": "current_time = pd.Timestamp(Metadata['current_datetime']).strftime('%H:%M:%S');"
                 }
             ]
         }

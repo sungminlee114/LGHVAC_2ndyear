@@ -34,9 +34,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "settemp_avg = qr['settemp'].mean()"
-                    ]
+                    "script": "settemp_avg = qr['settemp'].mean();"
                 }
             ]
         }
@@ -59,9 +57,7 @@
             "Instructions": [
                 {
                     "type": "o",
-                    "script": [
-                        "current_time = pd.Timestamp(Metadata['current_datetime']).strftime('%H:%M:%S')"
-                    ]
+                    "script": "current_time = pd.Timestamp(Metadata['current_datetime']).strftime('%H:%M:%S');"
                 }
             ]
         }
@@ -101,10 +97,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "qr_recent = qr[qr['timestamp'] == qr['timestamp'].max()]",
-                        "on_names = pd.unique(qr_recent[qr_recent['oper'] == True]['idu'])"
-                    ]
+                    "script": "qr_recent = qr[qr['timestamp'] == qr['timestamp'].max()];on_names = pd.unique(qr_recent[qr_recent['oper'] == True]['idu']);"
                 }
             ]
         }
@@ -142,10 +135,7 @@
                 },
                 {
                     "type": "o",
-                    "script": [
-                        "recent_time = qr['timestamp'].max()",
-                        "settemp_recent = qr[qr['timestamp'] == recent_time]['settemp'].values[0]"
-                    ]
+                    "script": "recent_time = qr['timestamp'].max();settemp_recent = qr[qr['timestamp'] == recent_time]['settemp'].values[0];"
                 }
             ]
         }
