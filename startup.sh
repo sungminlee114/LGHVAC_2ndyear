@@ -6,7 +6,7 @@ git clone https://github.com/sungminlee114/LGHVAC_2ndyear
 cd LGHVAC_2ndyear
 git config --global user.email "$(gh api user --jq '.email')" && \
 git config --global user.name "$(gh api user --jq '.login')"
-git checkout feature/finetuning
+git checkout main
 
 pip install unsloth peft transformers jupyter ipywidgets
 

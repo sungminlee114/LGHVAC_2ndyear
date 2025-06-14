@@ -479,9 +479,10 @@ def main():
         "ours" # 4
     ][4]
 
+    r = 170
     model_name, tr_dir = \
         "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-        f"v7_r256_a512_{train_type}_tr60_0613/"
+        f"v7_r{r}_a{2*r}_{train_type}_tr56_0613/"
 
     
     model_dir = Path(f"/model/{model_name}")
@@ -490,6 +491,7 @@ def main():
     # last checkpoint in chekpoint_dir
     checkpoint_dir = sorted(checkpoint_dir.iterdir(), key=lambda x: int(x.name.split("-")[-1]))[-1]
     tr_config = f"{tr_dir}/{checkpoint_dir.name}"
+    tr_config = f"{tr_dir}/checkpoint-33"
     print(tr_config)
     checkpoint_dir = Path(f"{model_dir}/chkpts/{tr_config}")
         
@@ -511,25 +513,14 @@ def main():
         dataset.extend(data)
         
     
-    
-
-    if "v5" in BASE_DIR.name:
-        if train_type in ["woall", "FI", "ISP"]:
-            # search <|ST|>~~<|ST|> and remove between them
-            common_prompt = re.sub(r"\n?<\|ST\|>(.|\n)*?<\|ST\|>", "", common_prompt)
-        if train_type in ["woall", "FI"]:
-            # search <|ISP|>~~<|ISP|> and remove between them
-            common_prompt = re.sub(r"\n?<\|ISP\|>(.|\n)*?<\|ISP\|>", "", common_prompt)
-        if train_type in ["woall"]:
-            # search <|FI|>~~<|FI|> and remove between them
-            common_prompt = re.sub(r"\n?<\|FI\|>(.|\n)*?<\|FI\|>", "", common_prompt)
-    
-    elif "v6" in BASE_DIR.name or "v7" in BASE_DIR.name:
+    if "v6" in BASE_DIR.name or "v7" in BASE_DIR.name:
         # if train_type in ["woall"]:
         #     # search <|FI|>~~<|FI|> and remove between them
         #     common_prompt = re.sub(r"\n?<\|Ours\|>(.|\n)*?<\|Ours\|>", "", common_prompt)
-        if train_type in ["ours"]:
+        if train_type in ["ours", "woall"]:
             common_prompt = open(BASE_DIR / F"prompt.txt", "r").read()
+            if train_type in ["woall"]:
+                common_prompt = re.sub(r"\n?<\|Ours\|>(.|\n)*?<\|Ours\|>", "", common_prompt)
         else:
             common_prompt = open(BASE_DIR / F"prompt_v2.txt", "r").read()
             common_prompt = re.sub(fr"\n?<\|{train_type}\|>(.|\n)*?<\|{train_type}\|>", "", common_prompt)
@@ -538,7 +529,7 @@ def main():
     common_prompt = re.sub(r"<\|.*?\|>", "", common_prompt)
     
     # Initialize distributed inference
-    batch_size = 1  # 배치 크기 설정
+    batch_size = 20  # 배치 크기 설정
     inference = UnslothInference(
         checkpoint_dir=str(checkpoint_dir),
         cache_dir=str(cache_dir),
@@ -559,7 +550,7 @@ def main():
     output_file = f"r-{tr_config.replace('/', '-')}.json"
     open(output_file, "w").close()  # Clear output file
     
-    track_memory = True
+    track_memory = False
     if track_memory:
         memory_tracker = GPUMemoryTracker()
         memory_tracker.start_tracking()
