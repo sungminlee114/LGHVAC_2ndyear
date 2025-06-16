@@ -12,30 +12,32 @@
         "Response": {
             "Thinking": "설정온도는 하루동안 여러번의 측정값이 있는데, 사용자는 특정 시점을 언급하지 않았으므로 특정 시점이 아닌 1일 전 하루동안 측정된 설정온도의 평균값을 기반해서 대답해야함. 어제 우리반과 옆반의 설정온도를 쿼리한 후 각 반의 하루 평균 설정온도 및 그 차이를 계산하여 반환하면 됨.",
             "Expectations": [
-                "어제 우리반의 설정온도({{settemp_ours}}℃)는 옆반의 설정온도({{settemp_beside}}℃)보다 {{settemp_diff}}℃ 높습니다."
+                "어제 우리반의 설정온도({{어제_우리반_평균_설정온도}}℃)는 옆반의 설정온도({{어제_옆반_평균_설정온도}}℃)보다 {{어제_평균설정온도_차이}}℃ 높습니다."
             ],
             "Instructions": [
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))",
-                        "spatials": [
-                            "01_IB5",
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
+                        "temporal": {
+                            "어제": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))"
+                        },
+                        "spatials": {
+                            "우리반": "01_IB5",
+                            "옆반": "01_IB7"
+                        },
+                        "modalities": {
+                            "설정온도": "settemp"
+                        }
+                    }
                 },
                 {
                     "type": "o",
                     "script": [
-                        "settemp_ours = qr[qr['idu'] == '01_IB5']['settemp'].mean()",
-                        "settemp_beside = qr[qr['idu'] == '01_IB7']['settemp'].mean()",
-                        "settemp_diff = settemp_ours - settemp_beside"
+                        "어제_우리반_설정온도 = data(t='어제',s='우리반',m='설정온도')",
+                        "어제_옆반_설정온도 = data(t='어제',s='옆반',m='설정온도')",
+                        "어제_우리반_평균_설정온도 = avg(어제_우리반_설정온도)",
+                        "어제_옆반_평균_설정온도 = avg(어제_옆반_설정온도)",
+                        "어제_평균설정온도_차이 = diff(어제_우리반_평균_설정온도, 어제_옆반_평균_설정온도)"
                     ]
                 }
             ]
@@ -55,30 +57,32 @@
         "Response": {
             "Thinking": "사용자는 오늘 하루 평균 우리반과 옆반의 실내온도의 차이를 알고 싶어함. 사용자는 차이 결과 뿐만 아니라 계산에 사용된 각 반의 평균 실내온도 값도 궁금할 것임. 오늘 하루 우리반과 옆반의 실내온도를 쿼리한 후 각 반의 평균 실내온도 및 그 차이를 계산하여 반환하면 됨.",
             "Expectations": [
-                "우리반({{roomtemp_ours}}℃)이 옆반({{roomtemp_beside}}℃)보다 {{temp_diff}}℃ 높습니다."
+                "우리반({{오늘_우리반_평균_실내온도}}℃)이 옆반({{오늘_옆반_평균_실내온도}}℃)보다 {{오늘_평균실내온도_차이}}℃ 높습니다."
             ],
             "Instructions": [
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE'), DATE_TRUNC('day', DATE 'CURRENT_DATE' + INTERVAL '1 day'))",
-                        "spatials": [
-                            "01_IB5",
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
+                        "temporal": {
+                            "오늘": "[DATE_TRUNC('day', DATE 'CURRENT_DATE'), DATE_TRUNC('day', DATE 'CURRENT_DATE' + INTERVAL '1 day'))"
+                        },
+                        "spatials": {
+                            "우리반": "01_IB5",
+                            "옆반": "01_IB7"
+                        },
+                        "modalities": {
+                            "실내온도": "roomtemp"
+                        }
+                    }
                 },
                 {
                     "type": "o",
                     "script": [
-                        "roomtemp_ours = qr[qr['idu'] == '01_IB5']['roomtemp'].mean()",
-                        "roomtemp_beside = qr[qr['idu'] == '01_IB7']['roomtemp'].mean()",
-                        "temp_diff = roomtemp_ours - roomtemp_beside"
+                        "오늘_우리반_실내온도 = data(t='오늘',s='우리반',m='실내온도')",
+                        "오늘_옆반_실내온도 = data(t='오늘',s='옆반',m='실내온도')",
+                        "오늘_우리반_평균_실내온도 = avg(오늘_우리반_실내온도)",
+                        "오늘_옆반_평균_실내온도 = avg(오늘_옆반_실내온도)",
+                        "오늘_평균실내온도_차이 = diff(오늘_우리반_평균_실내온도, 오늘_옆반_평균_실내온도)"
                     ]
                 }
             ]
@@ -88,7 +92,7 @@
         "Input": "작년 겨울 우리반 평균온도 알려줘",
         "Tags": {
             "Style": [
-                "Weather",
+                "Implicit temporal",
                 "Avg/Diff/Get",
                 "Implicit modality"
             ],
@@ -99,27 +103,28 @@
         "Response": {
             "Thinking": "사용자는 우리반의 1년 전 12월 ~ 올해 2월의 평균 실내온도를 알고 싶어함. 풍부한 정보를 위해 작년 겨울이 언제인지도 알려주어야 함. 우리반의 1년 전 겨울(12월 ~ 2월) 실내온도를 쿼리한 후 평균값을 계산하여 반환하면 됨.",
             "Expectations": [
-                "작년 겨울(2021-12 ~ 2022-02) 우리반의 평균 온도는 {{roomtemp_avg}}℃ 입니다."
+                "작년 겨울(2021-12 ~ 2022-02) 우리반의 평균 온도는 {{작년겨울_우리반_평균_실내온도}}℃ 입니다."
             ],
             "Instructions": [
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE 'CURRENT_YEAR-12-01' - INTERVAL '1 year', DATE 'CURRENT_YEAR-03-01')",
-                        "spatials": [
-                            "01_IB5"
-                        ]
-                    },
-                    "result_name": "qr"
+                        "temporal": {
+                            "작년겨울": "[DATE 'CURRENT_YEAR-12-01' - INTERVAL '1 year', DATE 'CURRENT_YEAR-03-01')"
+                        },
+                        "spatials": {
+                            "우리반": "01_IB5"
+                        },
+                        "modalities": {
+                            "실내온도": "roomtemp"
+                        }
+                    }
                 },
                 {
                     "type": "o",
                     "script": [
-                        "roomtemp_avg = qr['roomtemp'].mean()"
+                        "작년겨울_우리반_실내온도 = data(t='작년겨울',s='우리반',m='실내온도')",
+                        "작년겨울_우리반_평균_실내온도 = avg(작년겨울_우리반_실내온도)"
                     ]
                 }
             ]
@@ -129,7 +134,7 @@
         "Input": "올해 여름 앞반 평균온도 알려줘",
         "Tags": {
             "Style": [
-                "Weather",
+                "Implicit temporal",
                 "Avg/Diff/Get",
                 "Implicit modality"
             ],
@@ -140,27 +145,28 @@
         "Response": {
             "Thinking": "사용자는 올해 6월 ~ 8월 앞반의 평균 실내온도를 알고 싶어함. 또한 올해 여름이 언제인지 알려주어야 함. 올해 여름(6월 ~ 8월) 앞반의 실내온도를 쿼리한 후 평균값을 계산하여 반환하면 됨.",
             "Expectations": [
-                "올해 여름(6월 ~ 8월) 앞반의 평균 온도는 {{roomtemp_avg}}℃ 입니다."
+                "올해 여름(6월 ~ 8월) 앞반의 평균 온도는 {{올해여름_앞반_평균_실내온도}}℃ 입니다."
             ],
             "Instructions": [
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE 'CURRENT_YEAR-06-01', DATE 'CURRENT_YEAR-09-01')",
-                        "spatials": [
-                            "02_I81"
-                        ]
-                    },
-                    "result_name": "qr"
+                        "temporal": {
+                            "올해여름": "[DATE 'CURRENT_YEAR-06-01', DATE 'CURRENT_YEAR-09-01')"
+                        },
+                        "spatials": {
+                            "앞반": "02_I81"
+                        },
+                        "modalities": {
+                            "실내온도": "roomtemp"
+                        }
+                    }
                 },
                 {
                     "type": "o",
                     "script": [
-                        "roomtemp_avg = qr['roomtemp'].mean()"
+                        "올해여름_앞반_실내온도 = data(t='올해여름',s='앞반',m='실내온도')",
+                        "올해여름_앞반_평균_실내온도 = avg(올해여름_앞반_실내온도)"
                     ]
                 }
             ]
@@ -170,7 +176,7 @@
         "Input": "올해 봄 옆반 제일 추웠던 날 알려줘",
         "Tags": {
             "Style": [
-                "Weather",
+                "Implicit temporal",
                 "ArgMinMax/Compare",
                 "Implicit modality"
             ],
@@ -182,28 +188,29 @@
         "Response": {
             "Thinking": "사용자는 올해 3월 ~ 5월 옆반의 실내온도가 제일 낮았던 날짜를 알고 싶어함. 답변시 추측한 올해 봄이 언제인지, 모달리티가 무엇인지, 제일 추웠던 날의 날짜와 온도를 제공해야 함. 올해 3월 ~ 5월 옆반의 실내온도를 쿼리한 후 실내온도가 가장 낮은 날을 찾아 그 날짜와 온도를 반환하면 됨.",
             "Expectations": [
-                "올해 봄 옆반은 {{coldest_dates}}에 {{coldest_temp}}℃로 제일 추웠습니다."
+                "올해 봄(3월 ~ 5월) 옆반은 {{올해봄_옆반_최소실내온도_날짜}}에 {{올해봄_옆반_최소실내온도}}℃로 제일 추웠습니다."
             ],
             "Instructions": [
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE 'CURRENT_YEAR-03-01', DATE 'CURRENT_YEAR-06-01')",
-                        "spatials": [
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
+                        "temporal": {
+                            "올해봄": "[DATE 'CURRENT_YEAR-03-01', DATE 'CURRENT_YEAR-06-01')"
+                        },
+                        "spatials": {
+                            "옆반": "01_IB7"
+                        },
+                        "modalities": {
+                            "실내온도": "roomtemp"
+                        }
+                    }
                 },
                 {
                     "type": "o",
                     "script": [
-                        "coldest_temp = qr['roomtemp'].min()",
-                        "coldest_dates = qr[qr['roomtemp'] == coldest_temp]['timestamp'].dt.strftime('%Y-%m-%d').drop_duplicates().tolist()"
+                        "올해봄_옆반_실내온도 = data(t='올해봄',s='옆반',m='실내온도')",
+                        "올해봄_옆반_최소실내온도 = min(올해봄_옆반_실내온도)",
+                        "올해봄_옆반_최소실내온도_날짜 = get_dates(올해봄_옆반_실내온도[올해봄_옆반_실내온도 == 올해봄_옆반_최소실내온도])"
                     ]
                 }
             ]
@@ -223,27 +230,28 @@
         "Response": {
             "Thinking": "사용자는 4월 한달간 앞반의 평균 실내온도를 알고 싶어함. 4월 한달간 앞반의 실내온도를 쿼리한 후 평균값을 계산하여 반환하면 됨.",
             "Expectations": [
-                "4월 앞반의 평균 온도는 {{roomtemp_avg}}℃ 입니다."
+                "4월 앞반의 평균 온도는 {{4월_앞반_평균_실내온도}}℃ 입니다."
             ],
             "Instructions": [
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE 'CURRENT_YEAR-04-01', DATE 'CURRENT_YEAR-05-01')",
-                        "spatials": [
-                            "02_I81"
-                        ]
-                    },
-                    "result_name": "qr"
+                        "temporal": {
+                            "4월": "[DATE 'CURRENT_YEAR-04-01', DATE 'CURRENT_YEAR-05-01')"
+                        },
+                        "spatials": {
+                            "앞반": "02_I81"
+                        },
+                        "modalities": {
+                            "실내온도": "roomtemp"
+                        }
+                    }
                 },
                 {
                     "type": "o",
                     "script": [
-                        "roomtemp_avg = qr['roomtemp'].mean()"
+                        "4월_앞반_실내온도 = data(t='4월',s='앞반',m='실내온도')",
+                        "4월_앞반_평균_실내온도 = avg(4월_앞반_실내온도)"
                     ]
                 }
             ]
@@ -264,28 +272,29 @@
         "Response": {
             "Thinking": "사용자는 이번달 우리반의 일평균 실내온도가 가장 낮았던 날짜를 알고 싶어함. 답변시 해당 날짜 뿐만 아니라 그 때의 실내온도도 제공해야 함. 이번달 우리반의 실내온도를 쿼리한 후 일평균 실내온도가 가장 낮은 날을 찾아 그 날짜와 온도를 반환하면 됨.",
             "Expectations": [
-                "이번달 우리반은 {{coldest_dates}}에 {{coldest_temp}}℃로 가장 덜 더웠습니다."
+                "이번달 우리반은 {{이번달_우리반_최소실내온도_날짜}}에 {{이번달_우리반_최소실내온도}}℃로 가장 덜 더웠습니다."
             ],
             "Instructions": [
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('month', DATE 'CURRENT_DATE'), DATE_TRUNC('month', DATE 'CURRENT_DATE' + INTERVAL '1 month'))",
-                        "spatials": [
-                            "01_IB5"
-                        ]
-                    },
-                    "result_name": "qr"
+                        "temporal": {
+                            "이번달": "[DATE_TRUNC('month', DATE 'CURRENT_DATE'), DATE_TRUNC('month', DATE 'CURRENT_DATE' + INTERVAL '1 month'))"
+                        },
+                        "spatials": {
+                            "우리반": "01_IB5"
+                        },
+                        "modalities": {
+                            "실내온도": "roomtemp"
+                        }
+                    }
                 },
                 {
                     "type": "o",
                     "script": [
-                        "coldest_temp = qr['roomtemp'].min()",
-                        "coldest_dates = qr[qr['roomtemp'] == coldest_temp]['timestamp'].dt.strftime('%Y-%m-%d').drop_duplicates().tolist()"
+                        "이번달_우리반_실내온도 = data(t='이번달',s='우리반',m='실내온도')",
+                        "이번달_우리반_최소실내온도 = min(이번달_우리반_실내온도)",
+                        "이번달_우리반_최소실내온도_날짜 = get_dates(이번달_우리반_실내온도[이번달_우리반_실내온도 == 이번달_우리반_최소실내온도])"
                     ]
                 }
             ]
@@ -305,29 +314,30 @@
         "Response": {
             "Thinking": "2주전은 정확히 말하면 2주전 한주 (월~일)동안임. 사용자는 2주전 월요일부터 일요일까지 우리반과 옆반의 설정온도가 가장 낮았던 날짜를 알고 싶어함. 답변시 해당 날짜 뿐만 아니라 그 때의 설정온도도 제공해야 함. 2주전 우리반과 옆반의 설정온도를 쿼리한 후 설정온도가 가장 낮은 날을 찾아 그 날짜와 온도를 반환하면 됨.",
             "Expectations": [
-                "2주전 우리반과 옆반 합쳐서 설정온도가 가장 낮은 날은 {{coldest_dates}}로 {{coldest_temp}}℃였습니다."
+                "2주전 우리반과 옆반 합쳐서 설정온도가 가장 낮은 날은 {{2주전_우리반과옆반_최소설정온도_날짜}}로 {{2주전_우리반과옆반_최소설정온도}}℃였습니다."
             ],
             "Instructions": [
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '2 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week'))",
-                        "spatials": [
-                            "01_IB5",
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
+                        "temporal": {
+                            "2주전": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '2 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week'))"
+                        },
+                        "spatials": {
+                            "우리반": "01_IB5",
+                            "옆반": "01_IB7"
+                        },
+                        "modalities": {
+                            "설정온도": "settemp"
+                        }
+                    }
                 },
                 {
                     "type": "o",
                     "script": [
-                        "coldest_temp = qr['settemp'].min()",
-                        "coldest_dates = qr[qr['settemp'] == coldest_temp]['timestamp'].dt.strftime('%Y-%m-%d').drop_duplicates().tolist()"
+                        "2주전_우리반과옆반_설정온도 = data(t='2주전',s=['우리반','옆반'],m='설정온도')",
+                        "2주전_우리반과옆반_최소설정온도 = min(2주전_우리반과옆반_설정온도)",
+                        "2주전_우리반과옆반_최소설정온도_날짜 = get_dates(2주전_우리반과옆반_설정온도[2주전_우리반과옆반_설정온도 == 2주전_우리반과옆반_최소설정온도])"
                     ]
                 }
             ]
@@ -370,13 +380,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp"
-                        ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "settemp"
                         ]
                     },
                     "result_name": "qr"
@@ -413,14 +422,13 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp",
-                            "settemp"
-                        ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "01_IB7"
+                        ],
+                        "modalities": [
+                            "roomtemp",
+                            "settemp"
                         ]
                     },
                     "result_name": "qr"
@@ -432,96 +440,6 @@
                         "recent_data = qr[qr['timestamp'] == recent_time]",
                         "roomtemp_recent = recent_data['roomtemp'].values[0]",
                         "settemp_recent = recent_data['settemp'].values[0]"
-                    ]
-                }
-            ]
-        }
-    },
-    {
-        "Input": "지금 옆반 너무 추워",
-        "Tags": {
-            "Style": [
-                "Ambiguous question",
-                "Reason",
-                "Implicit modality"
-            ],
-            "Returns": [
-                "Data"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 특정 질문을 하진 않았지만, 의도를 추측해보면 옆반이 추워 불편함을 느끼는 것 같음. 현재 옆반이 추운 이유와 해결 방법을 제시하는것이 좋아보임. 옆반의 최근 3시간의 시간별 실내온도, 설정온도, 에어컨 작동 상태를 쿼리한 후 종합적으로 비교 분석하여 추운 이유를 분석하고 해결 방법을 제시해야함.",
-            "Expectations": [
-                "지금 에어컨 설정온도가 10℃로 너무 낮아서 옆반이 15℃로 추운 것 같아요. 에어컨을 끄거나 설정온도를 높여보세요.",
-                "지금 옆반이 추운 이유는 에어컨이 계속 켜져 있기 때문입니다.",
-                "옆반이 추운 이유는 에어컨이 꺼진지 30분밖에 안 되었기 때문입니다."
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp",
-                            "settemp",
-                            "oper"
-                        ],
-                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '3 hours', TIMESTAMP 'CURRENT_TIMESTAMP']",
-                        "spatials": [
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "qr"
-                    ]
-                }
-            ]
-        }
-    },
-    {
-        "Input": "우리반 왜이리 덥노",
-        "Tags": {
-            "Style": [
-                "Implicit temporal",
-                "Reason",
-                "Implicit modality"
-            ],
-            "Returns": [
-                "Data"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 현재 우리반이 더운 이유를 궁금해함. 최근 3시간 우리반의 시간별 설정온도, 실내온도, 에어컨 작동 상태를 쿼리한 후 종합적으로 비교 분석하여 더운 이유를 분석하고 해결 방법을 제시해야함.",
-            "Expectations": [
-                "지금 우리반은 27.3℃인데 에어컨 설정온도는 28℃로 실내온도보다 높네요. 설정온도를 낮추면 시원해질 거에요.",
-                "지금 우리반은 30.6℃로 더운데 에어컨이 꺼져있네요. 에어컨을 켜면 시원해질 거에요.",
-                "지금 우리반은 30.6℃인데요, 에어컨이 켜진지 5분밖에 안되었기 때문입니다."
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp",
-                            "settemp",
-                            "oper"
-                        ],
-                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '3 hours', TIMESTAMP 'CURRENT_TIMESTAMP']",
-                        "spatials": [
-                            "01_IB5"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "qr"
                     ]
                 }
             ]
@@ -654,13 +572,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -712,13 +629,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp"
-                        ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '8 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '7 day'))",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "settemp"
                         ]
                     },
                     "result_name": "qr"
@@ -752,13 +668,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '10 year'), DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '10 year' + INTERVAL '1 day'))",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -785,22 +700,6 @@
             "Thinking": "질문의 맥락 상 공간정보는 롯데캐슬인데, metadata에는 없음. 사용자에게 롯데캐슬이 어떤 곳인지 물어보고, 해당 정보를 변수에 저장해야 함.",
             "Expectations": [
                 "롯데캐슬이 어떤 곳인지 알려주세요."
-            ],
-            "Instructions": []
-        }
-    },
-    {
-        "Input": "다음 대통령 선거는 언제인가요?",
-        "Tags": {
-            "Style": [
-                "Unrelated"
-            ],
-            "Returns": []
-        },
-        "Response": {
-            "Thinking": "질문의 맥락 상 HVAC 시스템과 관련 없는 질문임. HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
-            "Expectations": [
-                "HVAC 시스템과 관련 없는 질문입니다."
             ],
             "Instructions": []
         }
@@ -844,15 +743,14 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "oper"
-                        ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "01_IB5",
                             "01_IB7",
                             "02_I81"
+                        ],
+                        "modalities": [
+                            "oper"
                         ]
                     },
                     "result_name": "qr"
@@ -888,14 +786,13 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp",
-                            "settemp"
-                        ],
                         "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "roomtemp",
+                            "settemp"
                         ]
                     },
                     "result_name": "qr"
@@ -932,13 +829,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
                         "temporal": "[DATE_TRUNC('month', DATE 'CURRENT_DATE'), DATE_TRUNC('month', DATE 'CURRENT_DATE' + INTERVAL '1 month'))",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -972,13 +868,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "oper"
-                        ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "oper"
                         ]
                     },
                     "result_name": "qr"
@@ -1015,15 +910,14 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "01_IB5",
                             "01_IB7",
                             "02_I81"
+                        ],
+                        "modalities": [
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -1037,22 +931,6 @@
                     ]
                 }
             ]
-        }
-    },
-    {
-        "Input": "농담 좀 해줘",
-        "Tags": {
-            "Style": [
-                "Unrelated"
-            ],
-            "Returns": []
-        },
-        "Response": {
-            "Thinking": "질문의 맥락 상 HVAC 시스템과 관련 없는 질문임. HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
-            "Expectations": [
-                "HVAC 시스템과 관련 없는 질문입니다."
-            ],
-            "Instructions": []
         }
     },
     {
@@ -1077,16 +955,15 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "oper",
-                            "settemp"
-                        ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "01_IB5",
                             "01_IB7",
                             "02_I81"
+                        ],
+                        "modalities": [
+                            "oper",
+                            "settemp"
                         ]
                     },
                     "result_name": "qr"
@@ -1125,13 +1002,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
                         "temporal": "[DATE_TRUNC('year', DATE 'CURRENT_DATE' - INTERVAL '1 year'), DATE_TRUNC('year', DATE 'CURRENT_DATE'))",
                         "spatials": [
                             "01_IB7"
+                        ],
+                        "modalities": [
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -1167,14 +1043,13 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp",
-                            "roomtemp"
-                        ],
                         "temporal": "[DATE_TRUNC('month', DATE 'CURRENT_DATE' - INTERVAL '1 month'), DATE_TRUNC('month', DATE 'CURRENT_DATE'))",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "settemp",
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -1213,13 +1088,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp"
-                        ],
                         "temporal": "[DATE 'CURRENT_DATE' - INTERVAL '1 month', DATE 'CURRENT_DATE']",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "settemp"
                         ]
                     },
                     "result_name": "qr"
@@ -1253,14 +1127,13 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "01_IB5",
                             "01_IB7"
+                        ],
+                        "modalities": [
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -1313,13 +1186,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "oper"
-                        ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "02_I81"
+                        ],
+                        "modalities": [
+                            "oper"
                         ]
                     },
                     "result_name": "qr"
@@ -1354,13 +1226,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "oper"
-                        ],
                         "temporal": "[DATE 'CURRENT_DATE', DATE 'CURRENT_DATE' + INTERVAL '1 day')",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "oper"
                         ]
                     },
                     "result_name": "qr"
@@ -1372,22 +1243,6 @@
                     ]
                 }
             ]
-        }
-    },
-    {
-        "Input": "이번주 경제 소식 알려줘.",
-        "Tags": {
-            "Style": [
-                "Unrelated"
-            ],
-            "Returns": []
-        },
-        "Response": {
-            "Thinking": "질문의 맥락 상 HVAC 시스템과 관련 없는 질문임. HVAC 시스템과 관련 없는 질문에 대해 답변이 불가함을 사용자에게 알림.",
-            "Expectations": [
-                "HVAC 시스템과 관련 없는 질문입니다."
-            ],
-            "Instructions": []
         }
     },
     {
@@ -1409,13 +1264,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp"
-                        ],
                         "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "settemp"
                         ]
                     },
                     "result_name": "qr"
@@ -1449,13 +1303,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp"
-                        ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day') + INTERVAL '6 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day') + INTERVAL '9 hours')",
                         "spatials": [
                             "01_IB7"
+                        ],
+                        "modalities": [
+                            "settemp"
                         ]
                     },
                     "result_name": "qr_morning"
@@ -1463,13 +1316,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp"
-                        ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day') + INTERVAL '18 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day') + INTERVAL '21 hours')",
                         "spatials": [
                             "01_IB7"
+                        ],
+                        "modalities": [
+                            "settemp"
                         ]
                     },
                     "result_name": "qr_evening"
@@ -1504,13 +1356,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "oper"
-                        ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "01_IB7"
+                        ],
+                        "modalities": [
+                            "oper"
                         ]
                     },
                     "result_name": "qr"
@@ -1545,13 +1396,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
                         "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE' + INTERVAL '1 week'))",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -1584,13 +1434,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp"
-                        ],
                         "temporal": "[DATE_TRUNC('month', DATE 'CURRENT_DATE'), DATE_TRUNC('month', DATE 'CURRENT_DATE' + INTERVAL '1 month'))",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "settemp"
                         ]
                     },
                     "result_name": "qr"
@@ -1626,14 +1475,13 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "01_IB5",
                             "01_IB7"
+                        ],
+                        "modalities": [
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -1671,13 +1519,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "oper"
-                        ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "oper"
                         ]
                     },
                     "result_name": "qr"
@@ -1732,13 +1579,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
                         "temporal": "[DATE_TRUNC('month', DATE 'CURRENT_DATE' - INTERVAL '1 month'), DATE_TRUNC('month', DATE 'CURRENT_DATE'))",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -1772,13 +1618,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "oper"
-                        ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '7 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE' + INTERVAL '1 day'))",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "oper"
                         ]
                     },
                     "result_name": "qr"
@@ -1816,13 +1661,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '21 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '20 day'))",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -1855,13 +1699,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp"
-                        ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 month') + INTERVAL '14 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 month') + INTERVAL '15 hours')",
                         "spatials": [
                             "01_IB7"
+                        ],
+                        "modalities": [
+                            "settemp"
                         ]
                     },
                     "result_name": "qr"
@@ -1895,13 +1738,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '16 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '18 hours')",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -1935,13 +1777,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
                         "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week') + INTERVAL '2 day', DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week') + INTERVAL '3 day')",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -1974,13 +1815,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
                         "temporal": "DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '11 hours'",
                         "spatials": [
                             "01_IB7"
+                        ],
+                        "modalities": [
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -2013,13 +1853,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp"
-                        ],
                         "temporal": "DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '14 hours'",
                         "spatials": [
                             "01_IB7"
+                        ],
+                        "modalities": [
+                            "settemp"
                         ]
                     },
                     "result_name": "qr"
@@ -2029,1292 +1868,6 @@
                     "script": [
                         "settemp = qr['settemp'].values[0]"
                     ]
-                }
-            ]
-        }
-    },
-    {
-        "Input": "지난주 설정온도 변화 추이 보여줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 지난주 우리반 설정온도의 추이 그래프를 보고자함. 지난주 우리반의 설정온도 데이터(settemp)를 쿼리한 후 시간에 따른 설정온도를 시각화하면 됨. 같은 type이므로 같은 axis안에 모두 나타냄.",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "settemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
-                        "spatials": [
-                            "01_IB5"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "settemp_rawtimeseries = qr[['timestamp', 'settemp']]"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "설정 온도 (°C)",
-                                    "title": "지난주 우리반 설정온도 변화 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "settemp_rawtimeseries['timestamp']",
-                                        "y": "settemp_rawtimeseries['settemp']",
-                                        "label": "설정 온도 (°C)"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "우리반과 옆반 이번주 설정온도 차이 보여줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 이번 주 동안 우리반(01_IB5)과 옆반(01_IB7)의 설정 온도 차이를 보고 싶어함. 이를 위해 먼저 두 반의 이번 주 설정 온도 데이터(settemp)를 가져오고, 같은 시간대의 데이터를 매칭하여 온도 차이를 계산함. 마지막으로, 시간에 따른 설정 온도 차이를 선 그래프로 시각화하여 변화를 쉽게 확인할 수 있도록 함",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "settemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE' + INTERVAL '1 week'))",
-                        "spatials": [
-                            "01_IB5",
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "settemp_ours = qr[qr['idu'] == '01_IB5']",
-                        "settemp_theirs = qr[qr['idu'] == '01_IB7']",
-                        "settemp_rawtimeseries = pd.merge(settemp_ours, settemp_theirs, on='timestamp', suffixes=('_ours', '_theirs'))",
-                        "settemp_rawtimeseries['temp_diff'] = settemp_rawtimeseries['settemp_ours'] - settemp_rawtimeseries['settemp_theirs']"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "설정 온도 차이(°C)",
-                                    "title": "이번주 우리반과 옆반 설정온도 차이 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "settemp_rawtimeseries['timestamp']",
-                                        "y": "settemp_rawtimeseries['temp_diff']",
-                                        "label": "설정온도 차이"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "이번주 우리반과 옆반 온도 변화 추이 비교한거 보야줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 이번 주 동안 우리반(01_IB5)과 옆반(01_IB7)의 실내 온도 변화 추이를 비교하고 싶어함. 이를 위해 두 반의 이번 주 실내 온도 데이터(roomtemp)를 가져와야 함. 이후 같은 시간대의 데이터를 매칭하여 두 반의 온도 변화를 비교할 수 있도록 정리함. 마지막으로, 시간에 따른 실내 온도 변화를 선 그래프로 시각화하여 비교하기 쉽게함.",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE') + INTERVAL '1 week')",
-                        "spatials": [
-                            "01_IB5",
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "roomtemp_ours = qr[qr['idu'] == '01_IB5']",
-                        "roomtemp_beside = qr[qr['idu'] == '01_IB7']",
-                        "roomtemp_rawtimeseries = pd.merge(roomtemp_ours, roomtemp_beside, on='timestamp', suffixes=('_ours', '_theirs'))"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "실내 온도 (°C)",
-                                    "title": "이번주 우리반과 옆반 실내온도 변화 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "roomtemp_rawtimeseries['timestamp']",
-                                        "y": "roomtemp_rawtimeseries['roomtemp_ours']",
-                                        "label": "우리반 실내온도"
-                                    },
-                                    {
-                                        "x": "roomtemp_rawtimeseries['timestamp']",
-                                        "y": "roomtemp_rawtimeseries['roomtemp_beside']",
-                                        "label": "옆반 실내온도"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "지난 일주일동안의 우리반 설정온도 추이 보여줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 우리반(01_IB5)의 지난 일주일간의 설정 온도 변화를 알고 싶어함. 이를 위해 해당 반의 설정 온도 데이터(settemp)를 가져와야함. 선 그래프로 시각화하여 변화를 쉽게 파악할 수 있도록 함",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "settemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
-                        "spatials": [
-                            "01_IB5"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "settemp_rawtimeseries = qr[['timestamp', 'settemp']]"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "설정 온도 (°C)",
-                                    "title": "지난 일주일 간 우리반 설정온도 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "settemp_rawtimeseries['timestamp']",
-                                        "y": "settemp_rawtimeseries['settemp']",
-                                        "label": "설정 온도 (°C)"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "이번주 우리반 설정온도 추이 알려줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 우리반(01_IB5)의 이번주 설정 온도 변화를 보고 싶어함. 이를 위해 해당 반의 설정 온도 데이터(settemp)를 가져와야함. 선 그래프로 시각화하여 변화를 쉽게 파악할 수 있도록 함",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "settemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE') + INTERVAL '1 week')",
-                        "spatials": [
-                            "01_IB5"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "settemp_rawtimeseries = qr[['timestamp', 'settemp']]"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "설정 온도 (°C)",
-                                    "title": "이번주 우리반 설정온도 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "settemp_rawtimeseries['timestamp']",
-                                        "y": "settemp_rawtimeseries['settemp']",
-                                        "label": "설정 온도 (°C)"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "지난주 우리반과 옆반의 설정온도 추이 보여줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 지난주 동안 우리반(01_IB5)과 옆반(01_IB7)의 설정 온도 변화를 비교하고 싶어함. 이를 위해 두 반의 설정 온도 데이터(settemp)를 가져와 동일한 시간대의 데이터를 매칭하고, 선 그래프로 시각화하여 비교할 수 있도록 함.",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "settemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
-                        "spatials": [
-                            "01_IB5",
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "settemp_ours = qr[qr['idu'] == '01_IB5']",
-                        "settemp_theirs = qr[qr['idu'] == '01_IB7']",
-                        "settemp_rawtimeseries = pd.merge(settemp_ours, settemp_theirs, on='timestamp', suffixes=('_ours', '_theirs'))"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "설정 온도 (°C)",
-                                    "title": "지난주 우리반과 옆반의 설정온도 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "settemp_rawtimeseries['timestamp']",
-                                        "y": "settemp_rawtimeseries['settemp_ours']",
-                                        "label": "우리반"
-                                    },
-                                    {
-                                        "x": "settemp_rawtimeseries['timestamp']",
-                                        "y": "settemp_rawtimeseries['settemp_theirs']",
-                                        "label": "옆반"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "이번주 우리반과 옆반의 실내온도 차이 비교한것 보여줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 이번 주 동안 우리반(01_IB5)과 옆반(01_IB7)의 실내 온도 차이를 비교하고 싶어함. 두 반의 실내 온도 데이터(roomtemp)를 가져와 동일한 시간대의 데이터를 매칭하고, 두 반의 온도 차이를 계산하여 선 그래프로 시각화함",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE') + INTERVAL '1 week')",
-                        "spatials": [
-                            "01_IB5",
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "roomtemp_ours = qr[qr['idu'] == '01_IB5']",
-                        "roomtemp_beside = qr[qr['idu'] == '01_IB7']",
-                        "roomtemp_rawtimeseries = pd.merge(roomtemp_ours, roomtemp_beside, on='timestamp', suffixes=('_ours', '_theirs'))",
-                        "roomtemp_rawtimeseries['temp_diff'] = roomtemp_rawtimeseries['roomtemp_ours'] - roomtemp_rawtimeseries['roomtemp_theirs']"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "실내온도 차이 (°C)",
-                                    "title": "이번주 우리반과 옆반의 실내온도 차이 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "roomtemp_rawtimeseries['timestamp']",
-                                        "y": "roomtemp_rawtimeseries['temp_diff']",
-                                        "label": "실내온도 차이 (°C)"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "이번주 우리반 실내온도와 설정온도 보여줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 이번 주 동안 우리반(01_IB5)의 실내 온도와 설정 온도 변화를 확인하고 싶어함. 이를 위해 해당 반의 실내 온도(roomtemp)와 설정 온도(settemp) 데이터를 가져와야함. 선 그래프로 시각화하여 비교할 수 있도록 함.",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "roomtemp",
-                            "settemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE' + INTERVAL '1 week'))",
-                        "spatials": [
-                            "01_IB5"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "rawtimeseries = qr[['timestamp','roomtemp','settemp']]"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "온도 (°C)",
-                                    "title": "이번주 우리반 실내온도와 설정온도 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "rawtimeseries['timestamp']",
-                                        "y": "rawtimeseries['roomtemp']",
-                                        "label": "실내 온도 (°C)"
-                                    },
-                                    {
-                                        "x": "rawtimeseries['timestamp']",
-                                        "y": "rawtimeseries['settemp']",
-                                        "label": "설정 온도 (°C)"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "지난주 우리반 전원상태 보여줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 지난주 동안 우리반(01_IB5)의 전원 상태 변화를 알고 싶어함. 이를 위해 해당 반의 전원 상태(oper) 데이터를 가져와야함. 이산적인 값이므로 바 그래프(bar graph)로 시각화하여 전원 상태의 변화를 쉽게 파악할 수 있도록 함",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "oper"
-                        ],
-                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
-                        "spatials": [
-                            "01_IB5"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "oper_rawtimeseries = qr[['timestamp','oper']]"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "bar",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "전원 상태",
-                                    "title": "지난주 우리반 전원상태 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "oper_rawtimeseries['timestamp']",
-                                        "y": "oper_rawtimeseries['oper']",
-                                        "label": "전원 상태"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "지난주 우리반 전원상태랑 실내온도 보여줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 지난주 동안 우리반(01_IB5)의 전원 상태와 실내 온도 변화를 동시에 확인하고 싶어함. 이를 위해 전원 상태(oper)와 실내 온도(roomtemp) 데이터를 가져옴. 전원 상태는 이산적인 값이므로 바 그래프(bar graph)로 시각화하고, 실내 온도는 연속적인 값이므로 선 그래프(line graph)로 시각화하여 각각 별개의 축을 사용해 비교할 수 있도록 함",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "oper",
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
-                        "spatials": [
-                            "01_IB5"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "rawtimeseries = qr[['timestamp','oper','roomtemp']]"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "bar",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "전원 상태",
-                                    "title": "지난주 우리반 전원 상태 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "rawtimeseries['timestamp']",
-                                        "y": "rawtimeseries['oper']",
-                                        "label": "전원 상태"
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "실내온도 (°C)",
-                                    "title": "지난주 우리반 실내온도 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "rawtimeseries['timestamp']",
-                                        "y": "rawtimeseries['roomtemp']",
-                                        "label": "실내온도 (°C)"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "지난 이틀간 우리반과 옆반의 설정 온도 차이 보여줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 지난 이틀간 우리반(01_IB5)과 옆반(01_IB7)의 설정 온도 차이를 보고싶어함. 이를 위해 먼저 두 반의 지난 이틀동안의 설정 온도 데이터를 가져옴. 이후 같은 시간대의 데이터를 매칭하여 설정 온도 차이를 계산함. 마지막으로, 시간에 따른 설정 온도 차이를 선 그래프로 시각화하여 변화를 쉽게 확인할 수 있도록 함.",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "settemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '2 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))",
-                        "spatials": [
-                            "01_IB5",
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "settemp_ours = qr[qr['idu'] == '01_IB5']",
-                        "settemp_theirs = qr[qr['idu'] == '01_IB7']",
-                        "settemp_rawtimeseries = pd.merge(settemp_ours, settemp_theirs, on='timestamp', suffixes=('_ours', '_theirs'))",
-                        "settemp_rawtimeseries['temp_diff'] = settemp_rawtimeseries['settemp_ours'] - settemp_rawtimeseries['settemp_theirs']"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "설정온도 차이 (°C)",
-                                    "title": "이틀전 우리반과 옆반 설정온도 차이 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "settemp_rawtimeseries['timestamp']",
-                                        "y": "settemp_rawtimeseries['temp_diff']",
-                                        "label": "설정온도 차이 (°C)"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "지난 8월 옆반의 전원 상태 변화 그래프 보여줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 지난 8월 동안 옆반(01_IB7)의 전원 상태 변화를 보고 싶어함. 이를 위해 해당 반의 전원 상태(oper) 데이터를 가져옴. 이산적인 값이므로 바 그래프(bar graph)로 시각화하여 전원 상태의 변화를 쉽게 파악할 수 있도록 함.",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "oper"
-                        ],
-                        "temporal": "[DATE 'CURRENT_YEAR-08-01', DATE 'CURRENT_YEAR-09-01')",
-                        "spatials": [
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "oper_rawtimeseries = qr[['timestamp','oper']]"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "bar",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "전원 상태",
-                                    "title": "지난 8월 옆반의 전원 상태 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "oper_rawtimeseries['timestamp']",
-                                        "y": "oper_rawtimeseries['oper']",
-                                        "label": "전원 상태"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "지난주 우리반과 옆반의 전원 상태 변화를 비교해줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 지난주 동안 우리반(01_IB5)과 옆반(01_IB7)의 전원 상태 변화를 비교하고 싶어함. 이를 위해 두 반의 전원 상태(oper) 데이터를 가져온 후, 같은 시간대의 데이터를 매칭하여 두 반의 전원 상태 변화를 비교할 수 있도록 함.이산적인 값이므로 바 그래프(bar graph)로 시각화하여 전원 상태의 변화를 쉽게 파악할 수 있도록 함",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "oper"
-                        ],
-                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
-                        "spatials": [
-                            "01_IB5",
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "oper_ours = qr[qr['idu'] == '01_IB5']",
-                        "oper_theirs = qr[qr['idu'] == '01_IB7']",
-                        "oper_rawtimeseries = pd.merge(oper_ours, oper_theirs, on='timestamp', suffixes=('_ours', '_theirs'))"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "bar",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "전원 상태",
-                                    "title": "지난주 우리반과 옆반의 전원 상태 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "oper_rawtimeseries['timestamp']",
-                                        "y": "oper_rawtimeseries['oper_ours']",
-                                        "label": "우리반"
-                                    },
-                                    {
-                                        "x": "oper_rawtimeseries['timestamp']",
-                                        "y": "oper_rawtimeseries['oper_theirs']",
-                                        "label": "옆반"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "지난 3주간 우리반과 옆반의 실내온도를 비교해줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 지난 3주간 우리반과 옆반의 실내온도를 비교하고 싶어함. 이를 위해 지난 3주간 두 반의 실내온도 데이터를 가져오고 동일한 시간대의 데이터를 매칭하여 선 그래프를 통해 비교할 수 있도록 함.",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '3 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
-                        "spatials": [
-                            "01_IB5",
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "roomtemp_ours = qr[qr['idu'] == '01_IB5']",
-                        "roomtemp_beside = qr[qr['idu'] == '01_IB7']",
-                        "roomtemp_rawtimeseries = pd.merge(roomtemp_ours, roomtemp_beside, on='timestamp', suffixes=('_ours', '_theirs'))"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "실내 온도 (°C)",
-                                    "title": "지난 3주간 우리반과 옆반의 실내온도 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "roomtemp_rawtimeseries['timestamp']",
-                                        "y": "roomtemp_rawtimeseries['roomtemp_ours']",
-                                        "label": "우리반"
-                                    },
-                                    {
-                                        "x": "roomtemp_rawtimeseries['timestamp']",
-                                        "y": "roomtemp_rawtimeseries['roomtemp_beside']",
-                                        "label": "옆반"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "지난 3일간 옆반의 설정온도와 실내온도를 비교한것 보여줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 지난 3일간 옆반(01_IB7)의 실내 온도와 설정 온도 변화를 확인하고 싶어함. 이를 위해 해당 반의 실내 온도(roomtemp)와 설정 온도(settemp) 데이터를 가져와야함. 선 그래프로 시각화하여 비교할 수 있도록 함",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "settemp",
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '3 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))",
-                        "spatials": [
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "rawtimeseries = qr[['timestamp','roomtemp','settemp']]"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "온도 (°C)",
-                                    "title": "지난 3일간 옆반의 설정온도와 실내온도 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "rawtimeseries['timestamp']",
-                                        "y": "rawtimeseries['roomtemp']",
-                                        "label": "실내온도"
-                                    },
-                                    {
-                                        "x": "rawtimeseries['timestamp']",
-                                        "y": "rawtimeseries['settemp']",
-                                        "label": "설정온도"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "지난달 우리반의 전원상태와 실내온도를 보여줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 지난달 우리반(01_IB5)의 전원상태와 실내온도를 확인하고 싶어함. 이를 위해 해당 반의 실내 온도(roomtemp)와 전원상태(oper) 데이터를 가져와야함. 전원 상태는 이산적인 값이므로 바 그래프(bar graph)로 시각화하고, 실내 온도는 연속적인 값이므로 선 그래프(line graph)로 시각화하여 각각 별개의 축을 사용해 비교할 수 있도록 함",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "oper",
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('month', DATE 'CURRENT_DATE' - INTERVAL '1 month'), DATE_TRUNC('month', DATE 'CURRENT_DATE'))",
-                        "spatials": [
-                            "01_IB5"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "rawtimeseries = qr[['timestamp','roomtemp','oper']]"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "실내 온도 (°C)",
-                                    "title": "지난달 우리반의 실내온도 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "rawtimeseries['timestamp']",
-                                        "y": "rawtimeseries['roomtemp']",
-                                        "label": "우리반 실내 온도"
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "bar",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "전원 상태",
-                                    "title": "지난달 우리반의 전원 상태 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "rawtimeseries['timestamp']",
-                                        "y": "rawtimeseries['oper']",
-                                        "label": "전원 상태"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "지난 3일간 우리반과 옆반의 전원 상태를 비교한것 보여줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 지난 3일간 우리반(01_IB5)과 옆반(01_IB7)의 전원 상태 변화를 비교하고 싶어함. 이를 위해 두 반의 전원 상태(oper) 데이터를 가져온 후, 같은 시간대의 데이터를 매칭하여 두 반의 전원 상태 변화를 비교할 수 있도록 함.이산적인 값이므로 바 그래프(bar graph)로 시각화하여 전원 상태의 변화를 쉽게 파악할 수 있도록 함",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "oper"
-                        ],
-                        "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '3 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))",
-                        "spatials": [
-                            "01_IB5",
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "oper_ours = qr[qr['idu'] == '01_IB5']",
-                        "oper_theirs = qr[qr['idu'] == '01_IB7']",
-                        "oper_rawtimeseries = pd.merge(oper_ours, oper_theirs, on='timestamp', suffixes=('_ours', '_theirs'))"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "bar",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "전원 상태",
-                                    "title": "지난 3일간 우리반과 옆반의 전원 상태 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "oper_rawtimeseries['timestamp']",
-                                        "y": "oper_rawtimeseries['oper_ours']",
-                                        "label": "우리반"
-                                    },
-                                    {
-                                        "x": "oper_rawtimeseries['timestamp']",
-                                        "y": "oper_rawtimeseries['oper_theirs']",
-                                        "label": "옆반"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "지난달 우리반 설정온도와 실내온도 비교한것 보여줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 지난달 우리반(01_IB5)의 실내 온도와 설정 온도 변화를 확인하고 싶어함. 이를 위해 해당 반의 실내 온도(roomtemp)와 설정 온도(settemp) 데이터를 가져와야함. 선 그래프로 시각화하여 비교할 수 있도록 함",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "timestamp",
-                            "settemp",
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('month', DATE 'CURRENT_DATE' - INTERVAL '1 month'), DATE_TRUNC('month', DATE 'CURRENT_DATE'))",
-                        "spatials": [
-                            "01_IB5"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "rawtimeseries = qr[['timestamp','roomtemp','settemp']]"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "온도 (°C)",
-                                    "title": "지난달 우리반 설정온도와 실내온도 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "rawtimeseries['timestamp']",
-                                        "y": "rawtimeseries['settemp']",
-                                        "label": "설정 온도"
-                                    },
-                                    {
-                                        "x": "rawtimeseries['timestamp']",
-                                        "y": "rawtimeseries['roomtemp']",
-                                        "label": "실내 온도"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    },
-    {
-        "Input": "이번주 우리반과 옆반 온도 변화 추이 비교해줘",
-        "Tags": {
-            "Style": [
-                "Graph"
-            ],
-            "Returns": [
-                "Graph"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 이번 주 동안 우리반(01_IB5)과 옆반(01_IB7)의 실내 온도 변화 추이를 비교하고 싶어함. 이를 위해 두 반의 이번 주 실내 온도 데이터(roomtemp)를 가져와야 함. 이후 같은 시간대의 데이터를 매칭하여 두 반의 온도 변화를 비교할 수 있도록 정리함. 마지막으로, 시간에 따른 실내 온도 변화를 선 그래프로 시각화하여 비교하기 쉽게함.",
-            "Expectations": [
-                ""
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
-                        "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE') + INTERVAL '1 week')",
-                        "spatials": [
-                            "01_IB5",
-                            "01_IB7"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "roomtemp_ours = qr[qr['idu'] == '01_IB5']",
-                        "roomtemp_beside = qr[qr['idu'] == '01_IB7']",
-                        "roomtemp_rawtimeseries = pd.merge(roomtemp_ours, roomtemp_beside, on='timestamp', suffixes=('_ours', '_theirs'))"
-                    ]
-                },
-                {
-                    "type": "g",
-                    "args": {
-                        "axes": [
-                            {
-                                "type": "line",
-                                "description": {
-                                    "xlabel": "날짜",
-                                    "ylabel": "실내 온도 (°C)",
-                                    "title": "이번주 우리반과 옆반 실내온도 변화 추이"
-                                },
-                                "items": [
-                                    {
-                                        "x": "roomtemp_rawtimeseries['timestamp']",
-                                        "y": "roomtemp_rawtimeseries['roomtemp_ours']",
-                                        "label": "우리반 실내온도"
-                                    },
-                                    {
-                                        "x": "roomtemp_rawtimeseries['timestamp']",
-                                        "y": "roomtemp_rawtimeseries['roomtemp_beside']",
-                                        "label": "옆반 실내온도"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
                 }
             ]
         }

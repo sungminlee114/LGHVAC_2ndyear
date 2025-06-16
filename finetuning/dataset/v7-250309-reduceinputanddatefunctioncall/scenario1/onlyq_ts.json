@@ -1,51 +1,5 @@
 [
     {
-        "Input": "Why is our classroom so cold",
-        "Tags": {
-            "Style": [
-                "English",
-                "Implicit temporal",
-                "Reason",
-                "Implicit modality"
-            ],
-            "Returns": [
-                "Data"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 현재 우리반의 추운 이유를 분석하기 위해 최신 데이터를 조회하려고 합니다. ",
-            "Expectations": [
-                "The reason our classroom is cold with 15℃ is that the setting temperature is 10℃. Please turn off the air conditioner or raise the setting temperature.",
-                "The reason our classroom is cold is that the air conditioner is on.",
-                "The reason our classroom is cold is that the air conditioner has been on for only 30 minutes."
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp",
-                            "settemp",
-                            "oper"
-                        ],
-                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '3 hours', TIMESTAMP 'CURRENT_TIMESTAMP']",
-                        "spatials": [
-                            "01_IB5"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "qr"
-                    ]
-                }
-            ]
-        }
-    },
-    {
         "Input": "오늘 아침과 저녁의 온도차이는 얼마나 돼?",
         "Tags": {
             "Style": [
@@ -66,13 +20,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '6 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '9 hours')",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr_morning"
@@ -80,13 +33,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '18 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '21 hours')",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr_evening"
@@ -122,14 +74,13 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "01_IB7",
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -165,14 +116,13 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp",
-                            "roomtemp"
-                        ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "settemp",
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -210,14 +160,13 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp",
-                            "roomtemp"
-                        ],
                         "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE') - INTERVAL '1 week', DATE_TRUNC('week', DATE 'CURRENT_DATE'))",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "settemp",
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -256,14 +205,13 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp",
-                            "settemp"
-                        ],
                         "temporal": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE' + INTERVAL '1 week'))",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "roomtemp",
+                            "settemp"
                         ]
                     },
                     "result_name": "qr"
@@ -300,13 +248,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "oper"
-                        ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') - INTERVAL '1 day', DATE_TRUNC('day', DATE 'CURRENT_DATE'))",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "oper"
                         ]
                     },
                     "result_name": "qr"
@@ -342,13 +289,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp"
-                        ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') - INTERVAL '1 week', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '1 day')",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "settemp"
                         ]
                     },
                     "result_name": "qr"
@@ -380,22 +326,6 @@
         }
     },
     {
-        "Input": "올해 경상수지는?",
-        "Tags": {
-            "Style": [
-                "Unrelated"
-            ],
-            "Returns": []
-        },
-        "Response": {
-            "Thinking": "이 질문은 HVAC 시스템과 관련 없는 질문입니다.",
-            "Expectations": [
-                "HVAC 시스템과 관련 없는 질문입니다."
-            ],
-            "Instructions": []
-        }
-    },
-    {
         "Input": "지난 3일 동안 우리반 실내 온도 평균 값 알려줘.",
         "Tags": {
             "Style": [
@@ -414,13 +344,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE') - INTERVAL '3 days', DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '1 day')",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -469,13 +398,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp"
-                        ],
                         "temporal": "DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '17 hours'",
                         "spatials": [
                             "01_IB7"
+                        ],
+                        "modalities": [
+                            "settemp"
                         ]
                     },
                     "result_name": "qr"
@@ -509,13 +437,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp"
-                        ],
                         "temporal": "[DATE 'CURRENT_YEAR-06-01', DATE 'CURRENT_YEAR-09-01')",
                         "spatials": [
                             "01_IB5"
+                        ],
+                        "modalities": [
+                            "roomtemp"
                         ]
                     },
                     "result_name": "qr"
@@ -544,51 +471,6 @@
                 "예측하기는 아직 지원되지 않는 기능입니다."
             ],
             "Instructions": []
-        }
-    },
-    {
-        "Input": "지금 우리반 너무 더워",
-        "Tags": {
-            "Style": [
-                "Ambiguous question",
-                "Reason",
-                "Implicit modality"
-            ],
-            "Returns": [
-                "Data"
-            ]
-        },
-        "Response": {
-            "Thinking": "사용자는 특정 질문을 하진 않았지만, 의도를 추측해보면 우리반이 너무 더워 불편함을 느끼고 있는 것 같습니다. 현재 우리반의 더운 원인과 해결 방법을 제시하기 위해, 최근 3시간 동안의 시간별 실내온도, 설정온도, 에어컨 작동 상태 데이터를 쿼리하여 분석해야 합니다.",
-            "Expectations": [
-                "지금 에어컨 설정온도가 30℃로 너무 높아서 우리반의 실내온도가 35℃로 더워요. 에어컨을 켜거나 설정온도를 낮춰보세요.",
-                "지금 우리반이 더운 이유는 에어컨이 꺼져 있기 때문입니다.",
-                "우리반이 더운 이유는 에어컨이 꺼진지 30분밖에 안 되었기 때문입니다."
-            ],
-            "Instructions": [
-                {
-                    "type": "q",
-                    "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "roomtemp",
-                            "settemp",
-                            "oper"
-                        ],
-                        "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '3 hours', TIMESTAMP 'CURRENT_TIMESTAMP']",
-                        "spatials": [
-                            "01_IB5"
-                        ]
-                    },
-                    "result_name": "qr"
-                },
-                {
-                    "type": "o",
-                    "script": [
-                        "qr"
-                    ]
-                }
-            ]
         }
     },
     {

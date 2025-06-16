@@ -19,15 +19,14 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp"
-                        ],
                         "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE'), DATE_TRUNC('day', DATE 'CURRENT_DATE' + INTERVAL '1 day'))",
                         "spatials": [
                             "02_I84",
                             "02_I85",
                             "01_IB7"
+                        ],
+                        "modalities": [
+                            "settemp"
                         ]
                     },
                     "result_name": "qr"
@@ -86,15 +85,14 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "oper"
-                        ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "02_I84",
                             "02_I85",
                             "01_IB7"
+                        ],
+                        "modalities": [
+                            "oper"
                         ]
                     },
                     "result_name": "qr"
@@ -129,13 +127,12 @@
                 {
                     "type": "q",
                     "args": {
-                        "table_name": "data_t",
-                        "columns": [
-                            "settemp"
-                        ],
                         "temporal": "[TIMESTAMP 'CURRENT_TIMESTAMP' - INTERVAL '5 minutes', TIMESTAMP 'CURRENT_TIMESTAMP']",
                         "spatials": [
                             "02_I84"
+                        ],
+                        "modalities": [
+                            "settemp"
                         ]
                     },
                     "result_name": "qr"
