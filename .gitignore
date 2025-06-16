@@ -10,3 +10,4 @@ finetuning/try_lora/unsloth_compiled_cache/
 model/
 *.gguf
 */unsloth_compiled_cache/
+/unsloth_compiled_cache/

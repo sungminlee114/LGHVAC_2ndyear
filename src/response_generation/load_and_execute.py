@@ -128,10 +128,10 @@ class ResponseGeneration:
                 return instruction.expectations, {}
             return instruction.expectations[0], {}
             
-        # Check if all required variables are available
-        if exp_tag == None and any([required_v not in variables or variables[required_v] in [] 
-                for required_v in instruction.required_variables]):
-            return "죄송합니다, 관련 데이터를 찾을 수 없습니다.", {}  # "Sorry, related data couldn't be found"
+        # # Check if all required variables are available
+        # if exp_tag == None and any([required_v not in variables or variables[required_v] in [] 
+        #         for required_v in instruction.required_variables]):
+        #     return "죄송합니다, 관련 데이터를 찾을 수 없습니다.", {}  # "Sorry, related data couldn't be found"
             
         # Filter variables to include only required ones
         if exp_tag in ["woCoTExp", "woOp"]:
@@ -165,7 +165,7 @@ class ResponseGeneration:
                     "content": formatted_input
                 }],
                 tokenize=True,
-                add_generation_prompt=True,
+                add_generation_promptS=True,
                 return_tensors="pt"
             ).to(cls.model.device)
             

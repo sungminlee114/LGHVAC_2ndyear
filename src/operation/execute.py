@@ -10,12 +10,13 @@ import numpy as np
 class OperationExecutor:
 
     @classmethod
-    def run_script(cls, args, scripts, returns):
+    def run_script(cls, args, scripts):
         try:
             # logger.info(f'Executing operation {python_script}')
             # print(python_script, flush=True)
             # inject arguments into the global namespace
             globals().update(args)
+            global_copy = globals().copy()
 
             for script in scripts:
                 try:
@@ -24,7 +25,10 @@ class OperationExecutor:
                     logger.error(f'Error executing operation {script}')
                     logger.error(e)
                     raise e
-            # return variables named in the returns list
+
+            # returns: updated global variables
+            returns = [name for name in globals() if name not in global_copy]
+
             return {name: globals()[name] for name in returns}
         except Exception as e:
             import traceback
@@ -32,8 +36,8 @@ class OperationExecutor:
             return {name: None for name in returns}
     
     @classmethod
-    def execute(cls, args, python_script, returns):
-        result = cls.run_script(args, python_script, returns)
+    def execute(cls, args, python_script):
+        result = cls.run_script(args, python_script)
         for k, v in result.items():
             while True:
                 if type(v) in [pd.DataFrame]:

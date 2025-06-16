@@ -34,7 +34,6 @@ class InstructionQ_raw:
 @dataclass
 class InstructionO:
     scripts: list[str]
-    returns: list[str]
 
 @dataclass
 class InstructionG:

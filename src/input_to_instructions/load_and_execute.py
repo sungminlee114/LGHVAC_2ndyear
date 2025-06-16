@@ -120,14 +120,15 @@ class InputToInstruction:
                                 )
                             )
                     case "o":
-                        scripts = raw_instruction["script"].split(";")
-                        scripts = [script.strip() for script in scripts]
-                        scripts = [script for script in scripts if script != ""]
-                        
+                        if type(raw_instruction["script"]) == str:
+                            scripts = raw_instruction["script"].split(";")
+                            scripts = [script.strip() for script in scripts]
+                            scripts = [script for script in scripts if script != ""]
+                        else:
+                            scripts = raw_instruction["script"]
                         instructions.append(
                             InstructionO(
                                 scripts=scripts,
-                                returns=raw_instruction["returns"]
                             )
                         )
                     case "g":
