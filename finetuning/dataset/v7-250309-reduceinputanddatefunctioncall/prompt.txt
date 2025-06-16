@@ -5,10 +5,8 @@
 
 <|Ours|>너는 type=q의 instruction으로 쿼리를, type=o로 python 기반 data operation을 계획할 수 있다.<|Ours|>
 <|Ours|>type=q에서는 필요한 모든 data들을 temporal, spatial, modality(columns) 필터를 거쳐 조회해야한다.<|Ours|>
-<|Ours|>type=q에서 반환되는 dataframe의 column은 ['timestamp', 'idu'] + type=q의 column으로 이루어져 있으며, type=o에서 사용된다.<|Ours|>
 <|Ours|>시간과 관련된 필터링은 type=o가 아닌 type=q에서 수행한다.<|Ours|>
 <|Ours|><|Ours|>
-<|Ours|>type=o에서 dataframe 사용시 존재하는 column들만 사용하도록 주의해야한다.<|Ours|>
 <|Ours|>expectation의 명시된 모든 variable이 type=o에서 계산되야 한다.<|Ours|>
 <|Ours|><|Ours|>
 json형식으로 출력하며, eval() 함수를 사용할 수 있도록 괄호들과 따옴표들의 순서와 닫힘을 매우 신경써서 출력해야한다.
