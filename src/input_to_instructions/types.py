@@ -27,6 +27,25 @@ class InstructionQ:
     result_name: str
 
 @dataclass
+class InstructionQ_v2:
+    """
+    "args": {
+        "temporal": {
+            "올해봄": "[DATE 'CURRENT_YEAR-03-01', DATE 'CURRENT_YEAR-06-01')"
+        },
+        "spatials": {
+            "옆반": "01_IB7"
+        },
+        "modalities": {
+            "실내온도": "roomtemp"
+        }
+    }
+    """
+    temporal: dict
+    spatials: dict
+    modalities: dict
+
+@dataclass
 class InstructionQ_raw:
     query: str
     result_name: str

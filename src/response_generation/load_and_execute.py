@@ -140,32 +140,45 @@ class ResponseGeneration:
             result = {k: v for k, v in variables.items() if k in instruction.required_variables}
 
         # Format input for the model
-        if exp_tag != "woCoTExp":
-            formatted_input = """질문: {input}; Metadata: {metadata}; 예시: {expectations}; 참고: {result}""".format(
+        if metadata is None:
+            formatted_input = """질문: {input}; 포맷: {expectations}; 데이터: {result};""".format(
                 input=input,
-                metadata=metadata,
                 expectations=instruction.expectations,
                 result=result
             )
         else:
-            formatted_input = """질문: {input}; Metadata: {metadata}; 참고: {result}""".format(
-                input=input,
-                metadata=metadata,
-                result=result
-            )
+            if exp_tag != "woCoTExp":
+                formatted_input = """질문: {input}; Metadata: {metadata}; 예시: {expectations}; 데이터: {result}""".format(
+                    input=input,
+                    metadata=metadata,
+                    expectations=instruction.expectations,
+                    result=result
+                )
+            else:
+                formatted_input = """질문: {input}; Metadata: {metadata}; 데이터: {result}""".format(
+                    input=input,
+                    metadata=metadata,
+                    result=result
+                )
         
         # Run inference
         if cls.instance_type == "llama.cpp":
             return cls.instance.run_inference(formatted_input), result
         elif cls.instance_type == "unsloth":
-            formatted_input = cls.prompt + formatted_input
+            # print(instruction.expectations, result)
+            print(formatted_input)
+            # formatted_input = cls.prompt + formatted_input
             chat = cls.tokenizer.apply_chat_template(
                 [{
+                    "role": "system",
+                    "content": cls.prompt
+                },
+                {
                     "role": "user",
                     "content": formatted_input
                 }],
                 tokenize=True,
-                add_generation_promptS=True,
+                add_generation_prompt=True,
                 return_tensors="pt"
             ).to(cls.model.device)
             

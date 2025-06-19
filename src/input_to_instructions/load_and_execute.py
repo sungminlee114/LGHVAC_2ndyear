@@ -2,7 +2,9 @@ __all__ = ["InputToInstruction"]
 
 import logging
 
-from src.input_to_instructions.types import InstructionQ_raw
+from numpy import require
+
+from src.input_to_instructions.types import InstructionQ_raw, InstructionQ_v2
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -100,7 +102,23 @@ class InputToInstruction:
             try:
                 match raw_instruction["type"]:
                     case "q":
-                        if exp_tag != "woQM":
+                        if exp_tag == "woQM":
+                            instructions.append(
+                                InstructionQ_raw(
+                                    query=raw_instruction["query"],
+                                    result_name=raw_instruction["result_name"]
+                                )
+                            )
+                            
+                        elif exp_tag == "v2":
+                            instructions.append(
+                                InstructionQ_v2(
+                                    temporal=raw_instruction["args"]["temporal"],
+                                    spatials=raw_instruction["args"]["spatials"],
+                                    modalities=raw_instruction["args"]["modalities"]
+                                )
+                            )
+                        else:
                             args = raw_instruction["args"]
                             if "table_name" in args:
                                 del args["table_name"]
@@ -112,13 +130,7 @@ class InputToInstruction:
                                     result_name=raw_instruction["result_name"]
                                 )
                             )
-                        else:
-                            instructions.append(
-                                InstructionQ_raw(
-                                    query=raw_instruction["query"],
-                                    result_name=raw_instruction["result_name"]
-                                )
-                            )
+                            
                     case "o":
                         if type(raw_instruction["script"]) == str:
                             scripts = raw_instruction["script"].split(";")
@@ -153,7 +165,8 @@ class InputToInstruction:
 
                     case "r":
                         expectations = raw_instruction["expectations"]
-
+                        if exp_tag == "v2":
+                            expectations = [e.replace("{{", "{{v_") for e in expectations]
                         # Find required variables
                         required_variables = []
                         for expectation in expectations:
