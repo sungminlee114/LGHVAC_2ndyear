@@ -8,7 +8,11 @@ class DBManager:
     This is a high-level interface which uses the DBInstance class to interact with the database.
     External modules should use this class to interact with the database.
     """
-    db_instance = DBInstance(dbname='PerSite_DB')
+    db_instance = DBInstance(
+        dbname='PerSite_DB',
+        host='1.233.219.93',
+        port=9014,
+    )
     
     @classmethod
     def execute_sql(cls, sql:str):

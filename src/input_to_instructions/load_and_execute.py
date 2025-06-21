@@ -4,7 +4,7 @@ import logging
 
 from numpy import require
 
-from src.input_to_instructions.types import InstructionQ_raw, InstructionQ_v2
+from src.input_to_instructions.types import InstructionQ_raw, Mapping
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -58,6 +58,63 @@ class InputToInstruction:
         """Check if the model is loaded."""
         return cls.instance is not None and cls.instance.is_loaded()
     
+    @classmethod
+    def postprocess_v2(cls, response_raw, exp_tag=None):
+        # Parse the response
+        # try:
+        if type(response_raw) != dict:
+            response = eval(response_raw)
+        else:
+            response = response_raw
+        
+        try:
+            # thinking = response["Thinking"]
+            expectations = response["Expectations"]
+            mapping = response["Mapping"]
+        except Exception as e:
+            logger.warning(f"Failed to parse response: {response_raw}. Falling to regex.")
+                # raw_instructions = re.search(r'(?<="Instructions": \[)(.*)(?=\])', response_raw, re.DOTALL).group(0)
+                # expectations = re.search(r'(?<="Expectations": \[)(.*)(?=\])', response_raw, re.DOTALL).group(0)
+
+            # if "Expectations" in response:
+            #     expectations = response["Expectations"]
+            # elif exp_tag == "woCoTExp":
+            #     expectations = ""
+            # else:
+            #     raise Exception("Expectations not found in response.")
+        # except Exception as e:
+        #     logger.warning(f"Failed to parse response: {response_raw}. Falling to regex.")
+        #     try:
+        #         raw_instructions = re.search(r'(?<="Instructions": \[)(.*)(?=\])', response_raw, re.DOTALL).group(0)
+        #         expectations = re.search(r'(?<="Expectations": \[)(.*)(?=\])', response_raw, re.DOTALL).group(0)
+        #         if raw_instructions is None or expectations is None:
+        #             logger.error(f"Failed to parse response: {response_raw}.")
+        #             return None
+        #     except Exception as e:
+        #         logger.error(f"Failed to parse response: {response_raw}.")
+        #         return None
+        mapping = Mapping(
+            temporal=mapping["temporal"],
+            spatials=mapping["spatials"],
+            modalities=mapping["modalities"]
+        )
+
+        if "Script" in response:
+            scripts = response["Script"]
+        else:
+            scripts = None
+
+        expectations = [e.replace("{{", "{{v_") for e in expectations]
+        # Find required variables
+        required_variables = []
+        for expectation in expectations:
+            required_variables += re.findall(r'{{(.*?)}}', expectation)
+        
+        required_variables = list(set(required_variables))
+
+        return mapping, expectations, required_variables, scripts
+
+
     @classmethod
     def postprocess(cls, response_raw, exp_tag=None):
         # Parse the response

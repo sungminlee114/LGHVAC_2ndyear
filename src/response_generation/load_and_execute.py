@@ -2,6 +2,7 @@ import datetime
 import logging
 
 import torch
+from unsloth.models.llama import BitsAndBytesConfig
 
 from src.db import instance
 logging.basicConfig(level=logging.INFO)
@@ -16,14 +17,19 @@ from src.input_to_instructions.types import InstructionR
 MODULE_DIR = BASE_DIR / "response_generation"
 
 import re
-def extract_content(text: str) -> str:
+def extract_content(text: str) -> str | None:
     """Extract content from model output."""
+    pattern: str | None = None
     if "start_header_id" in text:
         pattern = r"<\|start_header_id\|>assistant<\|end_header_id\|>(.*?)<\|eot_id\|>"
     elif "start_of_turn" in text:
         pattern = r"<start_of_turn>model\n(.*?)<eos>"
-    match = re.search(pattern, text, re.DOTALL)
-    return match.group(1).strip() if match else None
+    elif "|endofturn|" in text:
+        pattern = r"\[\|assistant\|\](.*?)\[\|endofturn\|\]"
+    if pattern:
+        match = re.search(pattern, text, re.DOTALL)
+        return match.group(1).strip() if match else None
+    return None
 
 class ResponseGeneration:
     """Class to generate responses using a LLaMA model."""
@@ -53,7 +59,9 @@ class ResponseGeneration:
             )
             cls.instance.load()
         elif instance_type == "unsloth":
-            model_id = 'sh2orc/Llama-3.1-Korean-8B-Instruct'
+            # model_id = 'sh2orc/Llama-3.1-Korean-8B-Instruct'
+            # model_id = 'Bllossom/llama-3-Korean-Bllossom-70B'
+            model_id = 'LGAI-EXAONE/EXAONE-3.5-7.8B-Instruct'
             model_dir = f"/model/{model_id.replace('/', '-')}"
             if torch.cuda.get_device_capability()[0] >= 8:
                 attn_implementation = "flash_attention_2"
@@ -66,9 +74,18 @@ class ResponseGeneration:
                 dtype = torch_dtype,
                 load_in_4bit = False,
                 load_in_8bit = False,
+                trust_remote_code=True,
+                # quantization_config=BitsAndBytesConfig(
+                #         # load_in_4bit=True,
+                #         # bnb_4bit_use_double_quant=True,
+                #         # bnb_4bit_quant_type="nf4",
+                #         # bnb_4bit_compute_dtype=torch_dtype,
+                #         load_in_8bit=True,
+                #         # llm_int8_enable_fp32_cpu_offload=True
+                #     ),
                 attn_implementation=attn_implementation,
                 cache_dir=f"{model_dir}/cache",
-                local_files_only=True,
+                # local_files_only=True,
                 device_map="cuda",
             )
             FastLanguageModel.for_inference(model)
@@ -108,9 +125,72 @@ class ResponseGeneration:
             else:
                 variables[k] = str(v)
         return variables
-
+    
     @classmethod
-    def execute(cls, instruction: InstructionR, variables, input: str, metadata: dict, exp_tag=None) -> str:
+    def execute_raw(cls, input: str) -> str:
+        "unsloth"
+
+        chat = cls.tokenizer.apply_chat_template(
+            [{
+                "role": "user",
+                "content": input
+            }],
+            tokenize=True,
+            add_generation_prompt=True,
+            return_tensors="pt"
+        ).to(cls.model.device)
+
+        outputs = cls.model.generate(
+            input_ids=chat,
+        )
+
+        response = cls.tokenizer.batch_decode(outputs, skip_special_tokens=False)
+        return response[0]
+    
+    @classmethod
+    def execute_v2(cls, expectations: list[str], required_variables: list[str], variables: dict, input: str, exp_tag=None) -> tuple[str | None, dict]:
+        if exp_tag is None and len(required_variables) == 0:
+            return expectations[0], {}
+        
+        result = {k: v for k, v in variables.items() if k in required_variables}
+    
+        formatted_input = """질문: {input}; 포맷: {expectations}; 데이터: {result};""".format(
+            input=input,
+            expectations=expectations,
+            result=result
+        )
+        print(formatted_input)
+        chat = cls.tokenizer.apply_chat_template(
+            [{
+                "role": "system",
+                "content": cls.prompt
+            },
+            {
+                "role": "user",
+                "content": formatted_input
+            }],
+            tokenize=True,
+            add_generation_prompt=True,
+            return_tensors="pt"
+        ).to(cls.model.device)
+
+
+        # 모델 추론을 실행합니다.
+        outputs = cls.model.generate(
+            input_ids=chat,
+            max_new_tokens=1000,
+            # temperature=0.0,
+            do_sample=False,
+            pad_token_id=cls.tokenizer.eos_token_id,
+        )
+
+        responses = cls.tokenizer.batch_decode(outputs, skip_special_tokens=False)
+        response = extract_content(responses[0])
+
+        return response, result
+    
+    @classmethod
+    def execute(cls, instruction: InstructionR, variables, input: str, metadata: dict | None, exp_tag=None) -> tuple[str | None, dict]:
         """Generate a response based on the given instruction, variables and input.
         
         Args:
@@ -123,8 +203,8 @@ class ResponseGeneration:
             The generated response
         """
         # If no variables are required, return the first expectation directly
-        if exp_tag == None and len(instruction.required_variables) == 0:
-            if type(instruction.expectations) == str:
+        if exp_tag is None and len(instruction.required_variables) == 0:
+            if isinstance(instruction.expectations, str):
                 return instruction.expectations, {}
             return instruction.expectations[0], {}
             
@@ -163,6 +243,7 @@ class ResponseGeneration:
         
         # Run inference
         if cls.instance_type == "llama.cpp":
+            assert cls.instance is not None
             return cls.instance.run_inference(formatted_input), result
         elif cls.instance_type == "unsloth":
             # print(instruction.expectations, result)
@@ -181,11 +262,16 @@ class ResponseGeneration:
                 add_generation_prompt=True,
                 return_tensors="pt"
             ).to(cls.model.device)
-            
+
+            # model의 입력 dtype을 가져와서 chat 텐서에 맞춰줍니다.
+            # 일반적으로 model의 첫 번째 파라미터의 dtype을 사용합니다.
+            # chat = chat.to(device=cls.model.device)
+
+            # 모델 추론을 실행합니다.
             outputs = cls.model.generate(
                 input_ids=chat,
                 max_new_tokens=1000,
-                temperature=0.0,
+                # temperature=0.0,
                 do_sample=False,
                 pad_token_id=cls.tokenizer.eos_token_id,
             )
@@ -194,6 +280,7 @@ class ResponseGeneration:
             response = extract_content(responses[0])
 
             return response, result
+        return None, {}
     
     @classmethod
     def close(cls):

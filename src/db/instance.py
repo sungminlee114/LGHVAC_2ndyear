@@ -336,16 +336,18 @@ class DBInstance:
                 if col in ["roomtemp", "settemp"]:
                     where_clauses.append(sql.SQL("{} IS DISTINCT FROM 'NaN'").format(sql.Identifier(col)))
             
+            if conditions == ["LAST_RECORD"]:
+                # If the condition is "LAST_RECORD", filter to the row with the maximum timestamp
+                where_clauses.append(sql.SQL("timestamp = (SELECT MAX(timestamp) FROM {})").format(sql.Identifier(table_name)))
             # Add WHERE clause if there are any conditions or subqueries
             if where_clauses:
                 where_part = " AND ".join([str(clause) if not isinstance(clause, sql.Composed) else clause.as_string(self.connection) for clause in where_clauses])
                 select_query += sql.SQL(" WHERE {}").format(sql.SQL(where_part))
-            
+
+
+
             # Add sorting by timestamp
             select_query += sql.SQL(" ORDER BY timestamp")
-            if conditions == ["LAST_RECORD"]:
-                select_query += sql.SQL(" DESC LIMIT 1")
-            
             logger.debug(f"Select query as string: {select_query.as_string(self.connection)}")
             return select_query.as_string(self.connection)
             

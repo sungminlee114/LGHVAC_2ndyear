@@ -111,6 +111,7 @@ class UnslothInference:
                     dtype = self.torch_dtype,
                     load_in_4bit = False,
                     load_in_8bit = False,
+                    # trust_remote_code=True,
                     # quantization_config=BitsAndBytesConfig(
                     #     load_in_4bit=True,
                     #     bnb_4bit_use_double_quant=True,
@@ -143,6 +144,8 @@ class UnslothInference:
         elif "im_start" in text:
             # <|im_start|>assistant{"Thinking": "사용자는 오늘 4층에 있는 모든 방의 설정온도의 평균값을 알고 싶어합니다. 4층에 해당하는 idu들(01_IB7, 02_I84, 02_I85)의 오늘 설정온도 데이터를 쿼리한 후 평균값을 계산하여 반환하면 됩니다.", "Expectations": ["오늘 4층의 평균 설정온도는 {{settemp_avg}}℃ 입니다."], "Instructions": [{"type": "q", "args": {"table_name": "data_t", "columns": ["settemp"], "temporal": "[DATE_TRUNC('day', DATE 'CURRENT_DATE'), DATE_TRUNC('day', DATE 'CURRENT_DATE' + INTERVAL '1 day'))", "spatials": ["01_IB7", "02_I84", "02_I85"]}, "result_name": "qr"}, {"type": "o", "script": "settemp_avg = qr['settemp'].mean();", "returns": ["settemp_avg"]}]}<|im_end|>
             pattern = r"<\|im_start\|>assistant\n(.*?)<\|im_end\|>"
+        elif "|endofturn|" in text:
+            pattern = r"\[\|assistant\|\](.*?)\[\|endofturn\|\]"
         match = re.search(pattern, text, re.DOTALL)
         return match.group(1).strip() if match else None
 
@@ -219,7 +222,7 @@ class UnslothInference:
             outputs = model.generate(
                 input_ids=batch_tensor,
                 attention_mask=attention_mask,
-                max_new_tokens=batch_tensor.size(1) + 100,
+                max_new_tokens=self.max_seq_length,
                 use_cache=True,
                 pad_token_id=tokenizer.pad_token_id,
                 do_sample=False  # 결정론적 생성
@@ -479,11 +482,14 @@ def main():
         "ours" # 4
     ][4]
 
-    r = 170
-    model_name, tr_dir = \
-        "sh2orc-Llama-3.1-Korean-8B-Instruct", \
-        f"v7_r{r}_a{2*r}_{train_type}_tr56_0613/"
+    r = 200
+    model_name = "sh2orc-Llama-3.1-Korean-8B-Instruct"
+    # model_name, tr_dir = \
+    #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
+    #     f"v7_r{r}_a{2*r}_{train_type}_tr17_0613/"
 
+    # model_name = "LGAI-EXAONE-EXAONE-3.5-7.8B-Instruct"
+    tr_dir = f"v7_r{r}_a{2*r}_{train_type}_tr27_0613"
     
     model_dir = Path(f"/model/{model_name}")
     checkpoint_dir = Path(f"{model_dir}/chkpts/{tr_dir}")
@@ -491,7 +497,7 @@ def main():
     # last checkpoint in chekpoint_dir
     checkpoint_dir = sorted(checkpoint_dir.iterdir(), key=lambda x: int(x.name.split("-")[-1]))[-1]
     tr_config = f"{tr_dir}/{checkpoint_dir.name}"
-    tr_config = f"{tr_dir}/checkpoint-33"
+    tr_config = f"{tr_dir}/checkpoint-34"
     print(tr_config)
     checkpoint_dir = Path(f"{model_dir}/chkpts/{tr_config}")
         
@@ -533,7 +539,8 @@ def main():
     inference = UnslothInference(
         checkpoint_dir=str(checkpoint_dir),
         cache_dir=str(cache_dir),
-        batch_size=batch_size
+        batch_size=batch_size,
+        max_seq_length=10000
     )
 
     # gguf_path = model_dir / f"gguf/{tr_config.replace('/', '-')}.gguf"

@@ -1,4 +1,3 @@
-__all__ = ['InstructionQ', 'InstructionO', 'InstructionG', 'InstructionR']
 from dataclasses import dataclass
 
 @dataclass
@@ -27,7 +26,7 @@ class InstructionQ:
     result_name: str
 
 @dataclass
-class InstructionQ_v2:
+class Mapping:
     """
     "args": {
         "temporal": {
