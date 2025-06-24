@@ -22,6 +22,8 @@ def parse_temporal(temporal):
         right_bracket = temporal[-1]
         inner = temporal[1:-1]
 
+        inner = inner.replace(")),", "),")
+
         # 중첩된 괄호를 고려하여 외부 콤마 위치 찾기
         paren_count = 0
         split_index = None

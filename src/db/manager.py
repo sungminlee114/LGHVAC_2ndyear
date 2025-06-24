@@ -46,6 +46,14 @@ class DBManager:
         return cls.db_instance.structured_query_data_t_v2(metadata, m_raw, t_raw, s_raw, get_rowids=get_rowids)
 
     @classmethod
+    def get_query_strings_v2(cls, metadata, m_raw, t_raw, s_raw, get_rowids=False):
+        m_raw.append("idu_name")
+        columns = list(set(m_raw))
+
+        query_strings = cls.db_instance.get_query_strings_v2(metadata, columns, t_raw, s_raw, get_rowids)
+        return query_strings
+
+    @classmethod
     def get_query_strings(cls, metadata, args, exp_tag=None):
         return cls.db_instance.get_query_strings(metadata, **args, exp_tag=exp_tag)
 

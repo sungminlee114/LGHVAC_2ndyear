@@ -186,6 +186,7 @@ class UnslothInference:
                 ).to(model.device)
                 convos.append(chat)
             
+            print(convos[0])
             max_length = max(inputs.size(1) for inputs in convos)
         
             # 패딩 적용하여 입력 준비
@@ -465,6 +466,12 @@ def read_dataset(train_type, dir, path):
     # print(f"Type of result[0]['Response']: {type(result[0]['Response'])}")
     return result
 
+def sub(name, common_prompt):
+    # Remove the section between <|name|> ... <|name|> including the tags themselves
+    # Use re.DOTALL to match newlines with '.'
+    pattern = rf"\n?<\|{name}\|>[\s\S]*?<\|{name}\|>"
+    common_prompt = re.sub(pattern, "", common_prompt, flags=re.DOTALL)
+    return common_prompt
 
 def main():
     
@@ -475,14 +482,20 @@ def main():
     
 
     train_type = [
-        "woCoTExp", # 0
-        "woCoT", # 1
-        "woQM", # 2
-        "woOp", # 3
-        "ours" # 4
-    ][4]
+        "BASE", # 0
 
-    r = 200
+        "5SL", # 1
+        "Finetuning", # 2
+        "WoThinking", # 3
+
+        "rawSQL+LM", # 3
+        "QM+script", # 4
+
+        "NoExp", # 5
+        "ours" # 6
+    ][-1]
+
+    r = 211
     model_name = "sh2orc-Llama-3.1-Korean-8B-Instruct"
     # model_name, tr_dir = \
     #     "sh2orc-Llama-3.1-Korean-8B-Instruct", \
@@ -497,7 +510,7 @@ def main():
     # last checkpoint in chekpoint_dir
     checkpoint_dir = sorted(checkpoint_dir.iterdir(), key=lambda x: int(x.name.split("-")[-1]))[-1]
     tr_config = f"{tr_dir}/{checkpoint_dir.name}"
-    tr_config = f"{tr_dir}/checkpoint-34"
+    tr_config = f"{tr_dir}/checkpoint-80"
     print(tr_config)
     checkpoint_dir = Path(f"{model_dir}/chkpts/{tr_config}")
         
@@ -517,23 +530,24 @@ def main():
         for i, d in enumerate(data):
             data[i]["Scenario"] = scenario_dir.name
         dataset.extend(data)
-        
     
-    if "v6" in BASE_DIR.name or "v7" in BASE_DIR.name:
-        # if train_type in ["woall"]:
-        #     # search <|FI|>~~<|FI|> and remove between them
-        #     common_prompt = re.sub(r"\n?<\|Ours\|>(.|\n)*?<\|Ours\|>", "", common_prompt)
-        if train_type in ["ours", "woall"]:
-            common_prompt = open(BASE_DIR / F"prompt.txt", "r").read()
-            if train_type in ["woall"]:
-                common_prompt = re.sub(r"\n?<\|Ours\|>(.|\n)*?<\|Ours\|>", "", common_prompt)
-        else:
-            common_prompt = open(BASE_DIR / F"prompt_v2.txt", "r").read()
-            common_prompt = re.sub(fr"\n?<\|{train_type}\|>(.|\n)*?<\|{train_type}\|>", "", common_prompt)
+    common_prompt = open(BASE_DIR / f"prompt.txt", "r").read()
+    
+    if train_type == "ours":
+        sub_targets = []
+    elif train_type == "BASE":
+        sub_targets = ["Thinking", "Expectation", "Mapping", "Script"]
+    elif train_type == "5SL":
+        sub_targets = ["Thinking", "Expectation", "Mapping", "Script"]
+
+    for sub_target in sub_targets:
+        common_prompt = sub(sub_target, common_prompt)
 
     # remove all <||>
     common_prompt = re.sub(r"<\|.*?\|>", "", common_prompt)
     
+    print(common_prompt)
+
     # Initialize distributed inference
     batch_size = 20  # 배치 크기 설정
     inference = UnslothInference(

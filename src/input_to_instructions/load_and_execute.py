@@ -3,6 +3,7 @@ __all__ = ["InputToInstruction"]
 import logging
 
 from numpy import require
+from sympy import Not
 
 from src.input_to_instructions.types import InstructionQ_raw, Mapping
 logging.basicConfig(level=logging.INFO)
@@ -70,7 +71,9 @@ class InputToInstruction:
         try:
             # thinking = response["Thinking"]
             expectations = response["Expectations"]
-            mapping = response["Mapping"]
+            if exp_tag not in ["woQM", "woQM+Script"]:
+                mapping = response["Mapping"]
+        
         except Exception as e:
             logger.warning(f"Failed to parse response: {response_raw}. Falling to regex.")
                 # raw_instructions = re.search(r'(?<="Instructions": \[)(.*)(?=\])', response_raw, re.DOTALL).group(0)
@@ -93,11 +96,14 @@ class InputToInstruction:
         #     except Exception as e:
         #         logger.error(f"Failed to parse response: {response_raw}.")
         #         return None
-        mapping = Mapping(
-            temporal=mapping["temporal"],
-            spatials=mapping["spatials"],
-            modalities=mapping["modalities"]
-        )
+        if exp_tag not in ["woQM", "woQM+Script"]:
+            mapping = Mapping(
+                temporal=mapping["temporal"],
+                spatials=mapping["spatials"],
+                modalities=mapping["modalities"]
+            )
+        else:
+            mapping = None
 
         if "Script" in response:
             scripts = response["Script"]

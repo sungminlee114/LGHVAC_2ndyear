@@ -73,7 +73,7 @@
         }
     },
     {
-        "Input": "작년 겨울 우리반 평균온도 알려줘",
+        "Input": "",
         "Tags": {
             "Style": [
                 "Implicit temporal",
@@ -434,32 +434,36 @@
         }
     },
     {
-        "Input": "1층 평균 실내온도 알려줘",
+        "Input": "지금 4층 최대 설정온도 알려줘",
         "Tags": {
             "Style": [
-                "Unknown",
-                "Avg/Diff/Get"
+                "Avg/Diff/Get",
+                "GroupSpatial"
             ],
             "Returns": [
                 "Temp"
             ]
         },
         "Response": {
-            "Thinking": "사용자는 현재 1층의 공간 평균 실내온도를 알고 싶어함. 현재 1층에 속한 모든 공간의 실내온도의 평균값을 반환하면 됨.",
+            "Thinking": "사용자는 현재 4층의 공간 최대 설정온도를 알고 싶어함. 현재 4층에 속한 모든 공간의 설정온도의 최대값을 반환하면 됨.",
             "Expectations": [
-                "1층의 평균 실내온도는 {{현재_1층_실내온도_평균}}℃입니다."
+                "지금 4층의 최대 설정온도는 {{현재_4층_설정온도_최대}}℃입니다."
             ],
             "Mapping": {
                 "temporal": {
                     "현재": "LAST_RECORD"
                 },
                 "spatials": {
-                    "1층": "Unknown"
+                    "4층": ["01_IB5", "01_IB7", "02_I81"]
                 },
                 "modalities": {
-                    "실내온도": "roomtemp"
+                    "설정온도": "settemp"
                 }
-            }
+            },
+            "Script": [
+                "v_현재_4층_설정온도_df = data(t='현재',s='4층',m='설정온도')",
+                "v_현재_4층_설정온도_최대 = v_현재_4층_설정온도_df['설정온도'].max()"
+            ]
         }
     },
     {

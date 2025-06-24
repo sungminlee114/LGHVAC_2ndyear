@@ -95,6 +95,10 @@ class ResponseGeneration:
             cls.prompt = open(prompt_path, "r").read()
     
     @classmethod
+    def update_prompt(cls):
+        cls.prompt = open(MODULE_DIR / "prompt.txt", "r").read()
+
+    @classmethod
     def is_loaded(cls):
         """Check if the model is loaded."""
         return cls.instance is not None and cls.instance.is_loaded()
@@ -149,11 +153,13 @@ class ResponseGeneration:
     
     @classmethod
     def execute_v2(cls, expectations: list[str], required_variables: list[str], variables: dict, input: str, exp_tag=None) -> tuple[str | None, dict]:
-        if exp_tag is None and len(required_variables) == 0:
+        if exp_tag not in ["woExp"] and len(required_variables) == 0:
             return expectations[0], {}
         
-        result = {k: v for k, v in variables.items() if k in required_variables}
-    
+        if exp_tag in ["woExp", "woScript", "woQM+Script"]:
+            result = variables
+        else:
+            result = {k: v for k, v in variables.items() if k in required_variables}
         formatted_input = """질문: {input}; 포맷: {expectations}; 데이터: {result};""".format(
             input=input,
             expectations=expectations,
