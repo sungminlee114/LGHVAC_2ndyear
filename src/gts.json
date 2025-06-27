@@ -14357,8 +14357,8 @@
         "QueryResults": [
             {
                 "result_columns": [
-                    "roomtemp",
-                    "settemp"
+                    "settemp",
+                    "roomtemp"
                 ],
                 "result_indices": [
                     263514
@@ -14435,8 +14435,8 @@
         "QueryResults": [
             {
                 "result_columns": [
-                    "roomtemp",
-                    "settemp"
+                    "settemp",
+                    "roomtemp"
                 ],
                 "result_indices": [
                     175677,
