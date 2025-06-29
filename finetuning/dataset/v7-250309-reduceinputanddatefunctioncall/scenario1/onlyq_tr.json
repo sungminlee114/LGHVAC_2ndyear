@@ -2,9 +2,13 @@
     {
         "Input": "어제 우리반과 옆반의 설정온도 차이 알려줘",
         "Tags": {
-            "Style": [
-                "Avg/Diff/Get"
-            ],
+            "Style": {
+                "Type": ["Implicit operations"],
+                "Temporal": "어제",
+                "Spatials": ["우리반", "옆반"],
+                "Processing": ["Avg", "Diff"],
+                "Modality": ["설정온도"]
+            },
             "Returns": [
                 "Temp"
             ]
@@ -38,10 +42,13 @@
     {
         "Input": "오늘 우리반과 옆반의 평균 온도차이 알려줘",
         "Tags": {
-            "Style": [
-                "Avg/Diff/Get",
-                "Implicit modality"
-            ],
+            "Style": {
+                "Type": ["Implicit modality"],
+                "Temporal": "오늘",
+                "Spatials": ["우리반", "옆반"],
+                "Processing": ["Avg", "Diff"],
+                "Modality": ["실내온도"]
+            },
             "Returns": [
                 "Temp"
             ]
@@ -73,13 +80,15 @@
         }
     },
     {
-        "Input": "",
+        "Input": "작년 겨울 우리반 평균온도 알려줘",
         "Tags": {
-            "Style": [
-                "Implicit temporal",
-                "Avg/Diff/Get",
-                "Implicit modality"
-            ],
+            "Style": {
+                "Type": ["Implicit temporal", "Implicit modality"],
+                "Temporal": "작년겨울",
+                "Spatials": ["우리반"],
+                "Processing": ["Avg"],
+                "Modality": ["실내온도"]
+            },
             "Returns": [
                 "Temp"
             ]
@@ -109,11 +118,13 @@
     {
         "Input": "올해 여름 앞반 평균온도 알려줘",
         "Tags": {
-            "Style": [
-                "Implicit temporal",
-                "Avg/Diff/Get",
-                "Implicit modality"
-            ],
+            "Style": {
+                "Type": ["Implicit temporal", "Implicit modality"],
+                "Temporal": "올해여름",
+                "Spatials": ["앞반"],
+                "Processing": ["Avg"],
+                "Modality": ["실내온도"]
+            },
             "Returns": [
                 "Temp"
             ]
@@ -143,13 +154,14 @@
     {
         "Input": "올해 봄 옆반 제일 추웠던 날 알려줘",
         "Tags": {
-            "Style": [
-                "Implicit temporal",
-                "ArgMinMax/Compare",
-                "Implicit modality"
-            ],
+            "Style": {
+                "Type": ["Implicit temporal", "Implicit modality"],
+                "Temporal": "올해봄",
+                "Spatials": ["옆반"],
+                "Processing": ["Min"],
+                "Modality": ["실내온도"]
+            },
             "Returns": [
-                "Temp",
                 "Dates"
             ]
         },
@@ -180,10 +192,13 @@
     {
         "Input": "4월 앞반 평균온도 알려줘",
         "Tags": {
-            "Style": [
-                "Avg/Diff/Get",
-                "Implicit modality"
-            ],
+            "Style": {
+                "Type": ["Implicit modality"],
+                "Temporal": "4월",
+                "Spatials": ["앞반"],
+                "Processing": ["Avg"],
+                "Modality": ["실내온도"]
+            },
             "Returns": [
                 "Temp"
             ]
@@ -213,12 +228,14 @@
     {
         "Input": "이번달 중 우리반 온도가 가장 덜 더운날이 언제야?",
         "Tags": {
-            "Style": [
-                "ArgMinMax/Compare",
-                "Implicit modality"
-            ],
+            "Style": {
+                "Type": ["Implicit modality", "Implicit operations"],
+                "Temporal": "이번달",
+                "Spatials": ["우리반"],
+                "Processing": ["ArgMin"],
+                "Modality": ["실내온도"]
+            },
             "Returns": [
-                "Temp",
                 "Dates"
             ]
         },
@@ -248,11 +265,14 @@
     {
         "Input": "2주전 우리반과 옆반 합쳐서 설정온도가 가장 낮은날이 언제야?",
         "Tags": {
-            "Style": [
-                "ArgMinMax/Compare"
-            ],
+            "Style": {
+                "Type": [""],
+                "Temporal": "2주전",
+                "Spatials": ["우리반", "옆반"],
+                "Processing": ["ArgMin"],
+                "Modality": ["설정온도"]
+            },
             "Returns": [
-                "Temp",
                 "Dates"
             ]
         },
@@ -283,11 +303,16 @@
     {
         "Input": "이번달 중 뒷반 온도가 가장 더운날이 언제야?",
         "Tags": {
-            "Style": [
-                "Unknown",
-                "ArgMinMax/Compare"
-            ],
-            "Returns": []
+            "Style": {
+                "Type": ["Implicit modality", "Implicit operations"],
+                "Temporal": "이번달",
+                "Spatials": ["뒷반"],
+                "Processing": ["ArgMax"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Dates"
+            ]
         },
         "Response": {
             "Thinking": "사용자는 이번달 뒷반의 실내온도가 가장 더운날이 언제인지 물어봄. 이번달 뒷반의 실내온도를 쿼리한 후 실내온도가 가장 높은 날을 찾아 그 날짜와 온도를 반환하면 됨.",
@@ -310,12 +335,15 @@
     {
         "Input": "우리반의 현재 설정 온도 알려줘",
         "Tags": {
-            "Style": [
-                "Avg/Diff/Get"
-            ],
+            "Style": {
+                "Type": [""],
+                "Temporal": "현재",
+                "Spatials": ["우리반"],
+                "Processing": ["Get"],
+                "Modality": ["설정온도"]
+            },
             "Returns": [
-                "Temp",
-                "Time"
+                "Temp"
             ]
         },
         "Response": {
@@ -343,10 +371,13 @@
     {
         "Input": "8일전 설정온도는?",
         "Tags": {
-            "Style": [
-                "Avg/Diff/Get",
-                "Implicit spatial"
-            ],
+            "Style": {
+                "Type": ["Implicit spatial", "Implicit operations"],
+                "Temporal": "8일전",
+                "Spatials": ["우리반"],
+                "Processing": ["Avg"],
+                "Modality": ["설정온도"]
+            },
             "Returns": [
                 "Temp"
             ]
@@ -376,10 +407,13 @@
     {
         "Input": "10년 전 오늘 우리반 온도는?",
         "Tags": {
-            "Style": [
-                "Avg/Diff/Get",
-                "Implicit modality"
-            ],
+            "Style": {
+                "Type": ["Implicit modality", "Implicit operations"],
+                "Temporal": "10년전오늘",
+                "Spatials": ["우리반"],
+                "Processing": ["Avg"],
+                "Modality": ["실내온도"]
+            },
             "Returns": [
                 "Temp"
             ]
@@ -409,11 +443,16 @@
     {
         "Input": "롯데캐슬의 현재 온도 알려줘",
         "Tags": {
-            "Style": [
-                "Unknown",
-                "Avg/Diff/Get"
-            ],
-            "Returns": []
+            "Style": {
+                "Type": ["Implicit modality"],
+                "Temporal": "현재",
+                "Spatials": ["롯데캐슬"],
+                "Processing": ["Get"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
         },
         "Response": {
             "Thinking": "사용자는 롯데캐슬의 현재 실내온도를 알고 싶어함. 롯데캐슬의 현재 실내온도값을 반환하면 됨.",
@@ -436,10 +475,13 @@
     {
         "Input": "지금 4층 최대 설정온도 알려줘",
         "Tags": {
-            "Style": [
-                "Avg/Diff/Get",
-                "GroupSpatial"
-            ],
+            "Style": {
+                "Type": [""],
+                "Temporal": "현재",
+                "Spatials": ["4층"],
+                "Processing": ["ArgMax"],
+                "Modality": ["설정온도"]
+            },
             "Returns": [
                 "Temp"
             ]
@@ -469,12 +511,14 @@
     {
         "Input": "우리반, 옆반, 앞반 중 가장 추운 방은?",
         "Tags": {
-            "Style": [
-                "Implicit temporal",
-                "ArgMinMax/Compare"
-            ],
+            "Style": {
+                "Type": ["Implicit temporal", "Implicit operations", "Implicit modality"],
+                "Temporal": "현재",
+                "Spatials": ["우리반", "옆반", "앞반"],
+                "Processing": ["ArgMin"],
+                "Modality": ["실내온도"]
+            },
             "Returns": [
-                "Temp",
                 "Spatial"
             ]
         },
@@ -507,10 +551,16 @@
     {
         "Input": "지금 에너지 사용량 알려줘",
         "Tags": {
-            "Style": [
-                "Unknown"
-            ],
-            "Returns": []
+            "Style": {
+                "Type": ["Implicit spatial"],
+                "Temporal": "현재",
+                "Spatials": ["우리반"],
+                "Processing": ["Get"],
+                "Modality": ["에너지 사용량"]
+            },
+            "Returns": [
+                "Energy"
+            ]
         },
         "Response": {
             "Thinking": "사용자는 현재 우리반의 에너지 사용량을 알고싶어함. 현재 우리반의 에너지 사용량을 쿼리한 후 반환하면 됨.",
@@ -533,9 +583,13 @@
     {
         "Input": "지난달 오늘 오후 2시에 옆반의 설정온도는 어땠어?",
         "Tags": {
-            "Style": [
-                "Avg/Diff/Get"
-            ],
+            "Style": {
+                "Type": [],
+                "Temporal": "지난달오늘오후2시",
+                "Spatials": ["옆반"],
+                "Processing": ["Get"],
+                "Modality": ["설정온도"]
+            },
             "Returns": [
                 "Temp"
             ]
@@ -565,13 +619,15 @@
     {
         "Input": "옆반의 현재 온도랑 설정온도 알려줘",
         "Tags": {
-            "Style": [
-                "Avg/Diff/Get",
-                "Implicit modality"
-            ],
+            "Style": {
+                "Type": ["Implicit modality"],
+                "Temporal": "현재",
+                "Spatials": ["옆반"],
+                "Processing": ["Get"],
+                "Modality": ["실내온도", "설정온도"]
+            },
             "Returns": [
-                "Temp",
-                "Time"
+                "Temp"
             ]
         },
         "Response": {
@@ -601,10 +657,13 @@
     {
         "Input": "이번주 우리반 평균 온도 알려줘",
         "Tags": {
-            "Style": [
-                "Implicit modality",
-                "Avg/Diff/Get"
-            ],
+            "Style": {
+                "Type": ["Implicit modality"],
+                "Temporal": "이번주",
+                "Spatials": ["우리반"],
+                "Processing": ["Avg"],
+                "Modality": ["실내온도"]
+            },
             "Returns": [
                 "Temp"
             ]
@@ -634,10 +693,13 @@
     {
         "Input": "지난달 설정온도 평균을 알려줘.",
         "Tags": {
-            "Style": [
-                "Implicit spatial",
-                "Avg/Diff/Get"
-            ],
+            "Style": {
+                "Type": ["Implicit spatial"],
+                "Temporal": "지난달",
+                "Spatials": ["우리반"],
+                "Processing": ["Avg"],
+                "Modality": ["설정온도"]
+            },
             "Returns": [
                 "Temp"
             ]
@@ -667,10 +729,13 @@
     {
         "Input": "1층 평균 실내온도 알려줘",
         "Tags": {
-            "Style": [
-                "Unknown",
-                "Avg/Diff/Get"
-            ],
+            "Style": {
+                "Type": ["Implicit temporal"],
+                "Temporal": "현재",
+                "Spatials": ["1층"],
+                "Processing": ["Avg"],
+                "Modality": ["실내온도"]
+            },
             "Returns": [
                 "Temp"
             ]
@@ -696,12 +761,14 @@
     {
         "Input": "우리반 이번달 제일 추웠던 날은 언제냐?",
         "Tags": {
-            "Style": [
-                "Implicit modality",
-                "ArgMinMax/Compare"
-            ],
+            "Style": {
+                "Type": ["Implicit modality"],
+                "Temporal": "이번달",
+                "Spatials": ["우리반"],
+                "Processing": ["ArgMin"],
+                "Modality": ["실내온도"]
+            },
             "Returns": [
-                "Temp",
                 "Dates"
             ]
         },
@@ -732,12 +799,14 @@
     {
         "Input": "작년 옆반 가장 더웠던 달은?",
         "Tags": {
-            "Style": [
-                "Implicit modality",
-                "ArgMinMax/Compare"
-            ],
+            "Style": {
+                "Type": ["Implicit modality"],
+                "Temporal": "작년",
+                "Spatials": ["옆반"],
+                "Processing": ["ArgMax"],
+                "Modality": ["실내온도"]
+            },
             "Returns": [
-                "Temp",
                 "Dates"
             ]
         },
@@ -768,9 +837,13 @@
     {
         "Input": "오늘 오전 11시에 옆반의 실내온도는 어땠어?",
         "Tags": {
-            "Style": [
-                "Avg/Diff/Get"
-            ],
+            "Style": {
+                "Type": [""],
+                "Temporal": "오늘오전11시",
+                "Spatials": ["옆반"],
+                "Processing": ["Get"],
+                "Modality": ["실내온도"]
+            },
             "Returns": [
                 "Temp"
             ]
@@ -800,10 +873,13 @@
     {
         "Input": "오늘 오후 4시부터 6시까지 실내온도 평균 알려줘",
         "Tags": {
-            "Style": [
-                "Implicit spatial",
-                "Avg/Diff/Get"
-            ],
+            "Style": {
+                "Type": ["Implicit spatial"],
+                "Temporal": "오후4시부터6시",
+                "Spatials": ["우리반"],
+                "Processing": ["Avg"],
+                "Modality": ["실내온도"]
+            },
             "Returns": [
                 "Temp"
             ]
@@ -833,12 +909,14 @@
     {
         "Input": "지난주에 설정온도와 실내온도 차이가 가장 많이 났던 날은?",
         "Tags": {
-            "Style": [
-                "Implicit spatial",
-                "ArgMinMax/Compare"
-            ],
+            "Style": {
+                "Type": ["Implicit spatial"],
+                "Temporal": "지난주",
+                "Spatials": ["우리반"],
+                "Processing": ["Avg","Diff","ArgMax"],
+                "Modality": ["설정온도", "실내온도"]
+            },
             "Returns": [
-                "Temp",
                 "Dates"
             ]
         },
@@ -873,12 +951,14 @@
     {
         "Input": "우리반과 옆반중 더 추운곳은 어디야?",
         "Tags": {
-            "Style": [
-                "Implicit temporal",
-                "ArgMinMax/Compare"
-            ],
+            "Style": {
+                "Type": ["Implicit temporal", "Implicit operations"],
+                "Temporal": "현재",
+                "Spatials": ["우리반", "옆반"],
+                "Processing": ["ArgMin"],
+                "Modality": ["실내온도"]
+            },
             "Returns": [
-                "Temp",
                 "Spatial"
             ]
         },
