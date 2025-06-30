@@ -131,14 +131,21 @@ class ResponseGeneration:
         return variables
     
     @classmethod
-    def execute_raw(cls, input: str) -> str:
+    def execute_raw(cls, input: str, prompt=None) -> str:
         "unsloth"
 
+        chat = []
+        if prompt is not None:
+            chat.append({
+                "role": "system",
+                "content": prompt
+            })
+        chat.append({
+            "role": "user",
+            "content": input
+        })
         chat = cls.tokenizer.apply_chat_template(
-            [{
-                "role": "user",
-                "content": input
-            }],
+            chat,
             tokenize=True,
             add_generation_prompt=True,
             return_tensors="pt"
@@ -165,7 +172,7 @@ class ResponseGeneration:
             expectations=expectations,
             result=result
         )
-        print(formatted_input)
+        # print(formatted_input)
         chat = cls.tokenizer.apply_chat_template(
             [{
                 "role": "system",
