@@ -35,6 +35,7 @@ class ResponseGeneration:
     """Class to generate responses using a LLaMA model."""
     
     instance = None
+
     
     @classmethod
     def initialize(cls, log_output=False, instance_type="llama.cpp"):
@@ -187,7 +188,20 @@ class ResponseGeneration:
             return_tensors="pt"
         ).to(cls.model.device)
 
-
+        # measure_token_count = lambda input: len(tokenizer.encode(str(input)))
+        cls.last_input_str= formatted_input
+        # last_input_token_length = measure_token_count(
+        #     cls.tokenizer.apply_chat_template(
+        #         [{
+        #             "role": "system",
+        #             "content": cls.prompt
+        #         },
+        #         {
+        #             "role": "user",
+        #             "content": formatted_input
+        #         }]
+        #     )
+        # )
         # 모델 추론을 실행합니다.
         outputs = cls.model.generate(
             input_ids=chat,
@@ -200,6 +214,7 @@ class ResponseGeneration:
         responses = cls.tokenizer.batch_decode(outputs, skip_special_tokens=False)
         response = extract_content(responses[0])
 
+        cls.last_output_str = response
         return response, result
     
     @classmethod

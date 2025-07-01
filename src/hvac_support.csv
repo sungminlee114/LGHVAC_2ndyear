@@ -1,0 +1,40 @@
+Input,Support,Axis
+어제 우리반과 옆반의 설정온도 차이 알려줘,Supported,Value
+오늘 우리반과 옆반의 평균 온도차이 알려줘,Supported,Value
+작년 겨울 우리반 평균온도 알려줘,Supported,Value
+올해 여름 앞반 평균온도 알려줘,Supported,Value
+올해 봄 옆반 제일 추웠던 날 알려줘,Supported,Temporal
+4월 앞반 평균온도 알려줘,Supported,Value
+이번달 중 우리반 온도가 가장 덜 더운날이 언제야?,Unsupported,Temporal
+2주전 우리반과 옆반 합쳐서 설정온도가 가장 낮은날이 언제야?,Unsupported,Temporal
+이번달 중 뒷반 온도가 가장 더운날이 언제야?,Unsupported,Temporal
+우리반의 현재 설정 온도 알려줘,Simple get,Value
+8일전 설정온도는?,Supported,Value
+10년 전 오늘 우리반 온도는?,Supported,Value
+롯데캐슬의 현재 온도 알려줘,Simple get,Value
+지금 4층 최대 설정온도 알려줘,Unsupported,Value
+"우리반, 옆반, 앞반 중 가장 추운 방은?",Unsupported,Spatial
+지금 에너지 사용량 알려줘,Simple get,Value
+지난달 오늘 오후 2시에 옆반의 설정온도는 어땠어?,Simple get,Value
+옆반의 현재 온도랑 설정온도 알려줘,Simple get,Value
+이번주 우리반 평균 온도 알려줘,Supported,Value
+지난달 설정온도 평균을 알려줘.,Supported,Value
+1층 평균 실내온도 알려줘,Supported,Value
+우리반 이번달 제일 추웠던 날은 언제냐?,Unsupported,Temporal
+작년 옆반 가장 더웠던 달은?,Unsupported,Temporal
+오늘 오전 11시에 옆반의 실내온도는 어땠어?,Simple get,Value
+오늘 오후 4시부터 6시까지 실내온도 평균 알려줘,Supported,Value
+지난주에 설정온도와 실내온도 차이가 가장 많이 났던 날은?,"Supported, Unsupported",Temporal
+우리반과 옆반중 더 추운곳은 어디야?,Unsupported,Spatial
+이번주 우리반과 앞반의 평균 온도 알려줘,Supported,Value
+현재 설정온도랑 실내온도 차이 알려줘.,Supported,Value
+지난달에 설정온도와 실내온도 차이가 가장 많이 났던 날은?,"Supported, Unsupported",Temporal
+이번주 우리반과 옆반의 평균 실내온도 차이 알려줘,Supported,Value
+2주전 가장 더웠던 날 알려줘,Unsupported,Temporal
+화성의 설정온도 확인해줘,Simple get,Value
+옆반 습도 알려줘,Simple get,Value
+지난 3일 동안 우리반 실내 온도 평균 값 알려줘.,Supported,Value
+오늘 오후 5시에 옆반의 설정온도는 어땠어?,Simple get,Value
+올해 여름 우리반 실내온도 최대값과 최소값 알려줘,Supported,Value
+우리반과 앞반 중 가장 더운 방은?,Unsupported,Spatial
+지금 4층 평균 실내온도 알려줘,Supported,Value
