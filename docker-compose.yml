@@ -13,7 +13,7 @@ services:
     networks:
       - db_n
     ports:
-      - "5432:5432"
+      - "0.0.0.0:9014:5432"   # 8014 포트로 TimescaleDB를 외부에 노출합니다.
   pgadmin_s:
     container_name: pgadmin_c
     image: dpage/pgadmin4
