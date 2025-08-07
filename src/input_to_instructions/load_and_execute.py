@@ -2,7 +2,10 @@ __all__ = ["InputToInstruction"]
 
 import logging
 
-from src.input_to_instructions.types import InstructionQ_raw
+from numpy import require
+from sympy import Not
+
+from src.input_to_instructions.types import InstructionQ_raw, Mapping
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -57,6 +60,68 @@ class InputToInstruction:
         return cls.instance is not None and cls.instance.is_loaded()
     
     @classmethod
+    def postprocess_v2(cls, response_raw, exp_tag=None):
+        # Parse the response
+        # try:
+        if type(response_raw) != dict:
+            response = eval(response_raw)
+        else:
+            response = response_raw
+        
+        try:
+            # thinking = response["Thinking"]
+            expectations = response["Expectations"]
+            if exp_tag not in ["woQM", "woQM+Script"]:
+                mapping = response["Mapping"]
+        
+        except Exception as e:
+            logger.warning(f"Failed to parse response: {response_raw}. Falling to regex.")
+                # raw_instructions = re.search(r'(?<="Instructions": \[)(.*)(?=\])', response_raw, re.DOTALL).group(0)
+                # expectations = re.search(r'(?<="Expectations": \[)(.*)(?=\])', response_raw, re.DOTALL).group(0)
+
+            # if "Expectations" in response:
+            #     expectations = response["Expectations"]
+            # elif exp_tag == "woCoTExp":
+            #     expectations = ""
+            # else:
+            #     raise Exception("Expectations not found in response.")
+        # except Exception as e:
+        #     logger.warning(f"Failed to parse response: {response_raw}. Falling to regex.")
+        #     try:
+        #         raw_instructions = re.search(r'(?<="Instructions": \[)(.*)(?=\])', response_raw, re.DOTALL).group(0)
+        #         expectations = re.search(r'(?<="Expectations": \[)(.*)(?=\])', response_raw, re.DOTALL).group(0)
+        #         if raw_instructions is None or expectations is None:
+        #             logger.error(f"Failed to parse response: {response_raw}.")
+        #             return None
+        #     except Exception as e:
+        #         logger.error(f"Failed to parse response: {response_raw}.")
+        #         return None
+        if exp_tag not in ["woQM", "woQM+Script"]:
+            mapping = Mapping(
+                temporal=mapping["temporal"],
+                spatials=mapping["spatials"],
+                modalities=mapping["modalities"]
+            )
+        else:
+            mapping = None
+
+        if "Script" in response:
+            scripts = response["Script"]
+        else:
+            scripts = None
+
+        expectations = [e.replace("{{", "{{v_") for e in expectations]
+        # Find required variables
+        required_variables = []
+        for expectation in expectations:
+            required_variables += re.findall(r'{{(.*?)}}', expectation)
+        
+        required_variables = list(set(required_variables))
+
+        return mapping, expectations, required_variables, scripts
+
+
+    @classmethod
     def postprocess(cls, response_raw, exp_tag=None):
         # Parse the response
         try:
@@ -100,7 +165,23 @@ class InputToInstruction:
             try:
                 match raw_instruction["type"]:
                     case "q":
-                        if exp_tag != "woQM":
+                        if exp_tag == "woQM":
+                            instructions.append(
+                                InstructionQ_raw(
+                                    query=raw_instruction["query"],
+                                    result_name=raw_instruction["result_name"]
+                                )
+                            )
+                            
+                        elif exp_tag == "v2":
+                            instructions.append(
+                                InstructionQ_v2(
+                                    temporal=raw_instruction["args"]["temporal"],
+                                    spatials=raw_instruction["args"]["spatials"],
+                                    modalities=raw_instruction["args"]["modalities"]
+                                )
+                            )
+                        else:
                             args = raw_instruction["args"]
                             if "table_name" in args:
                                 del args["table_name"]
@@ -112,13 +193,7 @@ class InputToInstruction:
                                     result_name=raw_instruction["result_name"]
                                 )
                             )
-                        else:
-                            instructions.append(
-                                InstructionQ_raw(
-                                    query=raw_instruction["query"],
-                                    result_name=raw_instruction["result_name"]
-                                )
-                            )
+                            
                     case "o":
                         if type(raw_instruction["script"]) == str:
                             scripts = raw_instruction["script"].split(";")
@@ -153,7 +228,8 @@ class InputToInstruction:
 
                     case "r":
                         expectations = raw_instruction["expectations"]
-
+                        if exp_tag == "v2":
+                            expectations = [e.replace("{{", "{{v_") for e in expectations]
                         # Find required variables
                         required_variables = []
                         for expectation in expectations:

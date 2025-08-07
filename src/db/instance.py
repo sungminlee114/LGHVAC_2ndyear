@@ -22,6 +22,8 @@ def parse_temporal(temporal):
         right_bracket = temporal[-1]
         inner = temporal[1:-1]
 
+        inner = inner.replace(")),", "),")
+
         # 중첩된 괄호를 고려하여 외부 콤마 위치 찾기
         paren_count = 0
         split_index = None
@@ -319,7 +321,9 @@ class DBInstance:
             
             # Add raw conditions if provided
             if conditions:
-                where_clauses.extend(conditions)
+                for condition in conditions:
+                    if condition != "LAST_RECORD":
+                        where_clauses.append(condition)
             
             # for each column: check NULL and NaN
             for col in columns:
@@ -334,14 +338,18 @@ class DBInstance:
                 if col in ["roomtemp", "settemp"]:
                     where_clauses.append(sql.SQL("{} IS DISTINCT FROM 'NaN'").format(sql.Identifier(col)))
             
+            if conditions == ["LAST_RECORD"]:
+                # If the condition is "LAST_RECORD", filter to the row with the maximum timestamp
+                where_clauses.append(sql.SQL("timestamp = (SELECT MAX(timestamp) FROM {})").format(sql.Identifier(table_name)))
             # Add WHERE clause if there are any conditions or subqueries
             if where_clauses:
                 where_part = " AND ".join([str(clause) if not isinstance(clause, sql.Composed) else clause.as_string(self.connection) for clause in where_clauses])
                 select_query += sql.SQL(" WHERE {}").format(sql.SQL(where_part))
-            
+
+
+
             # Add sorting by timestamp
             select_query += sql.SQL(" ORDER BY timestamp")
-            
             logger.debug(f"Select query as string: {select_query.as_string(self.connection)}")
             return select_query.as_string(self.connection)
             
@@ -366,6 +374,34 @@ class DBInstance:
             logger.error("Error message: {}".format(e))
             return None
     
+    def get_query_strings_v2(self, metadata, columns, temporals, spatials, get_rowids=False, exp_tag=None):
+        for i in range(len(temporals)):
+            if temporals[i] == "LAST_RECORD":
+                pass
+            else:
+                temporals[i] = parse_temporal(temporals[i])
+                current_datetime = metadata["current_datetime"] # '2022-09-30 00:00:00'
+                current_date = current_datetime.split()[0] # '2022-09-30'
+                year, month, day = map(int, current_date.split('-'))
+                temporals[i] = temporals[i].replace("CURRENT_DATE", f"{current_date}")
+                temporals[i] = temporals[i].replace("CURRENT_YEAR", f"{year}")
+                temporals[i] = temporals[i].replace("CURRENT_MONTH", f"{month}")
+                temporals[i] = temporals[i].replace("CURRENT_TIMESTAMP", f"{current_datetime}")
+        
+
+        for i in range(len(columns)):
+            if "idu_name" in columns[i]:
+                columns[i] = "raw:(SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name"
+        
+        spatials = [f"'{s}'" for s in spatials]
+        return self.structured_query_to_query_string(
+            table_name='data_t',
+            columns=deepcopy(columns),
+            conditions=deepcopy(temporals),
+            subquery=f"idu_id IN (SELECT id FROM idu_t WHERE name IN ({', '.join(spatials)}))",
+            get_rowids=get_rowids
+        )
+
     def get_query_strings(self, metadata, columns, temporal=None, spatials=None, get_rowids=False, exp_tag=None):
         """
         Returns a list of query strings for the given metadata, columns, temporal, spatials, and get_rowids.
@@ -406,6 +442,15 @@ class DBInstance:
                     subquery=f"idu_id IN (SELECT id FROM idu_t WHERE name = {spatial})",
                     get_rowids=get_rowids
                 ) for spatial in spatials]
+
+    def structured_query_data_t_v2(self, metadata, columns, temporals, spatials, get_rowids=False):
+        columns.append("idu_name")
+        columns = list(set(columns))
+
+        query_strings = self.get_query_strings_v2(metadata, columns, temporals, spatials, get_rowids)
+        r = self.execute_structured_query_string(query_strings)
+        return r
+
 
     def structured_query_data_t(self, metadata, columns, temporal=None, spatials=None, get_rowids=False) -> pd.DataFrame:
         """

@@ -1,0 +1,362 @@
+[
+    {
+        "Input": "이번주 우리반과 앞반의 평균 온도 알려줘",
+        "Scenario": "scenario2",
+        "Metadata": {
+            "idu_mapping": {
+                "01_IB5": [
+                    "옆반",
+                    "4층"
+                ],
+                "01_IB7": [
+                    "앞반",
+                    "4층"
+                ],
+                "02_I81": [
+                    "우리반",
+                    "4층"
+                ]
+            },
+            "modality_mapping": {
+                "roomtemp": [
+                    "실내온도"
+                ],
+                "settemp": [
+                    "설정온도"
+                ]
+            },
+            "current_datetime": "2022-09-29 21:30:00"
+        },
+        "Candidate": "SELECT AVG(d.roomtemp) AS avg_roomtemp, AVG(d.settemp) AS avg_settemp FROM public.data_t d JOIN public.idu_t i ON d.idu_id = i.id WHERE i.name IN ('02_I81', '01_IB7') AND d.timestamp >= (TIMESTAMP '2022-09-29 21:30:00' - interval '1 week');"
+    },
+    {
+        "Input": "현재 설정온도랑 실내온도 차이 알려줘.",
+        "Scenario": "scenario2",
+        "Metadata": {
+            "idu_mapping": {
+                "01_IB5": [
+                    "옆반",
+                    "4층"
+                ],
+                "01_IB7": [
+                    "앞반",
+                    "4층"
+                ],
+                "02_I81": [
+                    "우리반",
+                    "4층"
+                ]
+            },
+            "modality_mapping": {
+                "roomtemp": [
+                    "실내온도"
+                ],
+                "settemp": [
+                    "설정온도"
+                ]
+            },
+            "current_datetime": "2022-09-29 21:30:00"
+        },
+        "Candidate": "SELECT d.idu_id, d.roomtemp - d.settemp AS temperature_difference FROM public.data_t d WHERE d.timestamp >= '2022-09-29 21:30:00' AND d.settemp IS NOT NULL AND d.roomtemp IS NOT NULL;"
+    },
+    {
+        "Input": "지난달에 설정온도와 실내온도 차이가 가장 많이 났던 날은?",
+        "Scenario": "scenario2",
+        "Metadata": {
+            "idu_mapping": {
+                "01_IB5": [
+                    "옆반",
+                    "4층"
+                ],
+                "01_IB7": [
+                    "앞반",
+                    "4층"
+                ],
+                "02_I81": [
+                    "우리반",
+                    "4층"
+                ]
+            },
+            "modality_mapping": {
+                "roomtemp": [
+                    "실내온도"
+                ],
+                "settemp": [
+                    "설정온도"
+                ]
+            },
+            "current_datetime": "2022-09-29 21:30:00"
+        },
+        "Candidate": "SELECT d.timestamp FROM public.data_t d WHERE d.idu_id IN (SELECT id FROM public.idu_t WHERE name IN ('02_I81', '01_IB5', '01_IB7')) AND d.timestamp >= (TIMESTAMP '2022-09-29 21:30:00' - interval '1 month') ORDER BY (d.settemp - d.roomtemp) DESC LIMIT 1;"
+    },
+    {
+        "Input": "이번주 우리반과 옆반의 평균 실내온도 차이 알려줘",
+        "Scenario": "scenario2",
+        "Metadata": {
+            "idu_mapping": {
+                "01_IB5": [
+                    "옆반",
+                    "4층"
+                ],
+                "01_IB7": [
+                    "앞반",
+                    "4층"
+                ],
+                "02_I81": [
+                    "우리반",
+                    "4층"
+                ]
+            },
+            "modality_mapping": {
+                "roomtemp": [
+                    "실내온도"
+                ],
+                "settemp": [
+                    "설정온도"
+                ]
+            },
+            "current_datetime": "2022-09-29 21:30:00"
+        },
+        "Candidate": "SELECT AVG(d.roomtemp) AS avg_roomtemp, (SELECT AVG(d2.roomtemp) FROM public.data_t d2 WHERE d2.idu_id IN (SELECT id FROM public.idu_t WHERE name = '01_IB5')) AS avg_roomtemp_neighbor FROM public.data_t d WHERE d.idu_id IN (SELECT id FROM public.idu_t WHERE name = '02_I81') AND d.timestamp >= (TIMESTAMP '2022-09-29 21:30:00' - interval '1 week') AND d.timestamp < TIMESTAMP '2022-09-29 21:30:00';"
+    },
+    {
+        "Input": "2주전 가장 더웠던 날 알려줘",
+        "Scenario": "scenario2",
+        "Metadata": {
+            "idu_mapping": {
+                "01_IB5": [
+                    "옆반",
+                    "4층"
+                ],
+                "01_IB7": [
+                    "앞반",
+                    "4층"
+                ],
+                "02_I81": [
+                    "우리반",
+                    "4층"
+                ]
+            },
+            "modality_mapping": {
+                "roomtemp": [
+                    "실내온도"
+                ],
+                "settemp": [
+                    "설정온도"
+                ]
+            },
+            "current_datetime": "2022-09-29 21:30:00"
+        },
+        "Candidate": "SELECT d.timestamp, d.roomtemp FROM public.data_t d WHERE d.idu_id IN (SELECT id FROM public.idu_t WHERE name IN ('02_I81', '01_IB5', '01_IB7')) AND d.roomtemp IS NOT NULL AND d.timestamp >= (TIMESTAMP '2022-09-29 21:30:00' - interval '2 weeks') ORDER BY d.roomtemp DESC LIMIT 1;"
+    },
+    {
+        "Input": "화성의 설정온도 확인해줘",
+        "Scenario": "scenario2",
+        "Metadata": {
+            "idu_mapping": {
+                "01_IB5": [
+                    "옆반",
+                    "4층"
+                ],
+                "01_IB7": [
+                    "앞반",
+                    "4층"
+                ],
+                "02_I81": [
+                    "우리반",
+                    "4층"
+                ]
+            },
+            "modality_mapping": {
+                "roomtemp": [
+                    "실내온도"
+                ],
+                "settemp": [
+                    "설정온도"
+                ]
+            },
+            "current_datetime": "2022-09-29 21:30:00"
+        },
+        "Candidate": "SELECT d.settemp FROM public.data_t d WHERE d.idu_id IN (SELECT id FROM public.idu_t WHERE name = '화성');"
+    },
+    {
+        "Input": "옆반 습도 알려줘",
+        "Scenario": "scenario2",
+        "Metadata": {
+            "idu_mapping": {
+                "01_IB5": [
+                    "옆반",
+                    "4층"
+                ],
+                "01_IB7": [
+                    "앞반",
+                    "4층"
+                ],
+                "02_I81": [
+                    "우리반",
+                    "4층"
+                ]
+            },
+            "modality_mapping": {
+                "roomtemp": [
+                    "실내온도"
+                ],
+                "settemp": [
+                    "설정온도"
+                ]
+            },
+            "current_datetime": "2022-09-29 21:30:00"
+        },
+        "Candidate": "SELECT d.settemp FROM public.data_t d JOIN public.idu_t i ON d.idu_id = i.id WHERE i.name = '01_IB5' AND d.timestamp >= '2022-09-29 21:30:00';"
+    },
+    {
+        "Input": "지난 3일 동안 우리반 실내 온도 평균 값 알려줘.",
+        "Scenario": "scenario2",
+        "Metadata": {
+            "idu_mapping": {
+                "01_IB5": [
+                    "옆반",
+                    "4층"
+                ],
+                "01_IB7": [
+                    "앞반",
+                    "4층"
+                ],
+                "02_I81": [
+                    "우리반",
+                    "4층"
+                ]
+            },
+            "modality_mapping": {
+                "roomtemp": [
+                    "실내온도"
+                ],
+                "settemp": [
+                    "설정온도"
+                ]
+            },
+            "current_datetime": "2022-09-29 21:30:00"
+        },
+        "Candidate": "SELECT AVG(d.roomtemp) AS average_roomtemp FROM public.data_t d JOIN public.idu_t i ON d.idu_id = i.id WHERE i.name = '02_I81' AND d.timestamp > (TIMESTAMP '2022-09-29 21:30:00' - interval '3 days');"
+    },
+    {
+        "Input": "오늘 오후 5시에 옆반의 설정온도는 어땠어?",
+        "Scenario": "scenario2",
+        "Metadata": {
+            "idu_mapping": {
+                "01_IB5": [
+                    "옆반",
+                    "4층"
+                ],
+                "01_IB7": [
+                    "앞반",
+                    "4층"
+                ],
+                "02_I81": [
+                    "우리반",
+                    "4층"
+                ]
+            },
+            "modality_mapping": {
+                "roomtemp": [
+                    "실내온도"
+                ],
+                "settemp": [
+                    "설정온도"
+                ]
+            },
+            "current_datetime": "2022-09-29 21:30:00"
+        },
+        "Candidate": "SELECT d.settemp FROM public.data_t d JOIN public.idu_t i ON d.idu_id = i.id WHERE i.name = '01_IB5' AND d.timestamp >= '2022-09-29 17:00:00' AND d.timestamp < '2022-09-30 00:00:00';"
+    },
+    {
+        "Input": "올해 여름 우리반 실내온도 최대값과 최소값 알려줘",
+        "Scenario": "scenario2",
+        "Metadata": {
+            "idu_mapping": {
+                "01_IB5": [
+                    "옆반",
+                    "4층"
+                ],
+                "01_IB7": [
+                    "앞반",
+                    "4층"
+                ],
+                "02_I81": [
+                    "우리반",
+                    "4층"
+                ]
+            },
+            "modality_mapping": {
+                "roomtemp": [
+                    "실내온도"
+                ],
+                "settemp": [
+                    "설정온도"
+                ]
+            },
+            "current_datetime": "2022-09-29 21:30:00"
+        },
+        "Candidate": "SELECT MAX(d.roomtemp) AS max_roomtemp, MIN(d.roomtemp) AS min_roomtemp FROM public.data_t d JOIN public.idu_t i ON d.idu_id = i.id WHERE i.name = '02_I81' AND EXTRACT(YEAR FROM d.timestamp) = EXTRACT(YEAR FROM TIMESTAMP '2022-09-29 21:30:00') AND EXTRACT(SEASON FROM d.timestamp) ='summer';"
+    },
+    {
+        "Input": "우리반과 앞반 중 가장 더운 방은?",
+        "Scenario": "scenario2",
+        "Metadata": {
+            "idu_mapping": {
+                "01_IB5": [
+                    "옆반",
+                    "4층"
+                ],
+                "01_IB7": [
+                    "앞반",
+                    "4층"
+                ],
+                "02_I81": [
+                    "우리반",
+                    "4층"
+                ]
+            },
+            "modality_mapping": {
+                "roomtemp": [
+                    "실내온도"
+                ],
+                "settemp": [
+                    "설정온도"
+                ]
+            },
+            "current_datetime": "2022-09-29 21:30:00"
+        },
+        "Candidate": "WITH room_temps AS (SELECT d.idu_id, d.roomtemp FROM public.data_t d WHERE d.timestamp >= '2022-09-29 21:30:00'::TIMESTAMP) SELECT idu.name, MAX(room_temps.roomtemp) AS max_room_temp FROM room_temps JOIN public.idu_t idu ON room_temps.idu_id = idu.id WHERE idu.name IN ('02_I81', '01_IB7') GROUP BY idu.name ORDER BY max_room_temp DESC NULLS LAST LIMIT 1;"
+    },
+    {
+        "Input": "지금 4층 평균 실내온도 알려줘",
+        "Scenario": "scenario2",
+        "Metadata": {
+            "idu_mapping": {
+                "01_IB5": [
+                    "옆반",
+                    "4층"
+                ],
+                "01_IB7": [
+                    "앞반",
+                    "4층"
+                ],
+                "02_I81": [
+                    "우리반",
+                    "4층"
+                ]
+            },
+            "modality_mapping": {
+                "roomtemp": [
+                    "실내온도"
+                ],
+                "settemp": [
+                    "설정온도"
+                ]
+            },
+            "current_datetime": "2022-09-29 21:30:00"
+        },
+        "Candidate": "SELECT AVG(d.roomtemp) AS average_roomtemp FROM public.data_t d WHERE d.timestamp >= '2022-09-29 21:30:00' AND d.idu_id IN (SELECT id FROM public.idu_t WHERE name IN ('02_I81', '01_IB5', '01_IB7'));"
+    }
+]

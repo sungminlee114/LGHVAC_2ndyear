@@ -1,6 +1,5 @@
-{   
-    "idu_name": "02_I84",
-    "idu_mapping": {"02_I84": ["4층"], "02_I85": ["4층"], "01_IB7": ["4층"]},
-    "modality_mapping": {"roomtemp": ["실내온도"], "settemp": ["설정온도"], "oper": ["전원"]},
-    "current_datetime": "2022-09-17 16:30:00"
+{
+    "idu_mapping": {"01_IB5": ["옆반", "4층"], "01_IB7": ["앞반", "4층"], "02_I81": ["우리반", "4층"]},
+    "modality_mapping": {"roomtemp": ["실내온도"], "settemp": ["설정온도"]},
+    "current_datetime": "2022-09-29 21:30:00"
 }
