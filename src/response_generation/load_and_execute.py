@@ -60,9 +60,9 @@ class ResponseGeneration:
             )
             cls.instance.load()
         elif instance_type == "unsloth":
-            # model_id = 'sh2orc/Llama-3.1-Korean-8B-Instruct'
+            model_id = 'sh2orc/Llama-3.1-Korean-8B-Instruct'
             # model_id = 'Bllossom/llama-3-Korean-Bllossom-70B'
-            model_id = 'LGAI-EXAONE/EXAONE-3.5-7.8B-Instruct'
+            # model_id = 'LGAI-EXAONE/EXAONE-3.5-7.8B-Instruct'
             model_dir = f"/model/{model_id.replace('/', '-')}"
             if torch.cuda.get_device_capability()[0] >= 8:
                 attn_implementation = "flash_attention_2"
@@ -90,6 +90,15 @@ class ResponseGeneration:
                 device_map="cuda",
             )
             FastLanguageModel.for_inference(model)
+
+            # print("Warning: quick fix to This model does not support cache_implementation='static'")
+            # original_f = model._prepare_cache_for_generation
+
+            # def patched_f(self, generation_config, model_kwargs, assistant_model, batch_size, max_cache_length):
+            #     generation_config.cache_implementation = 'dynamic'
+            #     return original_f(self, generation_config, model_kwargs, assistant_model, batch_size, max_cache_length)
+
+            # model._prepare_cache_for_generation = patched_f
             
             tokenizer.padding_side = "left"
             cls.model, cls.tokenizer = model, tokenizer
@@ -158,6 +167,7 @@ class ResponseGeneration:
 
         response = cls.tokenizer.batch_decode(outputs, skip_special_tokens=False)
         return response[0]
+
     
     @classmethod
     def execute_v2(cls, expectations: list[str], required_variables: list[str], variables: dict, input: str, exp_tag=None) -> tuple[str | None, dict]:
