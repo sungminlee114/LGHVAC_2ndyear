@@ -1,0 +1,248 @@
+  0%|          | 0/64 [00:00<?, ?it/s]
+ 62%|██████▎   | 40/64 [01:03<00:35,  1.49s/it]
+Error in executing script: v_현재_우리반_df = data_(metadata, mapping, query_results, t='현재',s='우리반')
+'types.UnionType' object is not iterable
+Error in running query_v2: 'types.UnionType' object is not iterable
+ 78%|███████▊  | 50/64 [01:08<00:11,  1.25it/s]
+Error in executing script: v_현재_실내온도_최고_공간({{v_현재_실내온도_최고_공간}})이 {{v_현재_실내온도_최고_공간別}}보다 {{v_현재_실내온도_차이}}℃ 더 높습니다.
+invalid character '℃' (U+2103) (<string>, line 1)
+Error in running query_v2: invalid character '℃' (U+2103) (<string>, line 1)
+100%|██████████| 64/64 [01:24<00:00,  1.32s/it]
+Error in executing script: v_3주전_우리반_실내온도_22℃이상_날짜 = []
+invalid character '℃' (U+2103) (<string>, line 1)
+Error in running query_v2: invalid character '℃' (U+2103) (<string>, line 1)
+Results for ../experiments/revision/r-v7_r211_a422_ours_tr27_0629-step-45.json:
+JsonStructureCorrectness: 1.00
+ExactMatch: 0.84
+Recall: 0.85
+Precision: 0.96
+
+ 41%|████      | 26/64 [00:39<01:14,  1.96s/it]Failed to parse input:  우리반과 옆반중 더 추운곳은 어디야? {"Thinking": "사용자는 현재 우리반과 옆반 중 실내온도가 더 낮은 곳을 알고싶어함. 현재 우리반과 옆반의 실내온도를 쿼리한 후 더 낮은 실내온도를 가진 방과 그 온도를 반환하면 됨.", "Mapping": {"temporal": {"현재": "LAST_RECORD"}, "spatials": {"우리반": "01_IB5", "옆반": "01_IB7"}, "modalities": {"실내온도": "roomtemp"}}, "Script": ["v_현재_우리반_실내온도_df = data(t='현재',s='우리반',m='실내온도')", "v_현재_옆반_실내온도_df = data(t='현재',s='옆반',m='실내온도')", "v_현재_실내온도 = {'우리반': v_현재_우리반_실내온도_df['실내온도'].values[0], '옆반': v_현재_옆반_실내온도_df['실내온도'].values[0]}", "v_현재_실내온도_낮은_공간, v_현재_실내온도_높은_공간 = ('우리반', '옆반') if v_현재_실내온도['우리반'] < v_현재_실내온도['옆반'] else ('옆반', '우리반')", "v_현재_실내온도_차이 = abs(v_현재_실내온도[v_현재_실내온도_낮은_공간] - v_현재_실내온도[v_현재_실내온도_높은_공간])", "v_현재_실내온도_낮은_공간_실내온도, v_현재_실내온도_높은_공간_실내온도 = v_현재_실내온도[v_현재_실내온도_낮은_공간], v_현재_실내온도[v_현재_실내온도_높은_공간]""]}
+ 58%|█████▊    | 37/64 [00:58<00:38,  1.43s/it]Failed to parse input:  우리반과 앞반 중 가장 더운 방은? {"Thinking": "사용자는 현재 우리반과 앞반 중 실내온도가 높은 곳을 알고싶어함. 현재 우리반과 앞반의 실내온도를 쿼리한 후 더 높은 실내온도를 가진 방과 그 온도를 반환하면 됨.", "Mapping": {"temporal": {"현재": "LAST_RECORD"}, "spatials": {"우리반": "02_I81", "앞반": "02_I83"}, "modalities": {"실내온도": "roomtemp"}}, "Script": ["v_현재_우리반_실내온도_df = data(t='현재',s='우리반',m='실내온도')", "v_현재_앞반_실내온도_df = data(t='현재',s='앞반',m='실내온도')", "v_현재_실내온도 = {'우리반': v_현재_우리반_실내온도_df['실내온도'].values[0], '앞반': v_현재_앞반_실내온도_df['실내온도'].values[0]}", "v_현재_실내온도_높은_공간, v_현재_실내온도_낮은_공간 = ('우리반', '앞반') if v_현재_실내온도['우리반'] > v_현재_실내온도['앞반'] else ('앞반', '우리반')", "v_현재_실내온도_차이 = abs(v_현재_실내온도[v_현재_실내온도_높은_공간] - v_현재_실내온도[v_현재_실내온도_낮은_공간])", "v_현재_실내온도_높은_공간_실내온도, v_현재_실내온도_낮은_공간_실내온도 = (v_현재_실내온도[v_현재_실내온도_높은_공간], v_현재_실내온도[v_현재_실내온도_낮은_공간])", "v_현재_실내온도_공간_정보 = {v_현재_실내온도_높은_공간: v_현재_실내온도_높은_공간_실내온도, v_현재_실내온도_낮은_공간: v_현재_실내온도_낮은_공간_실내온도}", "v_현재_실내온도_공간_정보"}
+ 77%|███████▋  | 49/64 [01:15<00:21,  1.41s/it]Failed to parse input:  우리집과 앞집 중 가장 더운 집은? {"Thinking": "사용자는 현재 우리집과 앞집 중 실내온도가 더 높은 곳을 알고싶어함. 현재 우리집과 앞집의 실내온도를 쿼리한 후 더 높은 실내온도를 가진 집과 그 온도를 반환하면 됨.", "Mapping": {"temporal": {"현재": "LAST_RECORD"}, "spatials": {"우리집": "02_I81", "앞집": "02_I84"}, "modalities": {"실내온도": "roomtemp"}}, "Script": ["v_현재_우리집_실내온도_df = data(t='현재',s='우리집',m='실내온도')", "v_현재_앞집_실내온도_df = data(t='현재',s='앞집',m='실내온도')", "v_현재_실내온도 = {'우리집': v_현재_우리집_실내온도_df['실내온도'].values[0], '앞집': v_현재_앞집_실내온도_df['실내온도'].values[0]}", "v_현재_실내온도_높은_공간, v_현재_실내온도_낮은_공간 = ('우리집', '앞집') if v_현재_실내온도['우리집'] > v_현재_실내온도['앞집'] else ('앞집', '우리집')", "v_현재_실내온도_차이 = abs(v_현재_실내온도[v_현재_실내온도_높은_공간] - v_현재_실내온도[v_현재_실내온도_낮은_공간])", "v_현재_실내온도_높은_공간_실내온도, v_현재_실내온도_낮은_공간_실내온도 = (v_현재_실내온도[v_현재_실내온도_높은_공간], v_현재_실내온도[v_현재_실내온도_낮은_공간])", "v_현재_실내온도_공간_정보 = {v_현재_실내온도_높은_공간: v_현재_실내온도_높은_공간_실내온도, v_현재_실내온도_낮은_공간: v_현재_실내온도_낮은_공간_실내온도}"}}
+ 83%|████████▎ | 53/64 [01:18<00:10,  1.05it/s]Failed to parse input:  지난달에 설정온도와 실내온도 차이가 가장 많이 났던 날은? 오류발생
+100%|██████████| 64/64 [01:30<00:00,  1.41s/it]
+Error in executing script: v_3주전_우리반_실내온도_22도이상_날짜 = get_time(v_3주전_우리반_실내온도_df[v_3주전_우리반_실내온도_df['실내온도'] > 22]['실내온도'], fmt='date')
+'timestamp'
+Error in running query_v2: 'timestamp'
+Results for ../experiments/revision/r-v7_r211_a422_woExp_tr27_0629-step-30.json:
+JsonStructureCorrectness: 0.94
+ExactMatch: 0.77
+Recall: 0.78
+Precision: 0.92
+ 25%|██▌       | 16/64 [00:21<00:22,  2.18it/s]Error in executing script: v_현재_방별_실내온도 = {{현재_시각}}_v_현재_방별_실내온도_df['실내온도']
+invalid syntax (<string>, line 1)
+Error in running query_v2: invalid syntax (<string>, line 1)
+Error in executing script: v_현재_우리반_에너지_사용량_df = data_(metadata, mapping, query_results, t='현재',s='우리반',m='에너지 사용량')
+column "에너지사용량" does not exist
+LINE 1: SELECT "에너지사용량", (SELECT name FROM idu_t WHERE id = da...
+               ^
+
+Error in running query_v2: column "에너지사용량" does not exist
+LINE 1: SELECT "에너지사용량", (SELECT name FROM idu_t WHERE id = da...
+               ^
+
+ 28%|██▊       | 18/64 [00:21<00:18,  2.43it/s]Error in executing script: v_현재_옆반_df = data_(metadata, mapping, query_results, t='현재_시각',s='옆반',m=['실내온도', '설정온도'])
+syntax error at or near "12"
+LINE 1: ...RE name IN ('01_IB7')) AND timestamp = 2022-09-30 12:00:00 A...
+                                                             ^
+
+Error in running query_v2: syntax error at or near "12"
+LINE 1: ...RE name IN ('01_IB7')) AND timestamp = 2022-09-30 12:00:00 A...
+                                                             ^
+
+ 41%|████      | 26/64 [00:39<01:10,  1.86s/it]Error in executing script: v_지난주_우리반_온도차이_최고 = v_지난주_우리반_온도차이_df['설정온도-실내온도'].abs().max()
+'설정온도-실내온도'
+Error in running query_v2: '설정온도-실내온도'
+ 47%|████▋     | 30/64 [00:45<00:52,  1.55s/it]Error in executing script: v_지난달_우리반_온도차이_최고 = v_지난달_우리반_온도차이_df['설정온도-실내온도'].abs().max()
+'설정온도-실내온도'
+Error in running query_v2: '설정온도-실내온도'
+ 53%|█████▎    | 34/64 [00:51<00:32,  1.09s/it]Error in executing script: v_현재_옆반_습도_df = data_(metadata, mapping, query_results, t='현재_시각',s='옆반',m='습도')
+syntax error at or near "21"
+LINE 1: ...RE name IN ('01_IB5')) AND timestamp = 2022-09-29 21:30:00 A...
+                                                             ^
+
+Error in running query_v2: syntax error at or near "21"
+LINE 1: ...RE name IN ('01_IB5')) AND timestamp = 2022-09-29 21:30:00 A...
+                                                             ^
+
+ 59%|█████▉    | 38/64 [00:56<00:29,  1.13s/it]Error in executing script: ,v_현재_앞반_실내온도_최고 = v_현재_앞반_실내온도_df['실내온도'].max()
+invalid syntax (<string>, line 1)
+Error in running query_v2: invalid syntax (<string>, line 1)
+ 66%|██████▌   | 42/64 [01:01<00:33,  1.53s/it]Error in executing script: v_지난달_우리반_온도차이_최고 = v_지난달_우리반_온도차이_df['설정온도-실내온도'].abs().max()
+'설정온도-실내온도'
+Error in running query_v2: '설정온도-실내온도'
+ 70%|███████   | 45/64 [01:06<00:27,  1.46s/it]Failed to parse input:  옆집 습도 알려줘 {"Expectations": ["옆집의 습도는 {{현재_옆집_습도}}%입니다."], "Mapping": {"temporal": {"현재_시각": "CURRENT_TIMESTAMP"}, "spatials": {"현재_옆집_습도": "v_현재_옆집_습도"}, "modalities": {"습도": "humidity"}}, "Script": ["v_현재_옆집_습도 = v_현재_우리반_실내온도_df['옆집']['습도']"}}
+ 78%|███████▊  | 50/64 [01:11<00:15,  1.14s/it]Error in executing script: v_현재_실내온도_차이 = v_현재_우리집_실내온도 - v_현재_앞집_실내온도
+name 'v_현재_우리집_실내온도' is not defined
+Error in running query_v2: name 'v_현재_우리집_실내온도' is not defined
+ 84%|████████▍ | 54/64 [01:17<00:15,  1.57s/it]Error in executing script: v_지난달_우리반_온도차이_최고 = v_지난달_우리반_온도차이_df['온도차이'].max()
+'온도차이'
+Error in running query_v2: '온도차이'
+ 91%|█████████ | 58/64 [01:21<00:05,  1.09it/s]Error in executing script: v_현재_옆반_습도_df = data_(metadata, mapping, query_results, t='현재_시각',s='옆반',m='습도')
+syntax error at or near "22"
+LINE 1: ...RE name IN ('02_I81')) AND timestamp = 2022-09-28 22:30:00 A...
+                                                             ^
+
+Error in running query_v2: syntax error at or near "22"
+LINE 1: ...RE name IN ('02_I81')) AND timestamp = 2022-09-28 22:30:00 A...
+                                                             ^
+
+ 98%|█████████▊| 63/64 [01:26<00:00,  1.23it/s]Error in executing script: v_현재_우리반_실내온도_최고_방 = v_현재_우리반_실내온도_df['실내온도'].max() +'(' + v_현재_우리반_실내온도_df[v_현재_우리반_실내온도_df['실내온도'] == v_현재_우리반_실내온도_최고_방]['방'] + ')'
+ufunc 'add' did not contain a loop with signature matching types (dtype('float64'), dtype('<U1')) -> None
+Error in running query_v2: ufunc 'add' did not contain a loop with signature matching types (dtype('float64'), dtype('<U1')) -> None
+Error in executing script: v_현재_4층_실내온도_22℃이상_방 = [v for v in v_현재_4층_실내온도_df['방'].values if v_현재_4층_실내온도_df[v_현재_4층_실내온도_df['방'] == v]['실내온도'].values >= 22]
+invalid character '℃' (U+2103) (<string>, line 1)
+Error in running query_v2: invalid character '℃' (U+2103) (<string>, line 1)
+100%|██████████| 64/64 [01:27<00:00,  1.36s/it]Error in executing script: v_3주전_우리반_설정온도_22℃이상_날짜 = get_time(v_3주전_우리반_설정온도_df[v_3주전_우리반_설정온도_df['설정온도'] >= 22]['설정온도'])
+invalid character '℃' (U+2103) (<string>, line 1)
+Error in running query_v2: invalid character '℃' (U+2103) (<string>, line 1)
+Results for ../experiments/revision/r-v7_r211_a422_WoMetadata+Thinking_tr27_0629-step-30.json:
+JsonStructureCorrectness: 0.98
+ExactMatch: 0.78
+Recall: 0.81
+Precision: 0.90
+
+ 62%|██████▎   | 40/64 [01:05<00:37,  1.55s/it]
+Failed to parse input:  현재 설정온도랑 실내온도 차이 알려줘. {"Expectations": ["현재 설정온도({{현재_설정온도}}℃)와 실내온도({{현재_실내온도}}℃) 차이는 {{현재_설정온도_실내온도_차이}}℃입니다."], "Mapping": {"temporal": {"현재": "LAST_RECORD"}, "spatials": {"우리반": "Unknown"}, "modalities": {"설정온도": "settemp"}, "실내온도": "roomtemp"}}, "Script": ["v_현재_우리반_설정온도_df = data(t='현재',s='우리반',m='설정온도')", "v_현재_우리반_실내온도_df = data(t='현재',s='우리반',m='실내온도')", "v_현재_설정온도 = v_현재_우리반_설정온도_df['설정온도'].values[0]", "v_현재_실내온도 = v_현재_우리반_실내온도_df['실내온도'].values[0]", "v_현재_설정온도_실내온도_차이 = v_현재_설정온도 - v_현재_실내온도"]}
+ 66%|██████▌   | 42/64 [01:05<00:21,  1.02it/s]
+Error in executing script: v_지난달_우리반_설정온도_실내온도_차이_최고_날짜 = get_time(v_지난달_우리반_설정온도_실내온도_차이_최고_df, fmt='date')
+'timestamp'
+Error in running query_v2: 'timestamp'
+ 77%|███████▋  | 49/64 [01:11<00:15,  1.06s/it]
+Error in executing script: v_현재_우리반_실내온도_df = data_(metadata, mapping, query_results, t='현재',s=['우리반'],m='실내온도')
+'우리반'
+Error in running query_v2: '우리반'
+100%|██████████| 64/64 [01:26<00:00,  1.35s/it]
+Failed to parse input:  3주전 온도가 22℃ 이상이었던 날짜 알려줘 오류발생
+Results for ../experiments/revision/r-v7_r211_a422_WoThinking_tr27_0629-step-31.json:
+JsonStructureCorrectness: 0.97
+ExactMatch: 0.88
+Recall: 0.86
+Precision: 0.99
+ 45%|████▌     | 29/64 [00:51<00:59,  1.69s/it]
+Error in executing script: v_현재_우리반_설정온도, v_현재_우리반_실내온도 = v_현재_우리반_df['settemp'], v_현재_우리반_df['roomtemp'] = v_현재_우리반_df['roomtemp'], v_현재_우리반_df['settemp'] = v_현재_우리반_df['settemp']
+not enough values to unpack (expected 2, got 1)
+Error in running query_v2: not enough values to unpack (expected 2, got 1)
+Failed to parse input:  지난달에 설정온도와 실내온도 차이가 가장 많이 났던 날은? {"Thinking": "사용자는 지난달 설정온도와 실내온도 차이가 가장 컸던 날짜를 알고 싶어함. 해당 기간의 데이터가 있으면 차이를 계산하여 가장 컸던 날과 그 차이를 반환하면 됨. 해당 기간의 데이터가 없으면 "데이터가 없습니다."와 같은 명시된 모든 variable이 script에서 계산되야 한다.", "Expectations": ["지난달 설정온도와 실내온도 차이가 가장 컸던 날은 {{지난달_설정온도와_실내온도_차이_최고_날짜}}로 {{지난달_설정온도와_실내온도_차이_최고}}℃였습니다."], "Script": ["v_지난달_설정온도_df = \"SELECT \"settemp\", \"roomtemp\", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, \"timestamp\" FROM \"data_t\" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5', '01_IB7', '02_I81')) AND timestamp >= TIMESTAMP '2022-08-29 00:00:00' AND timestamp < TIMESTAMP '2022-09-30 00:00:00' AND \"settemp\" IS NOT NULL AND \"settemp\" IS DISTINCT FROM 'NaN' AND \"roomtemp\" IS NOT NULL AND \"roomtemp\" IS DISTINCT FROM 'NaN' ORDER BY timestamp\"", "v_지난달_설정온도와_실내온도_차이 = v_지난달_설정온도_df['settemp'] - v_지난달_설정온도_df['roomtemp']", "v_지난달_설정온도와_실내온도_차이_최고 = v_지난달_설정온도와_실내온도_차이.max()", "v_지난달_설정온도와_실내온도_차이_최고_df = v_지난달_설정온도와_실내온도_차이[v_지난달_설정온도와_실내온도_차이 == v_지난달_설정온도와_실내온도_차이_최고]", "v_지난달_설정온도와_실내온도_차이_최고_날짜 = get_time(v_지난달_설정온도와_실내온도_차이_최고_df, fmt='date')"]}
+ 64%|██████▍   | 41/64 [01:04<00:25,  1.10s/it]
+Error in executing script: v_현재_우리반_설정온도, v_현재_우리반_실내온도 = v_현재_우리반_df['settemp'], v_현재_우리반_df['roomtemp'] = v_현재_우리반_df['roomtemp'], v_현재_우리반_df['settemp'] = v_현재_우리반_df['settemp']
+too many values to unpack (expected 2)
+Error in running query_v2: too many values to unpack (expected 2)
+ 77%|███████▋  | 49/64 [01:26<00:41,  2.80s/it]
+Failed to parse input:  우리집과 앞집 중 가장 더운 집은? {"Thinking": "사용자는 현재 우리반과 앞반 중 실내온도가 더 높은 곳을 알고싶어함. 현재 우리반과 앞반의 실내온도를 쿼리한 후 더 높은 실내온도를 가진 방과 그 온도를 반환하면 됨.", "Expectations": ["{{현재_실내온도_최고_공간}}({{현재_실내온도_최고_공간_실내온도}}℃)이 {{현재_실내온도_최고_공간_반}}로 {{현재_실내온도_다음_공간_실내온도}}℃ 더 높아요."], "Script": ["v_현재_우리반_실내온도_df = \"SELECT \"roomtemp\", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, \"timestamp\" FROM \"data_t\" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB7', '02_I83')) AND \"roomtemp\" IS NOT NULL AND \"roomtemp\" IS DISTINCT FROM 'NaN' AND timestamp = (SELECT MAX(timestamp) FROM \"data_t\") ORDER BY timestamp\"", "v_현재_앞반_실내온도_df = \"SELECT \"roomtemp\", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, \"timestamp\" FROM \"data_t\" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('02_I84')) AND \"roomtemp\" IS NOT NULL AND \"roomtemp\" IS DISTINCT FROM 'NaN' AND timestamp = (SELECT MAX(timestamp) FROM \"data_t\") ORDER BY timestamp\"", "v_현재_실내온도 = {'우리반': v_현재_우리반_실내온도_df['roomtemp'].values[0], '앞반': v_현재_앞반_실내온도_df['roomtemp'].values[0]}", "v_현재_실내온도_최고_공간, v_현재_실내온도_다음_공간 = ('우리반', '앞반') if v_현재_실내온도['우리반'] > v_현재_실내온도['앞반'] else ('앞반', '우리반')", "v_현재_실내온도_최고_공간_실내온도 = v_현재_실내온도[v_현재_실내온도_최고_공간]['roomtemp']", "v_현재_실내온도_최고_공간_반 = v_현재_실내온도[v_현재_실내온도_최고_공간]['roomtemp']"]
+ 84%|████████▍ | 54/64 [01:35<00:26,  2.66s/it]
+Error in executing script: v_지난달_설정온도와_실내온도_df = "SELECT "settemp", "roomtemp", "timestamp" FROM "data_t" WHERE timestamp >= TIMESTAMP '2022-08-01 00:00:00' AND timestamp < TIMESTAMP '2022-09-01 00:00:00' AND "settemp" IS NOT NULL AND "settemp" IS DISTINCT FROM 'NaN' AND "roomtemp" IS NOT NULL AND "roomtemp" IS DISTINCT FROM 'NaN' ORDER BY timestamp"
+list.remove(x): x not in list
+Error in running query_v2: list.remove(x): x not in list
+ 98%|█████████▊| 63/64 [01:46<00:01,  1.01s/it]
+Error in executing script: v_현재_4층_실내온도_22℃이상_방 = get_spatials(v_현재_4층_방별_실내온도_df[v_현재_4층_방별_실내온도_df['roomtemp'] >= 22], 'roomtemp')
+invalid character '℃' (U+2103) (<string>, line 1)
+Error in running query_v2: invalid character '℃' (U+2103) (<string>, line 1)
+100%|██████████| 64/64 [01:48<00:00,  1.69s/it]
+Error in executing script: v_3주전_실내온도_22℃이상_날짜 = get_time(v_3주전_실내온도_df[v_3주전_실내온도_df['roomtemp'] >= 22]['timestamp'])
+invalid character '℃' (U+2103) (<string>, line 1)
+Error in running query_v2: invalid character '℃' (U+2103) (<string>, line 1)
+Results for ../experiments/revision/r-v7_r211_a422_woQM_tr27_0629-step-30.json:
+JsonStructureCorrectness: 0.97
+ExactMatch: 0.69
+Recall: 0.82
+Precision: 0.81
+ 53%|█████▎    | 34/64 [01:02<00:43,  1.44s/it]
+Error in executing script: v_현재_옆반_습도_df = "SELECT "temp", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, "timestamp" FROM "data_t" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5')) AND "temp" IS NOT NULL AND "temp" IS DISTINCT FROM 'NaN' AND timestamp = (SELECT MAX(timestamp) FROM "data_t") ORDER BY timestamp"
+column "temp" does not exist
+LINE 1: SELECT id,  "temp", (SELECT name FROM idu_t WHERE id = data_...
+                    ^
+
+Error in running query_v2: column "temp" does not exist
+LINE 1: SELECT id,  "temp", (SELECT name FROM idu_t WHERE id = data_...
+                    ^
+
+ 72%|███████▏  | 46/64 [01:28<00:32,  1.81s/it]
+Error in executing script: v_현재_옆집_습도_df = "SELECT "modalitytemp", (SELECT name FROM idutemp WHERE id = datatemp.idu_id) AS idu_name, "timestamp" FROM "datatemp" WHERE idu_id IN (SELECT id FROM idutemp WHERE name IN ('02_I85')) AND "modalitytemp" IN ('relhum') AND timestamp = (SELECT MAX(timestamp) FROM "datatemp") ORDER BY timestamp"
+relation "datatemp" does not exist
+LINE 1: ... = datatemp.idu_id) AS idu_name, "timestamp" FROM "datatemp"...
+                                                             ^
+
+Error in running query_v2: relation "datatemp" does not exist
+LINE 1: ... = datatemp.idu_id) AS idu_name, "timestamp" FROM "datatemp"...
+                                                             ^
+
+ 91%|█████████ | 58/64 [01:58<00:12,  2.10s/it]
+Error in executing script: v_현재_옆반_습도_df = "SELECT "temp", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, "timestamp" FROM "data_t" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('02_I81')) AND "temp" IS NOT NULL AND "temp" IS DISTINCT FROM 'NaN' AND timestamp = (SELECT MAX(timestamp) FROM "data_t") ORDER BY timestamp"
+column "temp" does not exist
+LINE 1: SELECT id,  "temp", (SELECT name FROM idu_t WHERE id = data_...
+                    ^
+
+Error in running query_v2: column "temp" does not exist
+LINE 1: SELECT id,  "temp", (SELECT name FROM idu_t WHERE id = data_...
+                    ^
+
+ 98%|█████████▊| 63/64 [02:04<00:01,  1.21s/it]
+Error in executing script: v_현재_4층_방 목록 = "SELECT "idu_t", (SELECT name FROM idu_t WHERE id = data_t.idu_id) AS idu_name, "data_t" FROM "data_t" WHERE idu_id IN (SELECT id FROM idu_t WHERE name IN ('01_IB5', '01_IB7', '02_I81')) AND "roomtemp" IS NOT NULL AND "roomtemp" IS DISTINCT FROM 'NaN' AND "roomtemp" >= 22.0 AND "roomtemp" IS DISTINCT FROM '22.0' ORDER BY "roomtemp""
+column "idu_t" does not exist
+LINE 1: SELECT id,  "idu_t", (SELECT name FROM idu_t WHERE id = data...
+                    ^
+HINT:  Perhaps you meant to reference the column "data_t.idu_id".
+
+Error in running query_v2: column "idu_t" does not exist
+LINE 1: SELECT id,  "idu_t", (SELECT name FROM idu_t WHERE id = data...
+                    ^
+HINT:  Perhaps you meant to reference the column "data_t.idu_id".
+
+100%|██████████| 64/64 [02:06<00:00,  1.98s/it]
+Results for ../experiments/revision/r-v7_r211_a422_woQM+Script_tr27_0629-step-30.json:
+JsonStructureCorrectness: 1.00
+ExactMatch: 0.73
+Recall: 0.86
+Precision: 0.87
+ 50%|█████     | 32/64 [00:59<01:16,  2.39s/it]
+Failed to parse input:  옆반 습도 알려줘 {"Thinking": "사용자는 옆반의 현재 습도를 알고 싶어함. 현재 옆반의 습도를 쿼리한 후 반환하면 됨.", "Expectations": ["옆반의 현재 습도는 {{현재_옆반_습도}}%입니다."], "Mapping": {"temporal": {"현재": "LAST_RECORD"}, "spatials": {"옆반": "01_IB5"}, "modalities": {"습도": Unknown}}
+ 56%|█████▋    | 36/64 [01:00<00:29,  1.06s/it]
+Error in executing script: v_오후5시_옆반_설정온도_df = data_(metadata, mapping, query_results, t='오후5시',s='옆반',m='설정온도')
+syntax error at or near "17"
+LINE 1: ...RE name IN ('01_IB5')) AND timestamp = 2022-09-30 17:00:00 A...
+                                                             ^
+
+Error in running query_v2: syntax error at or near "17"
+LINE 1: ...RE name IN ('01_IB5')) AND timestamp = 2022-09-30 17:00:00 A...
+                                                             ^
+
+ 66%|██████▌   | 42/64 [01:10<00:41,  1.89s/it]
+Failed to parse input:  이번주 우리집과 옆집의 평균 실내온도 차이 알려줘 {'Thinking': '사용자는 이번주 우리집과 옆집의 평균 실내온도를 알고 이번주 우리집의 실내온도가 옆집의 실내온도보다 {{이번주_우리집_실내온도_평균}}℃ 높습니다. 라는 답변을 기대함. 이번주 우리집과 옆집의 실내온도를 쿼리한 후 각 집의 평균 실내온도 및 그 차이를 계산하여 반환하면 됨.', 'Mapping': {'temporal': {'이번주': "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE' + INTERVAL '1 week'))"}, 'spatials': {'우리집': '02_I83', '옆집': '02_I84'}, 'modalities': {'실내온도': 'roomtemp'}}, 'Script': ["v_이번주_우리집_실내온도_df = data(t='이번주',s='우리집',m='실내온도')", "v_이번주_옆집_실내온도_df = data(t='이번주',s='옆집',m='실내온도')"]}
+ 69%|██████▉   | 44/64 [01:15<00:41,  2.10s/it]
+Error in executing script: v_현재_옆집_습도_df = data_(metadata, mapping, query_results, t='현재',s='옆집',m='습도')
+argument of type 'NoneType' is not iterable
+Error in running query_v2: argument of type 'NoneType' is not iterable
+ 75%|███████▌  | 48/64 [01:17<00:17,  1.12s/it]
+Error in executing script: v_오후5시_옆집_설정온도_df = data_(metadata, mapping, query_results, t='오후5시',s='옆집',m='설정온도')
+syntax error at or near "17"
+LINE 1: ...RE name IN ('02_I84')) AND timestamp = 2022-09-29 17:00:00 A...
+                                                             ^
+
+Error in running query_v2: syntax error at or near "17"
+LINE 1: ...RE name IN ('02_I84')) AND timestamp = 2022-09-29 17:00:00 A...
+                                                             ^
+
+ 83%|████████▎ | 53/64 [01:26<00:18,  1.69s/it]
+Error in executing script: v_지난달_앞반_df = data_(metadata, mapping, query_results, t='지난달',s='01_IB5',m=['settemp','roomtemp'])
+'roomtemp'
+Error in running query_v2: 'roomtemp'
+ 86%|████████▌ | 55/64 [01:28<00:13,  1.47s/it]
+Failed to parse input:  옆반 습도 알려줘 {"Thinking": "사용자는 옆반의 현재 습도를 알고 싶어함. 현재 옆반의 습도를 쿼리한 후 반환하면 됨.", "Expectations": ["옆반의 현재 습도는 {{현재_옆반_습도}}%입니다."], "Mapping": {"temporal": {"현재": "LAST_RECORD"}, "spatials": {"옆반": "02_I81"}, "modalities": {"습도": Unknown}}
+ 94%|█████████▍| 60/64 [01:29<00:02,  1.45it/s]
+Error in executing script: v_오후5시_옆반_설정온도_df = data_(metadata, mapping, query_results, t='오후5시',s='옆반',m='설정온도')
+syntax error at or near "17"
+LINE 1: ...RE name IN ('02_I81')) AND timestamp = 2022-09-28 17:00:00 A...
+                                                             ^
+
+Error in running query_v2: syntax error at or near "17"
+LINE 1: ...RE name IN ('02_I81')) AND timestamp = 2022-09-28 17:00:00 A...
+                                                             ^
+
+100%|██████████| 64/64 [01:35<00:00,  1.49s/it]
+Results for ../experiments/revision/r-v7_r211_a422_woScript_tr27_0629-step-30.json:
+JsonStructureCorrectness: 0.95
+ExactMatch: 0.81
+Recall: 0.80
+Precision: 0.98
