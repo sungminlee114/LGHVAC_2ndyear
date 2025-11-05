@@ -6,8 +6,8 @@ git clone https://github.com/sungminlee114/LGHVAC_2ndyear
 cd LGHVAC_2ndyear
 git config --global user.email "$(gh api user --jq '.email')" && \
 git config --global user.name "$(gh api user --jq '.login')"
-git checkout newversion
+git checkout 3rdyear
 
-pip install unsloth peft transformers jupyter ipywidgets
+pip install unsloth peft transformers jupyter ipywidgets psycopg2-binary
 
 # kill -9 $(ps aux | grep 'jupyter' | grep -v grep | awk '{print $2}')
