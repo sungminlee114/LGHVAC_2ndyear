@@ -1,0 +1,707 @@
+[
+    {
+        "Input": "지금 4층 최대 설정온도 알려줘",
+        "Tags": {
+            "Style": {
+                "Type": [""],
+                "Temporal": "현재",
+                "Spatials": ["4층"],
+                "Processing": ["ArgMax"],
+                "Modality": ["설정온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 현재 4층의 공간 최대 설정온도를 알고 싶어함. 현재 4층에 속한 모든 공간의 설정온도의 최대값을 반환하면 됨.",
+            "Expectations": [
+                "지금 4층의 최대 설정온도는 {{현재_4층_설정온도_최대}}℃입니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "현재": "LAST_RECORD"
+                },
+                "spatials": {
+                    "4층": ["01_IB5", "01_IB7", "02_I81"]
+                },
+                "modalities": {
+                    "설정온도": "settemp"
+                }
+            },
+            "Script": [
+                "v_현재_4층_설정온도_df = data(t='현재',s='4층',m='설정온도')",
+                "v_현재_4층_설정온도_최대 = v_현재_4층_설정온도_df['설정온도'].max()"
+            ]
+        }
+    },
+
+    {
+        "Input": "지금 4층 평균 실내온도 알려줘",
+        "Tags": {
+            "Style": {
+                "Type": [""],
+                "Temporal": "현재",
+                "Spatials": ["4층"],
+                "Processing": ["Avg"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 현재 4층 방들의 실내온도 평균을 알고 싶어함. 현재 4층 방들의 실내온도 데이터를 쿼리한 후 평균값을 계산하면 됨.",
+            "Expectations": [
+                "지금 4층 평균 실내온도는 {{현재_4층_실내온도_평균}}℃입니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "현재": "LAST_RECORD"
+                },
+                "spatials": {
+                    "4층": ["02_I81", "01_IB5", "01_IB7"]
+                },
+                "modalities": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_현재_4층_실내온도_df = data(t='현재',s='4층',m='실내온도')",
+                "v_현재_4층_실내온도_평균 = v_현재_4층_실내온도_df['실내온도'].mean()"
+            ]
+        }
+    },
+    {
+        "Input": "4층 전체 중에서 지금 가장 더운 방은 어디야?",
+        "Tags": {
+            "Style": {
+                "Type": ["Implicit modality"],
+                "Temporal": "현재",
+                "Spatials": ["4층"],
+                "Processing": ["ArgMax"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Spatial"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 현재 4층 전체 공간(1반, 5반, 7반) 중 실내온도가 가장 높은 곳을 알고 싶어함. 현재 4층의 모든 공간 실내온도를 쿼리한 후 최고 온도를 가진 공간과 그 온도를 반환하면 됨.",
+            "Expectations": [
+                "지금 4층에서 {{현재_4층_실내온도_최고_공간}}이(가) {{현재_4층_실내온도_최고}}℃로 가장 덥습니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "현재": "LAST_RECORD"
+                },
+                "spatials": {
+                    "1반": "02_I81",
+                    "5반": "01_IB5",
+                    "7반": "01_IB7"
+                },
+                "modalities": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_현재_4층_실내온도_df = data(t='현재',s=['1반', '5반', '7반'],m='실내온도')",
+                "v_현재_4층_실내온도_최고 = v_현재_4층_실내온도_df['실내온도'].max()",
+                "v_현재_4층_실내온도_최고_공간 = v_현재_4층_실내온도_df.loc[v_현재_4층_실내온도_df['실내온도'] == v_현재_4층_실내온도_최고, 'idu_name'].values[0]"
+            ]
+        }
+    },
+    {
+        "Input": "오늘 4층 전체 설정온도 평균 알려줘",
+        "Tags": {
+            "Style": {
+                "Type": [""],
+                "Temporal": "오늘",
+                "Spatials": ["4층"],
+                "Processing": ["Avg"],
+                "Modality": ["설정온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 오늘 하루 4층 전체의 설정온도 평균을 알고 싶어함. 오늘 4층 전체 공간의 설정온도를 쿼리한 후 평균값을 계산하여 반환하면 됨.",
+            "Expectations": [
+                "오늘 4층 전체의 평균 설정온도는 {{오늘_4층_설정온도_평균}}℃입니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "오늘": "[DATE_TRUNC('day', DATE 'CURRENT_DATE'), DATE_TRUNC('day', DATE 'CURRENT_DATE' + INTERVAL '1 day'))"
+                },
+                "spatials": {
+                    "4층": ["01_IB5", "01_IB7", "02_I81"]
+                },
+                "modalities": {
+                    "설정온도": "settemp"
+                }
+            },
+            "Script": [
+                "v_오늘_4층_설정온도_df = data(t='오늘',s='4층',m='설정온도')",
+                "v_오늘_4층_설정온도_평균 = v_오늘_4층_설정온도_df['설정온도'].mean()"
+            ]
+        }
+    },
+    {
+        "Input": "지난달 4층에서 온도 편차가 가장 컸던 날은?",
+        "Tags": {
+            "Style": {
+                "Type": ["Implicit modality"],
+                "Temporal": "지난달",
+                "Spatials": ["4층"],
+                "Processing": ["Std", "ArgMax"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Dates"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 지난달 4층 전체 공간의 실내온도 편차(표준편차)가 가장 컸던 날을 알고 싶어함. 지난달 4층의 실내온도를 쿼리한 후 날짜별로 표준편차를 계산하여 최대 편차를 가진 날과 그 값을 반환하면 됨.",
+            "Expectations": [
+                "지난달 4층은 {{지난달_4층_온도편차_최대_날짜}}에 온도 편차가 {{지난달_4층_온도편차_최대}}℃로 가장 컸습니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "지난달": "[DATE_TRUNC('month', DATE 'CURRENT_DATE') - INTERVAL '1 month', DATE_TRUNC('month', DATE 'CURRENT_DATE'))"
+                },
+                "spatials": {
+                    "4층": ["01_IB5", "01_IB7", "02_I81"]
+                },
+                "modalities": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_지난달_4층_실내온도_df = data(t='지난달',s='4층',m='실내온도')",
+                "v_지난달_4층_일별_편차 = v_지난달_4층_실내온도_df.groupby('timestamp')['실내온도'].std()",
+                "v_지난달_4층_온도편차_최대 = v_지난달_4층_일별_편차.max()",
+                "v_지난달_4층_온도편차_최대_날짜 = v_지난달_4층_일별_편차.idxmax()"
+            ]
+        }
+    },
+    {
+        "Input": "어제 4층 5반과 7반의 평균 온도 차이는?",
+        "Tags": {
+            "Style": {
+                "Type": ["Implicit modality"],
+                "Temporal": "어제",
+                "Spatials": ["5반", "7반"],
+                "Processing": ["Avg", "Diff"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 어제 4층의 5반과 7반의 평균 실내온도 차이를 알고 싶어함. 어제 두 공간의 실내온도를 쿼리한 후 각각의 평균을 계산하여 차이를 반환하면 됨.",
+            "Expectations": [
+                "어제 5반({{어제_5반_실내온도_평균}}℃)과 7반({{어제_7반_실내온도_평균}}℃)의 평균 온도 차이는 {{어제_5반과7반_온도차이}}℃입니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "어제": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))"
+                },
+                "spatials": {
+                    "5반": "01_IB5",
+                    "7반": "01_IB7"
+                },
+                "modalities": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_어제_5반_실내온도_df = data(t='어제',s='5반',m='실내온도')",
+                "v_어제_7반_실내온도_df = data(t='어제',s='7반',m='실내온도')",
+                "v_어제_5반_실내온도_평균 = v_어제_5반_실내온도_df['실내온도'].mean()",
+                "v_어제_7반_실내온도_평균 = v_어제_7반_실내온도_df['실내온도'].mean()",
+                "v_어제_5반과7반_온도차이 = abs(v_어제_5반_실내온도_평균 - v_어제_7반_실내온도_평균)"
+            ]
+        }
+    },
+    {
+        "Input": "지금 4층 1반 온도와 설정온도 알려줘",
+        "Tags": {
+            "Style": {
+                "Type": ["Implicit modality"],
+                "Temporal": "현재",
+                "Spatials": ["1반"],
+                "Processing": ["Get"],
+                "Modality": ["실내온도", "설정온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 현재 4층 1반의 실내온도와 설정온도를 알고 싶어함. 현재 1반의 실내온도와 설정온도를 쿼리한 후 반환하면 됨.",
+            "Expectations": [
+                "지금 4층 1반의 실내온도는 {{현재_1반_실내온도}}℃이고, 설정온도는 {{현재_1반_설정온도}}℃입니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "현재": "LAST_RECORD"
+                },
+                "spatials": {
+                    "1반": "02_I81"
+                },
+                "modalities": {
+                    "실내온도": "roomtemp",
+                    "설정온도": "settemp"
+                }
+            },
+            "Script": [
+                "v_현재_1반_df = data(t='현재',s='1반',m=['실내온도', '설정온도'])",
+                "v_현재_1반_실내온도 = v_현재_1반_df['실내온도'].values[0]",
+                "v_현재_1반_설정온도 = v_현재_1반_df['설정온도'].values[0]"
+            ]
+        }
+    },
+    {
+        "Input": "오늘 4층에서 설정온도가 가장 낮았던 방은?",
+        "Tags": {
+            "Style": {
+                "Type": [""],
+                "Temporal": "오늘",
+                "Spatials": ["4층"],
+                "Processing": ["Avg", "ArgMin"],
+                "Modality": ["설정온도"]
+            },
+            "Returns": [
+                "Spatial"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 오늘 4층 전체 공간(1반, 5반, 7반) 중 평균 설정온도가 가장 낮은 공간을 알고 싶어함. 오늘 4층 각 공간의 설정온도를 쿼리한 후 평균이 가장 낮은 공간과 그 온도를 반환하면 됨.",
+            "Expectations": [
+                "오늘 4층에서 {{오늘_4층_설정온도_최저_공간}}이(가) 평균 {{오늘_4층_설정온도_최저_평균}}℃로 설정온도가 가장 낮았습니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "오늘": "[DATE_TRUNC('day', DATE 'CURRENT_DATE'), DATE_TRUNC('day', DATE 'CURRENT_DATE' + INTERVAL '1 day'))"
+                },
+                "spatials": {
+                    "1반": "02_I81",
+                    "5반": "01_IB5",
+                    "7반": "01_IB7"
+                },
+                "modalities": {
+                    "설정온도": "settemp"
+                }
+            },
+            "Script": [
+                "v_오늘_4층_설정온도_df = data(t='오늘',s=['1반', '5반', '7반'],m='설정온도')",
+                "v_오늘_4층_공간별_평균 = v_오늘_4층_설정온도_df.groupby('idu_name')['설정온도'].mean()",
+                "v_오늘_4층_설정온도_최저_공간 = v_오늘_4층_공간별_평균.idxmin()",
+                "v_오늘_4층_설정온도_최저_평균 = v_오늘_4층_공간별_평균.min()"
+            ]
+        }
+    },
+    {
+        "Input": "이번달 4층 전체 최고 온도와 최저 온도 알려줘",
+        "Tags": {
+            "Style": {
+                "Type": ["Implicit modality"],
+                "Temporal": "이번달",
+                "Spatials": ["4층"],
+                "Processing": ["Max", "Min"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 이번달 4층 전체의 최고 실내온도와 최저 실내온도를 알고 싶어함. 이번달 4층 전체 공간의 실내온도를 쿼리한 후 최고값과 최저값을 계산하여 반환하면 됨.",
+            "Expectations": [
+                "이번달 4층 전체의 최고 실내온도는 {{이번달_4층_실내온도_최고}}℃, 최저 실내온도는 {{이번달_4층_실내온도_최저}}℃입니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "이번달": "[DATE_TRUNC('month', DATE 'CURRENT_DATE'), DATE_TRUNC('month', DATE 'CURRENT_DATE' + INTERVAL '1 month'))"
+                },
+                "spatials": {
+                    "4층": ["01_IB5", "01_IB7", "02_I81"]
+                },
+                "modalities": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_이번달_4층_실내온도_df = data(t='이번달',s='4층',m='실내온도')",
+                "v_이번달_4층_실내온도_최고 = v_이번달_4층_실내온도_df['실내온도'].max()",
+                "v_이번달_4층_실내온도_최저 = v_이번달_4층_실내온도_df['실내온도'].min()"
+            ]
+        }
+    },
+    {
+        "Input": "오늘 오전 4층 7반 평균 설정온도는?",
+        "Tags": {
+            "Style": {
+                "Type": [""],
+                "Temporal": "오늘오전",
+                "Spatials": ["7반"],
+                "Processing": ["Avg"],
+                "Modality": ["설정온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 오늘 오전(0시~12시) 7반의 평균 설정온도를 알고 싶어함. 오늘 오전 시간대 7반의 설정온도를 쿼리한 후 평균값을 계산하여 반환하면 됨.",
+            "Expectations": [
+                "오늘 오전 7반의 평균 설정온도는 {{오늘오전_7반_설정온도_평균}}℃입니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "오늘오전": "[DATE_TRUNC('day', DATE 'CURRENT_DATE'), DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '12 hours')"
+                },
+                "spatials": {
+                    "7반": "01_IB7"
+                },
+                "modalities": {
+                    "설정온도": "settemp"
+                }
+            },
+            "Script": [
+                "v_오늘오전_7반_설정온도_df = data(t='오늘오전',s='7반',m='설정온도')",
+                "v_오늘오전_7반_설정온도_평균 = v_오늘오전_7반_설정온도_df['설정온도'].mean()"
+            ]
+        }
+    },
+    {
+        "Input": "이번달 4층에서 가장 온도 변화가 심했던 방은?",
+        "Tags": {
+            "Style": {
+                "Type": ["Implicit modality"],
+                "Temporal": "이번달",
+                "Spatials": ["4층"],
+                "Processing": ["Std", "ArgMax"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Spatial"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 이번달 4층 전체 공간(1반, 5반, 7반) 중 실내온도 표준편차가 가장 큰 공간을 알고 싶어함. 이번달 4층 각 공간의 실내온도를 쿼리한 후 공간별 표준편차를 계산하여 가장 큰 공간과 그 값을 반환하면 됨.",
+            "Expectations": [
+                "이번달 4층에서 {{이번달_4층_온도변화_최대_공간}}이(가) 표준편차 {{이번달_4층_온도변화_최대}}℃로 온도 변화가 가장 심했습니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "이번달": "[DATE_TRUNC('month', DATE 'CURRENT_DATE'), DATE_TRUNC('month', DATE 'CURRENT_DATE' + INTERVAL '1 month'))"
+                },
+                "spatials": {
+                    "1반": "02_I81",
+                    "5반": "01_IB5",
+                    "7반": "01_IB7"
+                },
+                "modalities": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_이번달_4층_실내온도_df = data(t='이번달',s=['1반','5반','7반'],m='실내온도')",
+                "v_이번달_4층_공간별_표준편차 = v_이번달_4층_실내온도_df.groupby('idu_name')['실내온도'].std()",
+                "v_이번달_4층_온도변화_최대_공간 = v_이번달_4층_공간별_표준편차.idxmax()",
+                "v_이번달_4층_온도변화_최대 = v_이번달_4층_공간별_표준편차.max()"
+            ]
+        }
+    },
+    {
+        "Input": "어제 저녁 4층 평균 온도 알려줘",
+        "Tags": {
+            "Style": {
+                "Type": ["Implicit modality"],
+                "Temporal": "어제저녁",
+                "Spatials": ["4층"],
+                "Processing": ["Avg"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 어제 저녁(18시~24시) 4층 전체의 평균 실내온도를 알고 싶어함. 어제 저녁 시간대 4층 전체 공간의 실내온도를 쿼리한 후 평균값을 계산하여 반환하면 됨.",
+            "Expectations": [
+                "어제 저녁 4층의 평균 실내온도는 {{어제저녁_4층_실내온도_평균}}℃입니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "어제저녁": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day') + INTERVAL '18 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE'))"
+                },
+                "spatials": {
+                    "4층": ["01_IB5", "01_IB7", "02_I81"]
+                },
+                "modalities": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_어제저녁_4층_실내온도_df = data(t='어제저녁',s='4층',m='실내온도')",
+                "v_어제저녁_4층_실내온도_평균 = v_어제저녁_4층_실내온도_df['실내온도'].mean()"
+            ]
+        }
+    },
+    {
+        "Input": "지난주 월요일 1반 설정온도 알려줘",
+        "Tags": {
+            "Style": {
+                "Type": [""],
+                "Temporal": "지난주월요일",
+                "Spatials": ["1반"],
+                "Processing": ["Avg"],
+                "Modality": ["설정온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 지난주 월요일 1반의 설정온도를 알고 싶어함. 지난주 월요일 하루 1반의 설정온도를 쿼리한 후 평균값을 반환하면 됨.",
+            "Expectations": [
+                "지난주 월요일 1반의 평균 설정온도는 {{지난주월요일_1반_설정온도_평균}}℃였습니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "지난주월요일": "[DATE_TRUNC('week', DATE 'CURRENT_DATE') - INTERVAL '1 week', DATE_TRUNC('week', DATE 'CURRENT_DATE') - INTERVAL '1 week' + INTERVAL '1 day')"
+                },
+                "spatials": {
+                    "1반": "02_I81"
+                },
+                "modalities": {
+                    "설정온도": "settemp"
+                }
+            },
+            "Script": [
+                "v_지난주월요일_1반_설정온도_df = data(t='지난주월요일',s='1반',m='설정온도')",
+                "v_지난주월요일_1반_설정온도_평균 = v_지난주월요일_1반_설정온도_df['설정온도'].mean()"
+            ]
+        }
+    },
+    {
+        "Input": "오늘 오후 2시 4층 전체 평균 온도는?",
+        "Tags": {
+            "Style": {
+                "Type": ["Implicit modality"],
+                "Temporal": "오늘오후2시",
+                "Spatials": ["4층"],
+                "Processing": ["Avg"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 오늘 오후 2시 4층 전체의 평균 실내온도를 알고 싶어함. 오늘 오후 2시 시점의 4층 전체 공간 실내온도를 쿼리한 후 평균값을 계산하여 반환하면 됨.",
+            "Expectations": [
+                "오늘 오후 2시 4층 전체의 평균 실내온도는 {{오늘오후2시_4층_실내온도_평균}}℃입니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "오늘오후2시": "DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '14 hours'"
+                },
+                "spatials": {
+                    "4층": ["01_IB5", "01_IB7", "02_I81"]
+                },
+                "modalities": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_오늘오후2시_4층_실내온도_df = data(t='오늘오후2시',s='4층',m='실내온도')",
+                "v_오늘오후2시_4층_실내온도_평균 = v_오늘오후2시_4층_실내온도_df['실내온도'].mean()"
+            ]
+        }
+    },{
+    "Input": "최근 3일간 4층에서 설정온도와 실내온도 차이가 가장 컸던 방은?",
+    "Tags": {
+        "Style": {
+            "Type": [""],
+            "Temporal": "최근3일",
+            "Spatials": ["4층"],
+            "Processing": ["Avg", "Diff", "ArgMax"],
+            "Modality": ["설정온도", "실내온도"]
+        },
+        "Returns": [
+            "Spatial"
+        ]
+    },
+    "Response": {
+        "Thinking": "사용자는 최근 3일간 4층 각 공간 중 설정온도와 실내온도의 평균 차이가 가장 큰 공간을 알고 싶어함. 최근 3일간 4층의 설정온도와 실내온도를 쿼리한 후 공간별로 차이의 평균을 계산하여 가장 큰 공간과 그 차이를 반환하면 됨.",
+        "Expectations": [
+            "최근 3일간 4층에서 {{최근3일_4층_온도차이_최대_공간}}이(가) 설정온도와 실내온도 차이가 평균 {{최근3일_4층_온도차이_최대}}℃로 가장 컸습니다."
+        ],
+        "Mapping": {
+            "temporal": {
+                "최근3일": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '3 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))"
+            },
+            "spatials": {
+                "4층": ["01_IB5", "01_IB7", "02_I81"]
+            },
+            "modalities": {
+                "설정온도": "settemp",
+                "실내온도": "roomtemp"
+            }
+        },
+        "Script": [
+            "v_최근3일_4층_df = data(t='최근3일',s='4층',m=['설정온도','실내온도'])",
+            "v_최근3일_4층_df['온도차이'] = abs(v_최근3일_4층_df['설정온도'] - v_최근3일_4층_df['실내온도'])",
+            "v_최근3일_4층_공간별_온도차이 = v_최근3일_4층_df.groupby('idu_name')['온도차이'].mean()",
+            "v_최근3일_4층_온도차이_최대_공간 = v_최근3일_4층_공간별_온도차이.idxmax()",
+            "v_최근3일_4층_온도차이_최대 = v_최근3일_4층_공간별_온도차이.max()"
+        ]
+    }
+},
+{
+    "Input": "이번주 4층 5반과 7반 중 설정온도가 평균적으로 더 높은 곳은?",
+    "Tags": {
+        "Style": {
+            "Type": [""],
+            "Temporal": "이번주",
+            "Spatials": ["5반", "7반"],
+            "Processing": ["Avg", "ArgMax"],
+            "Modality": ["설정온도"]
+        },
+        "Returns": [
+            "Spatial"
+        ]
+    },
+    "Response": {
+        "Thinking": "사용자는 이번주 5반과 7반 중 평균 설정온도가 더 높은 곳을 알고 싶어함. 이번주 두 공간의 설정온도를 쿼리한 후 평균을 비교하여 더 높은 곳과 온도 차이를 반환하면 됨.",
+        "Expectations": [
+            "이번주 {{이번주_설정온도_높은_공간}}({{이번주_설정온도_높은_공간_평균}}℃)이 {{이번주_설정온도_낮은_공간}}({{이번주_설정온도_낮은_공간_평균}}℃)보다 {{이번주_설정온도_차이}}℃ 더 높습니다."
+        ],
+        "Mapping": {
+            "temporal": {
+                "이번주": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE' + INTERVAL '1 week'))"
+            },
+            "spatials": {
+                "5반": "01_IB5",
+                "7반": "01_IB7"
+            },
+            "modalities": {
+                "설정온도": "settemp"
+            }
+        },
+        "Script": [
+            "v_이번주_5반과7반_설정온도_df = data(t='이번주',s=['5반','7반'],m='설정온도')",
+            "v_이번주_공간별_설정온도_평균 = v_이번주_5반과7반_설정온도_df.groupby('idu_name')['설정온도'].mean()",
+            "v_이번주_설정온도_높은_공간 = v_이번주_공간별_설정온도_평균.idxmax()",
+            "v_이번주_설정온도_낮은_공간 = v_이번주_공간별_설정온도_평균.idxmin()",
+            "v_이번주_설정온도_높은_공간_평균 = v_이번주_공간별_설정온도_평균.max()",
+            "v_이번주_설정온도_낮은_공간_평균 = v_이번주_공간별_설정온도_평균.min()",
+            "v_이번주_설정온도_차이 = v_이번주_설정온도_높은_공간_평균 - v_이번주_설정온도_낮은_공간_평균"
+        ]
+    }
+},{
+        "Input": "지금 4층 8반 온도 알려줘",
+        "Tags": {
+            "Style": {
+                "Type": ["Implicit modality"],
+                "Temporal": "현재",
+                "Spatials": ["8반"],
+                "Processing": ["Get"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 현재 4층 8반의 실내온도를 알고 싶어함. 하지만 8반은 존재하지 않는 공간임.",
+            "Expectations": [
+                "죄송하지만 8반은 존재하지 않는 공간입니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "현재": "LAST_RECORD"
+                },
+                "spatials": {
+                    "8반": "Unknown"
+                },
+                "modalities": {
+                    "실내온도": "roomtemp"
+                }
+            }
+        }
+    },
+    {
+        "Input": "어제 4층 5반 습도 알려줘",
+        "Tags": {
+            "Style": {
+                "Type": [""],
+                "Temporal": "어제",
+                "Spatials": ["5반"],
+                "Processing": ["Avg"],
+                "Modality": ["습도"]
+            },
+            "Returns": [
+                "Humidity"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 어제 5반의 습도를 알고 싶어함. 하지만 습도는 제공되지 않는 모달리티임.",
+            "Expectations": [
+                "죄송하지만 습도 데이터는 제공되지 않습니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "어제": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))"
+                },
+                "spatials": {
+                    "5반": "01_IB5"
+                },
+                "modalities": {
+                    "습도": "Unknown"
+                }
+            }
+        }
+    },
+    {
+        "Input": "지난달 4층 전체 평균 설정온도 알려줘",
+        "Tags": {
+            "Style": {
+                "Type": [""],
+                "Temporal": "지난달",
+                "Spatials": ["4층"],
+                "Processing": ["Avg"],
+                "Modality": ["설정온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 지난달 4층 전체의 평균 설정온도를 알고 싶어함. 지난달 4층 전체 공간의 설정온도를 쿼리한 후 평균값을 계산하여 반환하면 됨.",
+            "Expectations": [
+                "지난달 4층 전체의 평균 설정온도는 {{지난달_4층_설정온도_평균}}℃였습니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "지난달": "[DATE_TRUNC('month', DATE 'CURRENT_DATE') - INTERVAL '1 month', DATE_TRUNC('month', DATE 'CURRENT_DATE'))"
+                },
+                "spatials": {
+                    "4층": ["01_IB5", "01_IB7", "02_I81"]
+                },
+                "modalities": {
+                    "설정온도": "settemp"
+                }
+            },
+            "Script": [
+                "v_지난달_4층_설정온도_df = data(t='지난달',s='4층',m='설정온도')",
+                "v_지난달_4층_설정온도_평균 = v_지난달_4층_설정온도_df['설정온도'].mean()"
+            ]
+        }
+    }
+]

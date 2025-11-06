@@ -1,0 +1,649 @@
+[
+    {
+        "Input": "이번주 우리반과 앞반의 평균 온도 알려줘",
+        "Tags": {
+            "Style": {
+                "Type": ["Implicit modality"],
+                "Temporal": "이번주",
+                "Spatials": ["우리반", "앞반"],
+                "Processing": ["Avg"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 이번주 우리반과 앞반의 실내온도의 평균을 알고싶어함. 이번주 우리반과 앞반의 실내온도 데이터를 쿼리한 후 평균값을 계산하면 됨.",
+            "Expectations": [
+                "이번주 우리반의 평균 실내온도는 {{이번주_우리반_실내온도_평균}}℃이고, 앞반의 평균 실내온도는 {{이번주_앞반_실내온도_평균}}℃입니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "이번주": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE' + INTERVAL '1 week'))"
+                },
+                "spatials": {
+                    "우리반": "02_I81",
+                    "앞반": "01_IB7"
+                },
+                "modalities": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_이번주_우리반과앞반_실내온도_df = data(t='이번주',s=['우리반','앞반'],m='실내온도')",
+                "v_이번주_공간별_실내온도_평균 = v_이번주_우리반과앞반_실내온도_df.groupby('idu_name')['실내온도'].mean()",
+                "v_이번주_우리반_실내온도_평균 = v_이번주_공간별_실내온도_평균['우리반']",
+                "v_이번주_앞반_실내온도_평균 = v_이번주_공간별_실내온도_평균['앞반']"
+            ]
+        }
+    },
+    {
+        "Input": "현재 설정온도랑 실내온도 차이 알려줘.",
+        "Tags": {
+            "Style": {
+                "Type": ["Implicit spatial"],
+                "Temporal": "현재",
+                "Spatials": ["우리반"],
+                "Processing": ["Avg", "Diff"],
+                "Modality": ["설정온도", "실내온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 현재 우리반의 설정온도와 실내온도의 차이를 알고싶어함. 현재 우리반의 설정온도와 실내온도 데이터를 쿼리한 후 차이를 계산하면 됨.",
+            "Expectations": [
+                "현재 설정온도({{현재_우리반_설정온도}}℃)와 실내온도({{현재_우리반_실내온도}}℃)의 차이는 {{현재_우리반_온도_차이}}℃입니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "현재": "LAST_RECORD"
+                },
+                "spatials": {
+                    "우리반": "02_I81"
+                },
+                "modalities": {
+                    "설정온도": "settemp",
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_현재_우리반_df = data(t='현재',s='우리반',m=['설정온도','실내온도'])",
+                "v_현재_우리반_설정온도 = v_현재_우리반_df['설정온도'].values[0]",
+                "v_현재_우리반_실내온도 = v_현재_우리반_df['실내온도'].values[0]",
+                "v_현재_우리반_온도_차이 = abs(v_현재_우리반_설정온도 - v_현재_우리반_실내온도)"
+            ]
+        }
+    },
+    {
+        "Input": "지난달에 설정온도와 실내온도 차이가 가장 많이 났던 날은?",
+        "Tags": {
+            "Style": {
+                "Type": ["Implicit spatial"],
+                "Temporal": "지난달",
+                "Spatials": ["우리반"],
+                "Processing": ["Diff", "ArgMax"],
+                "Modality": ["설정온도", "실내온도"]
+            },
+            "Returns": [
+                "Dates"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 지난달 우리반 설정온도와 실내온도 차이가 가장 컸던 날짜를 알고 싶어함. 지난달 우리반의 설정온도와 실내온도 데이터를 쿼리한 후 차이를 계산하면 됨.",
+            "Expectations": [
+                "지난달 {{지난달_우리반_온도차이_최고_날짜}}에 설정온도({{지난달_우리반_온도차이_최고_설정온도}}℃)와 실내온도({{지난달_우리반_온도차이_최고_실내온도}}℃) 차이가 {{지난달_우리반_온도차이_최고}}℃로 가장 컸습니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "지난달": "[DATE_TRUNC('month', DATE 'CURRENT_DATE') - INTERVAL '1 month', DATE_TRUNC('month', DATE 'CURRENT_DATE'))"
+                },
+                "spatials": {
+                    "우리반": "02_I81"
+                },
+                "modalities": {
+                    "설정온도": "settemp",
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_지난달_우리반_df = data(t='지난달',s='우리반',m=['설정온도','실내온도'])",
+                "v_지난달_우리반_df['온도차이'] = v_지난달_우리반_df['설정온도'] - v_지난달_우리반_df['실내온도']",
+                "v_지난달_우리반_온도차이_최고 = v_지난달_우리반_df['온도차이'].max()",
+                "v_지난달_우리반_온도차이_최고_df = v_지난달_우리반_df[v_지난달_우리반_df['온도차이'] == v_지난달_우리반_온도차이_최고]",
+                "v_지난달_우리반_온도차이_최고_날짜 = get_time(v_지난달_우리반_온도차이_최고_df, fmt='date')",
+                "v_지난달_우리반_온도차이_최고_설정온도 = v_지난달_우리반_온도차이_최고_df['설정온도'].values[0]",
+                "v_지난달_우리반_온도차이_최고_실내온도 = v_지난달_우리반_온도차이_최고_df['실내온도'].values[0]"
+            ]
+        }
+    },
+    {
+        "Input": "이번주 우리반과 옆반의 평균 실내온도 차이 알려줘",
+        "Tags": {
+            "Style": {
+                "Type": [""],
+                "Temporal": "이번주",
+                "Spatials": ["우리반", "옆반"],
+                "Processing": ["Avg", "Diff"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 이번주 우리반과 옆반의 평균 실내온도 차이를 알고싶어함. 이번주 우리반과 옆반의 실내온도 데이터를 쿼리한 후 평균값을 계산하면 됨.",
+            "Expectations": [
+                "이번주 우리반 평균 실내온도({{이번주_우리반_실내온도_평균}}℃)와 옆반 평균 실내온도({{이번주_옆반_실내온도_평균}}℃) 차이는 {{이번주_실내온도_평균_차이}}℃입니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "이번주": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE' + INTERVAL '1 week'))"
+                },
+                "spatials": {
+                    "우리반": "02_I81",
+                    "옆반": "01_IB5"
+                },
+                "modalities": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_이번주_우리반과옆반_실내온도_df = data(t='이번주',s=['우리반','옆반'],m='실내온도')",
+                "v_이번주_공간별_실내온도_평균 = v_이번주_우리반과옆반_실내온도_df.groupby('idu_name')['실내온도'].mean()",
+                "v_이번주_우리반_실내온도_평균 = v_이번주_공간별_실내온도_평균['우리반']",
+                "v_이번주_옆반_실내온도_평균 = v_이번주_공간별_실내온도_평균['옆반']",
+                "v_이번주_실내온도_평균_차이 = abs(v_이번주_우리반_실내온도_평균 - v_이번주_옆반_실내온도_평균)"
+            ]
+        }
+    },
+    {
+        "Input": "2주전 가장 더웠던 날 알려줘",
+        "Tags": {
+            "Style": {
+                "Type": ["Implicit spatial", "Implicit modality", "Implicit operations"],
+                "Temporal": "2주전",
+                "Spatials": ["우리반"],
+                "Processing": ["ArgMax"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Dates"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 2주전 우리반의 실내온도가 가장 높았던 날짜를 알고 싶어함. 2주전 우리반의 실내온도 데이터를 쿼리한 후 최고값을 기록한 날짜와 값을 반환하면 됨.",
+            "Expectations": [
+                "2주전 {{2주전_우리반_실내온도_최고_날짜}}에 실내온도({{2주전_우리반_실내온도_최고_실내온도}}℃)가 가장 높았습니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "2주전": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '2 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '1 week'))"
+                },
+                "spatials": {
+                    "우리반": "02_I81"
+                },
+                "modalities": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_2주전_우리반_df = data(t='2주전',s='우리반',m='실내온도')",
+                "v_2주전_우리반_실내온도_최고 = v_2주전_우리반_df['실내온도'].max()",
+                "v_2주전_우리반_실내온도_최고_df = v_2주전_우리반_df[v_2주전_우리반_df['실내온도'] == v_2주전_우리반_실내온도_최고]",
+                "v_2주전_우리반_실내온도_최고_날짜 = get_time(v_2주전_우리반_실내온도_최고_df, fmt='date')",
+                "v_2주전_우리반_실내온도_최고_실내온도 = v_2주전_우리반_실내온도_최고_df['실내온도'].values[0]"
+            ]
+        }
+    },
+    {
+        "Input": "화성의 설정온도 확인해줘",
+        "Tags": {
+            "Style": {
+                "Type": ["Implicit temporal"],
+                "Temporal": "현재",
+                "Spatials": ["화성"],
+                "Processing": ["Get"],
+                "Modality": ["설정온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 현재 화성의 설정온도를 알고 싶어함. 현재 화성의 설정온도 데이터를 쿼리한 후 값을 반환하면 됨.",
+            "Expectations": [
+                "현재 화성의 설정온도는 {{현재_화성_설정온도}}℃입니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "현재": "LAST_RECORD"
+                },
+                "spatials": {
+                    "화성": "Unknown"
+                },
+                "modalities": {
+                    "설정온도": "settemp"
+                }
+            }
+        }
+    },
+    {
+        "Input": "옆반 습도 알려줘",
+        "Tags": {
+            "Style": {
+                "Type": ["Unknown"],
+                "Temporal": "현재",
+                "Spatials": ["옆반"],
+                "Processing": ["Get"],
+                "Modality": ["습도"]
+            },
+            "Returns": [
+                "Humidity"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 옆반의 현재 습도를 알고 싶어함. 옆반의 현재 습도 데이터를 쿼리한 후 값을 반환하면 됨.",
+            "Expectations": [
+                "옆반의 현재 습도는 {{현재_옆반_습도}}%입니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "현재": "LAST_RECORD"
+                },
+                "spatials": {
+                    "옆반": "01_IB5"
+                },
+                "modalities": {
+                    "습도": "Unknown"
+                }
+            }
+        }
+    },
+    {
+        "Input": "지난 3일 동안 우리반 실내 온도 평균 값 알려줘.",
+        "Tags": {
+            "Style": {
+                "Type": [""],
+                "Temporal": "지난3일",
+                "Spatials": ["우리반"],
+                "Processing": ["Avg"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 지난 3일 동안 우리반의 실내온도 평균값을 알고 싶어함. 지난 3일 동안 우리반의 실내온도 데이터를 쿼리한 후 평균값을 계산하면 됨.",
+            "Expectations": [
+                "지난 3일간 우리반 실내온도 평균값은 {{지난3일_우리반_실내온도_평균}}℃였습니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "지난3일": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '3 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))"
+                },
+                "spatials": {
+                    "우리반": "02_I81"
+                },
+                "modalities": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_지난3일_우리반_실내온도_df = data(t='지난3일',s='우리반',m='실내온도')",
+                "v_지난3일_우리반_실내온도_평균 = v_지난3일_우리반_실내온도_df['실내온도'].mean()"
+            ]
+        }
+    },
+    {
+        "Input": "오늘 오후 5시에 옆반의 설정온도는 어땠어?",
+        "Tags": {
+            "Style": {
+                "Type": [""],
+                "Temporal": "오늘오후5시",
+                "Spatials": ["옆반"],
+                "Processing": ["Get"],
+                "Modality": ["설정온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 오늘 오후 5시에 옆반의 설정온도를 알고 싶어함. 오늘 오후 5시에 옆반의 설정온도 데이터를 쿼리한 후 값을 반환하면 됨.",
+            "Expectations": [
+                "오늘 오후 5시 옆반의 설정온도는 {{오늘오후5시_옆반_설정온도}}℃였습니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "오늘오후5시": "DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '17 hours'"
+                },
+                "spatials": {
+                    "옆반": "01_IB5"
+                },
+                "modalities": {
+                    "설정온도": "settemp"
+                }
+            },
+            "Script": [
+                "v_오늘오후5시_옆반_df = data(t='오늘오후5시',s='옆반',m='설정온도')",
+                "v_오늘오후5시_옆반_설정온도 = v_오늘오후5시_옆반_df['설정온도'].values[0]"
+            ]
+        }
+    },
+    {
+        "Input": "올해 여름 우리반 실내온도 최대값과 최소값 알려줘",
+        "Tags": {
+            "Style": {
+                "Type": ["Implicit temporal"],
+                "Temporal": "올해여름",
+                "Spatials": ["우리반"],
+                "Processing": ["Max", "Min"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 올해 6월 ~ 8월 동안 우리반의 실내온도 최대값과 최소값을 알고 싶어함. 올해 6월 ~ 8월 동안 우리반의 실내온도 데이터를 쿼리한 후 최대값과 최소값을 계산하면 됨.",
+            "Expectations": [
+                "올해 여름(6월 ~ 8월) 우리반의 실내온도 최대값과 최소값은 각각 {{올해여름_우리반_실내온도_최대}}℃와 {{올해여름_우리반_실내온도_최소}}℃입니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "올해여름": "[DATE 'CURRENT_YEAR-06-01', DATE 'CURRENT_YEAR-09-01')"
+                },
+                "spatials": {
+                    "우리반": "02_I81"
+                },
+                "modalities": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_올해여름_우리반_df = data(t='올해여름',s='우리반',m='실내온도')",
+                "v_올해여름_우리반_실내온도_최대 = v_올해여름_우리반_df['실내온도'].max()",
+                "v_올해여름_우리반_실내온도_최소 = v_올해여름_우리반_df['실내온도'].min()"
+            ]
+        }
+    },
+    {
+        "Input": "우리반과 앞반 중 가장 더운 방은?",
+        "Tags": {
+            "Style": {
+                "Type": ["Implicit temporal", "Implicit modality", "Implicit operations"],
+                "Temporal": "현재",
+                "Spatials": ["우리반", "앞반"],
+                "Processing": ["ArgMax"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Spatial"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 현재 우리반과 앞반 중 실내온도가 최고인 방을 알고싶어함.현재 두 방의 실내온도를 쿼리한 후 실내온도가 최고인 방과 그 온도를 반환하면 됨.",
+            "Expectations": [
+                "현재 두 방 중 {{현재_실내온도_최고_방}}이(가) {{현재_실내온도_최고}}℃로 가장 더운 방이에요."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "현재": "LAST_RECORD"
+                },
+                "spatials": {
+                    "우리반": "02_I81",
+                    "앞반": "01_IB7"
+                },
+                "modalities": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_현재_우리반과앞반_실내온도_df = data(t='현재',s=['우리반','앞반'],m='실내온도')",
+                "v_현재_공간별_실내온도 = v_현재_우리반과앞반_실내온도_df.groupby('idu_name')['실내온도'].mean()",
+                "v_현재_실내온도_최고_방 = v_현재_공간별_실내온도.idxmax()",
+                "v_현재_실내온도_최고 = v_현재_공간별_실내온도.max()"
+            ]
+        }
+    },
+    {
+        "Input": "3주전 온도가 22도 이상이었던 날짜 알려줘",
+        "Tags": {
+            "Style": {
+                "Type": ["Implicit spatial", "Implicit operations"],
+                "Temporal": "3주전",
+                "Spatials": ["우리반"],
+                "Processing": ["Avg", "Filter"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Dates"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 3주전 우리반의 일평균 실내온도가 22℃ 이상인 날짜를 알고 싶어함. 3주전 우리반의 일평균 실내온도 데이터를 쿼리한 후 22℃ 이상인 날짜와 값을 반환하면 됨.",
+            "Expectations": [
+                "3주전 {{3주전_우리반_실내온도_22_이상_날짜}}에 22℃ 이상이었습니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "3주전": "[DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '3 week'), DATE_TRUNC('week', DATE 'CURRENT_DATE' - INTERVAL '2 week'))"
+                },
+                "spatials": {
+                    "우리반": "02_I81"
+                },
+                "modalities": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_3주전_우리반_실내온도_df = data(t='3주전',s='우리반',m='실내온도')",
+                "v_3주전_우리반_실내온도_22_이상_df = v_3주전_우리반_실내온도_df[v_3주전_우리반_실내온도_df['실내온도'] >= 22]",
+                "v_3주전_우리반_실내온도_22_이상_날짜 = get_time(v_3주전_우리반_실내온도_22_이상_df, fmt='date')"
+            ]
+        }
+    },
+    {
+        "Input": "어제와 오늘 우리반 평균 설정온도 비교해줘",
+        "Tags": {
+            "Style": {
+                "Type": [""],
+                "Temporal": "어제와오늘",
+                "Spatials": ["우리반"],
+                "Processing": ["Avg", "Diff"],
+                "Modality": ["설정온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 어제와 오늘 우리반의 평균 설정온도를 비교하고 싶어함. 어제와 오늘 우리반의 설정온도를 쿼리한 후 각각의 평균을 계산하여 차이를 반환하면 됨.",
+            "Expectations": [
+                "어제 우리반의 평균 설정온도는 {{어제_우리반_설정온도_평균}}℃였고, 오늘은 {{오늘_우리반_설정온도_평균}}℃로 {{어제와오늘_설정온도_차이}}℃ 차이가 있습니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "어제": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))",
+                    "오늘": "[DATE_TRUNC('day', DATE 'CURRENT_DATE'), DATE_TRUNC('day', DATE 'CURRENT_DATE' + INTERVAL '1 day'))"
+                },
+                "spatials": {
+                    "우리반": "02_I81"
+                },
+                "modalities": {
+                    "설정온도": "settemp"
+                }
+            },
+            "Script": [
+                "v_어제_우리반_설정온도_df = data(t='어제',s='우리반',m='설정온도')",
+                "v_오늘_우리반_설정온도_df = data(t='오늘',s='우리반',m='설정온도')",
+                "v_어제_우리반_설정온도_평균 = v_어제_우리반_설정온도_df['설정온도'].mean()",
+                "v_오늘_우리반_설정온도_평균 = v_오늘_우리반_설정온도_df['설정온도'].mean()",
+                "v_어제와오늘_설정온도_차이 = abs(v_오늘_우리반_설정온도_평균 - v_어제_우리반_설정온도_평균)"
+            ]
+        }
+    },
+    {
+        "Input": "이번주 옆반과 앞반 중 어디가 평균적으로 더 시원했어?",
+        "Tags": {
+            "Style": {
+                "Type": ["Implicit modality"],
+                "Temporal": "이번주",
+                "Spatials": ["옆반", "앞반"],
+                "Processing": ["Avg", "ArgMin"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Spatial"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 이번주 옆반과 앞반 중 평균 실내온도가 더 낮은 곳을 알고 싶어함. 이번주 두 공간의 실내온도를 쿼리한 후 평균을 비교하여 더 낮은 곳과 온도 차이를 반환하면 됨.",
+            "Expectations": [
+                "이번주 {{이번주_실내온도_낮은_공간}}({{이번주_실내온도_낮은_공간_평균}}℃)이 {{이번주_실내온도_높은_공간}}({{이번주_실내온도_높은_공간_평균}}℃)보다 {{이번주_실내온도_차이}}℃ 더 시원했습니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "이번주": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE' + INTERVAL '1 week'))"
+                },
+                "spatials": {
+                    "옆반": "01_IB5",
+                    "앞반": "01_IB7"
+                },
+                "modalities": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_이번주_옆반과앞반_실내온도_df = data(t='이번주',s=['옆반','앞반'],m='실내온도')",
+                "v_이번주_공간별_실내온도_평균 = v_이번주_옆반과앞반_실내온도_df.groupby('idu_name')['실내온도'].mean()",
+                "v_이번주_실내온도_낮은_공간 = v_이번주_공간별_실내온도_평균.idxmin()",
+                "v_이번주_실내온도_높은_공간 = v_이번주_공간별_실내온도_평균.idxmax()",
+                "v_이번주_실내온도_낮은_공간_평균 = v_이번주_공간별_실내온도_평균.min()",
+                "v_이번주_실내온도_높은_공간_평균 = v_이번주_공간별_실내온도_평균.max()",
+                "v_이번주_실내온도_차이 = v_이번주_실내온도_높은_공간_평균 - v_이번주_실내온도_낮은_공간_평균"
+            ]
+        }
+    },
+    {
+        "Input": "지난주 우리반, 옆반, 앞반 중 설정온도가 가장 높았던 곳은?",
+        "Tags": {
+            "Style": {
+                "Type": [""],
+                "Temporal": "지난주",
+                "Spatials": ["우리반", "옆반", "앞반"],
+                "Processing": ["Avg", "ArgMax"],
+                "Modality": ["설정온도"]
+            },
+            "Returns": [
+                "Spatial"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 지난주 우리반, 옆반, 앞반 중 평균 설정온도가 가장 높은 곳을 알고 싶어함. 지난주 세 공간의 설정온도를 쿼리한 후 평균을 계산하여 가장 높은 곳과 그 온도를 반환하면 됨.",
+            "Expectations": [
+                "지난주 {{지난주_설정온도_최고_공간}}의 평균 설정온도가 {{지난주_설정온도_최고_평균}}℃로 가장 높았습니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "지난주": "[DATE_TRUNC('week', DATE 'CURRENT_DATE') - INTERVAL '1 week', DATE_TRUNC('week', DATE 'CURRENT_DATE'))"
+                },
+                "spatials": {
+                    "우리반": "02_I81",
+                    "옆반": "01_IB5",
+                    "앞반": "01_IB7"
+                },
+                "modalities": {
+                    "설정온도": "settemp"
+                }
+            },
+            "Script": [
+                "v_지난주_세공간_설정온도_df = data(t='지난주',s=['우리반','옆반','앞반'],m='설정온도')",
+                "v_지난주_공간별_설정온도_평균 = v_지난주_세공간_설정온도_df.groupby('idu_name')['설정온도'].mean()",
+                "v_지난주_설정온도_최고_공간 = v_지난주_공간별_설정온도_평균.idxmax()",
+                "v_지난주_설정온도_최고_평균 = v_지난주_공간별_설정온도_평균.max()"
+            ]
+        }
+    },
+    {
+        "Input": "오늘 오전 우리반 실내온도 최저값은?",
+        "Tags": {
+            "Style": {
+                "Type": [""],
+                "Temporal": "오늘오전",
+                "Spatials": ["우리반"],
+                "Processing": ["Min"],
+                "Modality": ["실내온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 오늘 오전(0시~12시) 우리반의 최저 실내온도를 알고 싶어함. 오늘 오전 우리반의 실내온도를 쿼리한 후 최저값을 계산하여 반환하면 됨.",
+            "Expectations": [
+                "오늘 오전 우리반의 최저 실내온도는 {{오늘오전_우리반_실내온도_최저}}℃입니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "오늘오전": "[DATE_TRUNC('day', DATE 'CURRENT_DATE'), DATE_TRUNC('day', DATE 'CURRENT_DATE') + INTERVAL '12 hours')"
+                },
+                "spatials": {
+                    "우리반": "02_I81"
+                },
+                "modalities": {
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_오늘오전_우리반_실내온도_df = data(t='오늘오전',s='우리반',m='실내온도')",
+                "v_오늘오전_우리반_실내온도_최저 = v_오늘오전_우리반_실내온도_df['실내온도'].min()"
+            ]
+        }
+    },
+    {
+        "Input": "최근 일주일간 옆반과 앞반의 설정온도와 실내온도 평균 차이 비교해줘",
+        "Tags": {
+            "Style": {
+                "Type": [""],
+                "Temporal": "최근일주일",
+                "Spatials": ["옆반", "앞반"],
+                "Processing": ["Avg", "Diff"],
+                "Modality": ["설정온도", "실내온도"]
+            },
+            "Returns": [
+                "Temp"
+            ]
+        },
+        "Response": {
+            "Thinking": "사용자는 최근 일주일간 옆반과 앞반의 설정온도와 실내온도 평균 차이를 비교하고 싶어함. 최근 일주일간 두 공간의 설정온도와 실내온도를 쿼리한 후 각 공간의 차이를 계산하여 반환하면 됨.",
+            "Expectations": [
+                "최근 일주일간 옆반의 설정온도와 실내온도 평균 차이는 {{최근일주일_옆반_온도차이_평균}}℃이고, 앞반은 {{최근일주일_앞반_온도차이_평균}}℃입니다."
+            ],
+            "Mapping": {
+                "temporal": {
+                    "최근일주일": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '7 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))"
+                },
+                "spatials": {
+                    "옆반": "01_IB5",
+                    "앞반": "01_IB7"
+                },
+                "modalities": {
+                    "설정온도": "settemp",
+                    "실내온도": "roomtemp"
+                }
+            },
+            "Script": [
+                "v_최근일주일_옆반과앞반_df = data(t='최근일주일',s=['옆반','앞반'],m=['설정온도','실내온도'])",
+                "v_최근일주일_옆반과앞반_df['온도차이'] = abs(v_최근일주일_옆반과앞반_df['설정온도'] - v_최근일주일_옆반과앞반_df['실내온도'])",
+                "v_최근일주일_공간별_온도차이_평균 = v_최근일주일_옆반과앞반_df.groupby('idu_name')['온도차이'].mean()",
+                "v_최근일주일_옆반_온도차이_평균 = v_최근일주일_공간별_온도차이_평균['옆반']",
+                "v_최근일주일_앞반_온도차이_평균 = v_최근일주일_공간별_온도차이_평균['앞반']"
+            ]
+        }
+    }
+]

@@ -1,0 +1,5 @@
+{
+    "idu_mapping": {"01_IB5": ["옆반"], "01_IB7": ["앞반"], "02_I81": ["우리반"]},
+    "modality_mapping": {"roomtemp": ["실내온도"], "settemp": ["설정온도"]},
+    "current_datetime": "2022-09-29 21:30:00"
+}

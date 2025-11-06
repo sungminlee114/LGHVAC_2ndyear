@@ -1,0 +1,5 @@
+{
+    "idu_mapping": {"02_I85": ["옆집"], "02_I84": ["앞집"], "02_I83": ["우리집"]},
+    "modality_mapping": {"roomtemp": ["실내온도"], "settemp": ["설정온도"]},
+    "current_datetime": "2022-09-29 21:30:00"
+}

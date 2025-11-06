@@ -1,0 +1,5 @@
+{
+    "idu_mapping": {"02_I81": ["3층", "5반"], "01_IB5": ["3층", "7반"], "01_IB7": ["3층", "1반"]},
+    "modality_mapping": {"roomtemp": ["실내온도"], "settemp": ["설정온도"]},
+    "current_datetime": "2022-09-29 21:30:00"
+}
