@@ -23,8 +23,8 @@
                     "지난주": "[DATE_TRUNC('week', DATE 'CURRENT_DATE') - INTERVAL '1 week', DATE_TRUNC('week', DATE 'CURRENT_DATE'))"
                 },
                 "spatials": {
-                    "5반": "01_IB5",
-                    "1반": "02_I81"
+                    "5반": "02_I81",
+                    "1반": "01_IB7"
                 },
                 "modalities": {
                     "실내온도": "roomtemp"
@@ -65,9 +65,9 @@
                     "이번주": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE' + INTERVAL '1 week'))"
                 },
                 "spatials": {
-                    "1반": "02_I81",
-                    "5반": "01_IB5",
-                    "7반": "01_IB7"
+                    "1반": "01_IB7",
+                    "5반": "02_I81",
+                    "7반": "01_IB5"
                 },
                 "modalities": {
                     "실내온도": "roomtemp"
@@ -104,7 +104,7 @@
                     "어제": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))"
                 },
                 "spatials": {
-                    "4층": ["01_IB5", "01_IB7", "02_I81"]
+                    "4층": ["02_I81", "01_IB5", "01_IB7"]
                 },
                 "modalities": {
                     "실내온도": "roomtemp"
@@ -172,7 +172,7 @@
                     "지난주": "[DATE_TRUNC('week', DATE 'CURRENT_DATE') - INTERVAL '1 week', DATE_TRUNC('week', DATE 'CURRENT_DATE'))"
                 },
                 "spatials": {
-                    "1반": "02_I81"
+                    "1반": "01_IB7"
                 },
                 "modalities": {
                     "CO2 농도": "Unknown"
@@ -204,8 +204,8 @@
                     "이번주": "[DATE_TRUNC('week', DATE 'CURRENT_DATE'), DATE_TRUNC('week', DATE 'CURRENT_DATE' + INTERVAL '1 week'))"
                 },
                 "spatials": {
-                    "1반": "02_I81",
-                    "5반": "01_IB5"
+                    "1반": "01_IB7",
+                    "5반": "02_I81"
                 },
                 "modalities": {
                     "설정온도": "settemp"
@@ -244,7 +244,7 @@
                     "어제오후": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day') + INTERVAL '12 hours', DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '1 day') + INTERVAL '18 hours')"
                 },
                 "spatials": {
-                    "7반": "01_IB7"
+                    "7반": "01_IB5"
                 },
                 "modalities": {
                     "실내온도": "roomtemp"
@@ -255,13 +255,12 @@
                 "v_어제오후_7반_실내온도_최고 = v_어제오후_7반_실내온도_df['실내온도'].max()"
             ]
         }
-    },
-    {
-        "Input": "이번달 4층에서 밤 시간대에 가장 따뜻했던 방은?",
+    },{
+        "Input": "이번달 4층에서 일평균 온도가 가장 높았던 방은?",
         "Tags": {
             "Style": {
                 "Type": ["Implicit modality"],
-                "Temporal": "이번달밤시간",
+                "Temporal": "이번달",
                 "Spatials": ["4층"],
                 "Processing": ["Avg", "ArgMax"],
                 "Modality": ["실내온도"]
@@ -271,18 +270,18 @@
             ]
         },
         "Response": {
-            "Thinking": "사용자는 이번달 밤 시간대(22시~6시) 4층 전체 공간(1반, 5반, 7반) 중 평균 실내온도가 가장 높은 곳을 알고 싶어함. 이번달 밤 시간대 4층 각 공간의 실내온도를 쿼리한 후 평균을 계산하여 가장 높은 공간과 그 온도를 반환하면 됨.",
+            "Thinking": "사용자는 이번달 4층 전체 공간(1반, 5반, 7반) 중 일평균 실내온도가 가장 높았던 방을 알고 싶어함. 이번달 4층 각 공간의 실내온도를 쿼리한 후 공간별 전체 평균을 계산하여 가장 높은 공간과 그 온도를 반환하면 됨.",
             "Expectations": [
-                "이번달 밤 시간대(22시~6시) 4층에서 {{이번달밤_4층_실내온도_최고_공간}}이(가) 평균 {{이번달밤_4층_실내온도_최고_평균}}℃로 가장 따뜻했습니다."
+                "이번달 4층에서 {{이번달_4층_일평균_실내온도_최고_공간}}이(가) 일평균 {{이번달_4층_일평균_실내온도_최고}}℃로 가장 높았습니다."
             ],
             "Mapping": {
                 "temporal": {
-                    "이번달밤시간": "CUSTOM_NIGHT_HOURS"
+                    "이번달": "[DATE_TRUNC('month', DATE 'CURRENT_DATE'), DATE_TRUNC('month', DATE 'CURRENT_DATE' + INTERVAL '1 month'))"
                 },
                 "spatials": {
-                    "1반": "02_I81",
-                    "5반": "01_IB5",
-                    "7반": "01_IB7"
+                    "1반": "01_IB7",
+                    "5반": "02_I81",
+                    "7반": "01_IB5"
                 },
                 "modalities": {
                     "실내온도": "roomtemp"
@@ -290,11 +289,9 @@
             },
             "Script": [
                 "v_이번달_4층_실내온도_df = data(t='이번달',s=['1반','5반','7반'],m='실내온도')",
-                "v_이번달_4층_실내온도_df['시간'] = v_이번달_4층_실내온도_df['timestamp'].dt.hour",
-                "v_이번달밤_4층_실내온도_df = v_이번달_4층_실내온도_df[(v_이번달_4층_실내온도_df['시간'] >= 22) | (v_이번달_4층_실내온도_df['시간'] < 6)]",
-                "v_이번달밤_4층_공간별_평균 = v_이번달밤_4층_실내온도_df.groupby('idu_name')['실내온도'].mean()",
-                "v_이번달밤_4층_실내온도_최고_공간 = v_이번달밤_4층_공간별_평균.idxmax()",
-                "v_이번달밤_4층_실내온도_최고_평균 = v_이번달밤_4층_공간별_평균.max()"
+                "v_이번달_4층_공간별_평균 = v_이번달_4층_실내온도_df.groupby('idu_name')['실내온도'].mean()",
+                "v_이번달_4층_일평균_실내온도_최고_공간 = v_이번달_4층_공간별_평균.idxmax()",
+                "v_이번달_4층_일평균_실내온도_최고 = v_이번달_4층_공간별_평균.max()"
             ]
         }
     },
@@ -322,7 +319,7 @@
                     "지난주": "[DATE_TRUNC('week', DATE 'CURRENT_DATE') - INTERVAL '1 week', DATE_TRUNC('week', DATE 'CURRENT_DATE'))"
                 },
                 "spatials": {
-                    "4층": ["01_IB5", "01_IB7", "02_I81"]
+                    "4층": ["02_I81", "01_IB5", "01_IB7"]
                 },
                 "modalities": {
                     "실내온도": "roomtemp"
@@ -363,7 +360,7 @@
                     "최근2주": "[DATE_TRUNC('day', DATE 'CURRENT_DATE' - INTERVAL '14 day'), DATE_TRUNC('day', DATE 'CURRENT_DATE'))"
                 },
                 "spatials": {
-                    "5반": "01_IB5"
+                    "5반": "02_I81"
                 },
                 "modalities": {
                     "실내온도": "roomtemp"
